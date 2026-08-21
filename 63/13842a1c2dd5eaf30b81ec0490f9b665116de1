@@ -1,0 +1,26 @@
+apps/agents/runtime-requirements.txt
+  s_36f3e3f4652fc0::t_cc5dd591fadb68 1
+specs/07-implementation-deployment.md
+  s_36f3e3f4652fc0::t_cc5dd591fadb68 142-147
+tests/harness/test_agent_runtime_requirements.py
+  s_36f3e3f4652fc0::t_cc5dd591fadb68 135-140
+tests/unit/test_agent_platform_deploy.py
+  s_36f3e3f4652fc0::t_cc5dd591fadb68 192-194
+  s_36f3e3f4652fc0::t_d94059f37d0724 195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "6313842a1c2dd5eaf30b81ec0490f9b665116de1",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
