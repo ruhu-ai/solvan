@@ -1,0 +1,63 @@
+cloudbuild.yaml
+  s_36f3e3f4652fc0::t_5a189479dfec6c 289
+docs/sources/gemini-enterprise-agent-platform.md
+  s_36f3e3f4652fc0::t_22575e17e2ef10 16-41
+infra/terraform/environments/gcp/binary_authorization.tf
+  s_36f3e3f4652fc0::t_fadd94463a2099 1-21
+infra/terraform/environments/gcp/cloud_deploy.tf
+  s_36f3e3f4652fc0::t_f77866d240ba14 1-138
+infra/terraform/environments/gcp/cloud_run.tf
+  s_36f3e3f4652fc0::t_0bc91cc9f7fcc4 242-246,323-327,1945-1949,2042-2046,2166-2170,2596-2599,2667-2670,2686-2697,2740-2743,2821-2824,2903-2906,2968-2971,3020-3023,3071-3074,3162-3165,3240-3247
+infra/terraform/environments/gcp/iam.tf
+  s_36f3e3f4652fc0::t_16b7a363e14d9e 22-80
+infra/terraform/environments/gcp/locals.tf
+  s_36f3e3f4652fc0::t_ff091ee65c1335 211-226,240,244,250,406-409
+infra/terraform/environments/gcp/outputs.tf
+  s_36f3e3f4652fc0::t_1266d1902175cf 54-67
+infra/terraform/environments/gcp/storage.tf
+  s_36f3e3f4652fc0::t_6211cac13e6181 25-53
+infra/terraform/environments/gcp/variables.tf
+  s_36f3e3f4652fc0::t_bf7823fd89c104 735-738,741-742
+specs/05-security-governance.md
+  s_36f3e3f4652fc0::t_4adbaa9d7db8f2 797,829-832
+specs/07-implementation-deployment.md
+  s_36f3e3f4652fc0::t_765deaa6a93e17 334-343,346-369
+specs/08-test-evaluation-acceptance.md
+  s_36f3e3f4652fc0::t_ccbaf8340bcfa9 46-63
+specs/16-governed-tool-catalog.md
+  s_36f3e3f4652fc0::t_6b0bf7cf61a031 168-172
+specs/artifacts/catalog-network-policy.v1.json
+  s_36f3e3f4652fc0::t_a01bd34fe1a3cb 1-43
+src/solvan/application/catalog_release_governance.py
+  s_36f3e3f4652fc0::t_1801e1a283a9a7 1-166
+src/solvan/platform/cloud_deploy_catalog.py
+  s_36f3e3f4652fc0::t_8cd564bc1233d7 1-99
+src/solvan/platform/preflight.py
+  s_36f3e3f4652fc0::t_de32e45e390455 85,89,94
+tests/unit/test_catalog_release_governance.py
+  s_36f3e3f4652fc0::t_3bdd7a0dc068de 1-174
+tests/unit/test_deploy_release.py
+  s_36f3e3f4652fc0::t_26a3dafa1e09bc 3-4,128,140,154,163-170,199-244
+tests/unit/test_release_contracts.py
+  s_36f3e3f4652fc0::t_ca7dcfd712f7f8 262-283
+tools/deploy_release.py
+  s_36f3e3f4652fc0::t_dcc3863129eab0 19,75,77,79,92,139,141-151,214-215,222-223,490-544,693-878,951-967,1046-1049,1052,1055,1073-1177,1191,1205,1207,1210-1214
+tools/release_admin.py
+  s_36f3e3f4652fc0::t_1db8a2bb43473c 9,12,18,34,56,114-143,199-368,714,736-737
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "705fb2506c4640c86c9f36328973fde49166a0d6",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
