@@ -3,11 +3,11 @@ manifest_version: 2026-08-08.1
 status: implementation_complete_pending_cloud_evidence
 platform:
   framework: google-adk
-  framework_version: 2.5.0
+  framework_version: 2.7.1
   workspace_contract: WorkspaceAgent
   workspace_compatibility_contracts: []
   runtime_sdk: google-cloud-aiplatform
-  runtime_sdk_version: 1.163.0
+  runtime_sdk_version: 1.165.1
   location: europe-west1
   registry_binding: REQUIRED_BEFORE_DEPLOYMENT
   gateway_binding: REQUIRED_BEFORE_DEPLOYMENT
@@ -148,7 +148,7 @@ optional_agents:
     enable_env: SOLVAN_ENABLE_CONVERSATIONAL_SURFACE
     platform: cloud-run
     framework: google-adk
-    framework_version: 2.5.0
+    framework_version: 2.7.1
     identity_type: WORKLOAD_IDENTITY
     immutable_resource_env: SOLVAN_LIAISON_REGISTRY_RESOURCE
     location: europe-west1
@@ -201,7 +201,7 @@ optional_agents:
     platform: cloud-run
     workspace_provider: AntigravityWorkspaceProvider
     implementation_sdk: google-antigravity
-    implementation_sdk_version: 0.1.10
+    implementation_sdk_version: 0.1.13
     hosting_control_plane: cloud-run
     hosting_data_plane: private-https
     immutable_resource_env: SOLVAN_ANTIGRAVITY_WORKSPACE_SERVICE

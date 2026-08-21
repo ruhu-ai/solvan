@@ -251,9 +251,9 @@ def console_settings_projection(snapshot: dict[str, Any], *, api_version: str) -
             "model_location": os.environ.get("SOLVAN_MODEL_LOCATION", "eu"),
             "region": str(environment.get("region", "europe-west1")),
             "framework": os.environ.get("SOLVAN_AGENT_FRAMEWORK", "google-adk"),
-            "framework_version": os.environ.get("SOLVAN_AGENT_FRAMEWORK_VERSION", "2.5.0"),
+            "framework_version": os.environ.get("SOLVAN_AGENT_FRAMEWORK_VERSION", "2.7.1"),
             "runtime_sdk": os.environ.get("SOLVAN_RUNTIME_SDK", "google-cloud-aiplatform"),
-            "runtime_sdk_version": os.environ.get("SOLVAN_RUNTIME_SDK_VERSION", "1.163.0"),
+            "runtime_sdk_version": os.environ.get("SOLVAN_RUNTIME_SDK_VERSION", "1.165.1"),
             "agent_manifest_version": os.environ.get(
                 "SOLVAN_AGENT_MANIFEST_VERSION", "2026-08-08.1"
             ),

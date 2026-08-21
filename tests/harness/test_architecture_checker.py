@@ -109,3 +109,18 @@ def test_file_growth_ceiling_requires_an_owned_exception(
     findings = check_architecture.check_file_sizes(config(tmp_path))
     assert [finding.rule for finding in findings] == ["SIZE001"]
     assert "removal condition" in findings[0].remediation
+
+
+def test_nested_locked_environment_is_not_scanned_as_first_party(
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    monkeypatch.setattr(check_architecture, "ROOT", tmp_path)
+    write(
+        tmp_path,
+        "apps/provider/.venv/lib/python3.12/site-packages/vendor.py",
+        "print('vendor')\n# two\n# three\n# four\n",
+    )
+    configuration = config(tmp_path)
+    assert check_architecture.check_python(configuration) == []
+    assert check_architecture.check_file_sizes(configuration) == []

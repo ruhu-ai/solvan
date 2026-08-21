@@ -204,6 +204,9 @@ does not qualify a GitHub merge, deployment, rollback, or production release.
 - agent manifest/A2A card/Registry metadata consistency;
 - tool catalog versus IAM/Gateway manifest;
 - Model Armor coverage manifest versus protocol calls;
+- independent IAP/inline-Model-Armor Terraform toggles, with the staging
+  code-13 degradation omitting only the inline extension/policy and preserving
+  fail-closed in-process sanitization;
 - OTel required attributes and sensitive-field absence.
 
 ## 5. Model evaluations
@@ -516,7 +519,9 @@ data with branch data.
 - Registry search discovers approved agent metadata;
 - each Agent Identity reaches only its allowed destination;
 - Gateway permits expected egress and denies direct/unregistered egress;
-- Model Armor benign/injection/PII fixtures;
+- Model Armor benign/injection/PII fixtures through the in-process gate; inline
+  Gateway coverage is separately `ENFORCED` or explicitly
+  `DEGRADED_GOOGLE_AUTHZ_POLICY_CODE_13`, never inferred from those probes;
 - OTel trace spans and topology arrive with correlation.
 - target Liaison turns reconstruct from Cloud SQL after deleting every ADK or
   Agent Platform Session/cache object, and a conditional-Session IAM probe

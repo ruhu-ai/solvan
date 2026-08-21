@@ -88,7 +88,7 @@ def console_snapshot() -> dict[str, Any]:
                     "status": "OPEN",
                     "provider": "GEMINI_ADK_AGENT_ENGINE",
                     "implementation_sdk": "google-adk",
-                    "implementation_sdk_version": "2.5.0",
+                    "implementation_sdk_version": "2.7.1",
                     "provider_revision": "scripted · not deployed",
                     "registry_agent_key": "workspace-agent",
                     "classification": "INTERNAL",

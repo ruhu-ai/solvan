@@ -1,13 +1,13 @@
 # Gemini Enterprise Agent Platform source register
 
 Status: researched design input
-Retrieved: 2026-08-12
+Retrieved: 2026-08-21
 Authority: official Google Cloud, Google ADK, and Google Antigravity sources only
 
 Terraform provider check: the official Registry API reported
-`hashicorp/google==7.43.0` published 2026-08-04. The initial 7.34.0 pin did not
+`hashicorp/google==7.45.0` published 2026-08-18. The initial 7.34.0 pin did not
 contain the newly documented Agent Registry and Agent Gateway resource types;
-the deploy root therefore pins 7.43.0 and validates its live provider schema.
+the deploy root therefore pins 7.45.0 and validates its live provider schema.
 
 This register records volatile platform facts that materially constrain Solvan.
 Deployment preflight must recheck launch stage, region, API version, quotas, and
@@ -78,10 +78,10 @@ Verified facts and decisions:
 - Custom containers must satisfy the Runtime HTTP contract on port 8080. The
   competition release uses the supported ADK deployment path unless a custom
   container becomes necessary.
-- The 2026-07-23 long-running-query documentation exposes
-  `vertexai.Client.agent_engines.run_query_job` with a qualified
+- The current long-running-query documentation and 1.165.1 package expose
+  `agentplatform.Client.agent_engines.run_query_job` with a qualified
   `reasoningEngines` name, JSON query, and regional GCS output URI. Solvan pins
-  `google-adk==2.5.0` and `google-cloud-aiplatform==1.163.0`, persists the run
+  `google-adk==2.7.1` and `google-cloud-aiplatform==1.165.1`, persists the run
   before this call, and stores the returned job/input/output references. It
   polls with `check_query_job(retrieve_result=True)` and commits only a strict
   structured result associated with that stored operation.
@@ -259,25 +259,58 @@ traffic splitting and Gateway enforcement on that path.
 - [Interact with managed agents](https://docs.cloud.google.com/gemini-enterprise-agent-platform/build/managed-agents/interact-with-agents)
 - [Sandbox environment](https://docs.cloud.google.com/gemini-enterprise-agent-platform/build/managed-agents/sandbox-environment)
 
-Verified 2026-08-08 facts and decisions:
+Verified 2026-08-21 facts and decisions:
 
 - Google publishes the Apache-2.0 `google-antigravity` Python SDK for custom
   agents. The SDK exposes high-level `Agent`, stateful `Conversation`, custom
   tools/MCP, capability configuration, hooks, policies, and triggers. The
   package contains a platform-specific compiled runtime and must be installed
   from the official hash-pinned wheel rather than reconstructed from a source
-  checkout. PyPI reports `0.1.10`, uploaded 2026-08-05, Development Status
+  checkout. PyPI reports `0.1.13`, uploaded 2026-08-20, Development Status
   Alpha, with trusted-publishing provenance attestations and Linux
-  x86-64/ARM64 wheels.
+  x86-64/ARM64 wheels. The release-approved manylinux x86-64 wheel digest is
+  `sha256:f398664b362280037f8ed6df5cd61b996f3d02be1151ff665c6d09c87cc6a992`.
+- `google-antigravity==0.1.13` requires `protobuf>=7.35`, while
+  `google-cloud-aiplatform==1.165.1` requires `protobuf<7`. Solvan therefore
+  maintains a separate lock and `Dockerfile.antigravity`; the provider image
+  verifies the installed distribution and rejects ADK/Agent Platform packages
+  in its closure.
+- In 0.1.13, `CapabilitiesConfig.agent_behavior` defaults to autonomous and is
+  now set explicitly; `BudgetConfig` receives the coordinator's invocation
+  model/tool-call ceilings; `RunCommandConfig` disables daemons while the
+  `RUN_COMMAND` built-in remains absent; lifecycle and pre-tool decision hooks
+  validate tool names and argument shapes. Retries remain zero, the only
+  enabled built-in is `finish`, custom tools remain deny-all plus two exact
+  allows, and `WorkspaceModelProposal` remains the structured output schema.
 - The current package instructions configure Gemini Enterprise Agent Platform
   with `LocalAgentConfig(vertex=True, project=..., location=...)` and ADC. This
   selects Vertex/Agent Platform for model calls; the SDK agent loop and compiled
   runtime still execute in the caller's process. The SDK README documents no
   Managed Agents deployment, `environment_id`, or Interactions API bridge.
 - Solvan therefore self-hosts the pinned SDK in a private regional Cloud Run
-  service. The dependency freezes at `0.1.10` for the competition release;
+  service. The dependency freezes at `0.1.13` for the competition release;
   upgrades require explicit API/behavior evaluation, a new lockfile, wheel
   provenance, container compatibility, and regression receipts.
+
+## Current framework and deployment-tool releases
+
+Official PyPI/GitHub/Registry metadata rechecked on 2026-08-21 records:
+
+- `google-adk==2.7.1`, published 2026-08-17; 2.7.1 restores the OpenTelemetry
+  1.42.1 ceiling and validates Session initialization events.
+- `google-cloud-aiplatform==1.165.1`, published 2026-08-19; 1.165.0 added
+  public Sessions update methods and fixed Agent Engine SSE handling, while
+  1.165.1 fixes default bucket-name truncation.
+- `google-genai==2.19.0`, published 2026-08-19; the Enterprise client remains
+  `genai.Client(enterprise=True, project=..., location=...)` for Solvan's
+  evaluated surface.
+- `google-auth==2.56.3`, published 2026-08-06 and still current.
+- `hashicorp/google==7.45.0`, published 2026-08-18. Its changes do not alter a
+  Solvan-declared schema semantically; the Cloud Run computed-field fixes in
+  7.44.0 reduce irrelevant drift.
+- Terraform CLI `1.15.9` and Google Cloud CLI `581.0.0` are the current official
+  releases observed by their official release channels. Local upgrades are
+  tooling prerequisites, never deployment evidence.
 - Managed Agents is a distinct `google.genai`/REST surface. Its current create
   contract supports only `base_agent=antigravity-preview-05-2026` in `global`;
   the official documentation does not describe uploading or executing a custom
@@ -335,7 +368,7 @@ Verified 2026-08-10 facts and decisions:
   workspace retains a documented inference-location exception.
 - The documented EU jurisdictional hostname is
   `https://aiplatform.eu.rep.googleapis.com`. The locked
-  `google-genai==2.17.0` Enterprise client resolves `location="eu"` to that
+  `google-genai==2.19.0` Enterprise client resolves `location="eu"` to that
   hostname. A request sent to the global `aiplatform.googleapis.com` hostname
   with `/locations/eu/` in its path does not prove EU routing and is not an
   acceptable release probe; the negative control must use the same Enterprise

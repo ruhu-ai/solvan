@@ -48,6 +48,7 @@ images = {
 # Enable only after a passing provider-eligibility receipt and synthetic-data
 # attestation have been recorded. The required S1-S6 release leaves this false.
 antigravity_demo_enabled = false
+gateway_model_armor_enabled = false # Documented Google code-13 degradation; IAP stays enabled.
 # Enable only through the dedicated fault-drill release tool.
 fault_drill_enabled  = false
 direct_gcp_alert_triage_pilot_enabled = false

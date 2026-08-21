@@ -74,7 +74,7 @@ class WorkspaceRehydrationReceipt(WorkspaceModel):
     provider_service_revision: str = Field(min_length=1)
     provider_boot_hash: str = Field(pattern=_SHA256)
     implementation_sdk: str = Field(pattern=r"^google-antigravity$")
-    implementation_sdk_version: str = Field(pattern=r"^0\.1\.10$")
+    implementation_sdk_version: str = Field(pattern=r"^0\.1\.13$")
     implementation_sdk_distribution_hash: str = Field(pattern=_SHA256)
     provider_artifact_digest: str = Field(pattern=_SHA256)
     input_manifest_ref: str = Field(pattern=r"^gs://")

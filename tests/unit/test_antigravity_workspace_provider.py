@@ -34,7 +34,7 @@ from solvan.platform import (
 )
 from solvan.platform.evidence_objects import ObjectReceipt
 
-SDK_HASH = "sha256:249c102cac831e290a4a62918a2e0c01482696b6533b2a02e8215890080d634a"
+SDK_HASH = "sha256:f398664b362280037f8ed6df5cd61b996f3d02be1151ff665c6d09c87cc6a992"
 
 
 def _synchronous(function: Callable[[], Awaitable[None]]) -> Callable[[], None]:
@@ -170,7 +170,7 @@ def _attempt(
         "provider_service_revision": "antigravity-workspace-00001-x7p",
         "provider_boot_hash": f"sha256:{'f' * 64}",
         "implementation_sdk": "google-antigravity",
-        "implementation_sdk_version": "0.1.10",
+        "implementation_sdk_version": "0.1.13",
         "implementation_sdk_distribution_hash": SDK_HASH,
         "provider_artifact_digest": invocation.provider_artifact_digest,
         "input_manifest_hash": invocation.input_manifest_hash,
@@ -410,7 +410,7 @@ async def test_adapter_accepts_only_bound_fresh_rehydration_receipt() -> None:
         provider_service_revision="antigravity-workspace-00002-new",
         provider_boot_hash=f"sha256:{'1' * 64}",
         implementation_sdk="google-antigravity",
-        implementation_sdk_version="0.1.10",
+        implementation_sdk_version="0.1.13",
         implementation_sdk_distribution_hash=SDK_HASH,
         provider_artifact_digest=request.provider_artifact_digest,
         input_manifest_ref=request.input_manifest_ref,
@@ -470,13 +470,13 @@ def test_guidance_materials_reach_the_skills_path_and_nothing_else_does(tmp_path
     repository inputs stay in memory behind the read tool.
     """
 
-    from apps.antigravity_workspace.main import _materialize_guidance
+    from apps.antigravity_workspace.guidance import materialize_guidance
 
     invocation = _with_materials(
         _material_at("guidance/reliability/triage/SKILL.md", "# Triage\n1. Read the pool.\n"),
         _material_at("evidence/pool.json", '{"utilization": 0.94}'),
     )
-    paths = _materialize_guidance(invocation, root=tmp_path)
+    paths = materialize_guidance(invocation, root=tmp_path)
 
     assert paths == [str(tmp_path)]
     written = sorted(p.relative_to(tmp_path).as_posix() for p in tmp_path.rglob("*") if p.is_file())
@@ -489,8 +489,8 @@ def test_guidance_materials_reach_the_skills_path_and_nothing_else_does(tmp_path
 
 
 def test_a_workspace_with_no_guidance_gets_no_skills_path(tmp_path) -> None:
-    from apps.antigravity_workspace.main import _materialize_guidance
+    from apps.antigravity_workspace.guidance import materialize_guidance
 
     invocation = _with_materials(_material_at("evidence/pool.json", "{}"))
-    assert _materialize_guidance(invocation, root=tmp_path) == []
+    assert materialize_guidance(invocation, root=tmp_path) == []
     assert not any(tmp_path.iterdir())

@@ -62,14 +62,18 @@ Supporting material:
 - [Competition architecture reference — Solvan through the ADK-lab lens (print/PDF)](Solvan_Competition_Architecture.html)
 - [Submission architecture image](docs/assets/architecture.svg)
 - [Implementation plan](PLAN.md)
+- [Open/accepted decisions](docs/OPEN-DECISIONS.md)
 - [Documentation policy](docs/documentation-policy.md)
 - [Gemini Enterprise Agent Platform source register](docs/sources/gemini-enterprise-agent-platform.md)
 - [SaaS scale and tenant-isolation source record](docs/sources/saas-scale-and-isolation.md)
 - [Production environment model source record](docs/sources/production-environment-model.md)
+- [Alert Triage implementation plan](docs/exec-plans/active/2026-08-13-alert-triage.md)
 - [Curated design reference library and review checklists](docs/references/README.md)
+- [Specification execution plan](docs/exec-plans/active/specification-pack.md)
 - [Repository quality scorecard](docs/quality.md)
 - [Technical-debt ledger](docs/tech-debt.md)
 - [Competition release runbook](docs/release-runbook.md)
+- [Competition submission draft](docs/submission-draft.md)
 - [Third-party notices and disclosure](THIRD_PARTY_NOTICES.md)
 - [Generated repository map](docs/generated/repository-map.md)
 
@@ -90,7 +94,7 @@ sandboxed permanent-repair generation, exact patch review, Terraform for the
 single-region Google Cloud topology, and the operator console.
 
 The optional public-synthetic flagship is also implemented end to end: a
-hash-locked `google-antigravity==0.1.10` loop in a private regional Cloud Run
+hash-locked `google-antigravity==0.1.13` loop in a private regional Cloud Run
 service, independent KMS-backed fixture attestation, pre-upload eligibility
 allow/deny receipts, typed competing hypotheses, deterministic baseline
 reproduction and patched regression, content-bound logical-workspace

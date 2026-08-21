@@ -125,7 +125,7 @@ resource "google_network_services_authz_extension" "model_armor" {
 }
 
 resource "google_network_security_authz_policy" "model_armor" {
-  count          = var.gateway_extensions_enabled ? 1 : 0
+  count          = var.gateway_extensions_enabled && var.gateway_model_armor_enabled ? 1 : 0
   project        = var.project_id
   name           = "${local.prefix}-model-armor"
   location       = var.region

@@ -44,6 +44,7 @@ def parse_platform_preflight_receipt(value: object) -> PlatformPreflightReceipt:
         "runtime_bucket",
         "gateway_resources",
         "gateway_policy_resources",
+        "gateway_policy_status",
         "model_armor_template",
         "fast_fleet_model_resource",
         "fast_fleet_model_location",
@@ -65,6 +66,15 @@ def parse_platform_preflight_receipt(value: object) -> PlatformPreflightReceipt:
         ):
             raise ValueError(f"preflight topology {name} is invalid")
         return tuple(sorted((str(key), str(item)) for key, item in raw.items()))
+
+    def optional_string_map(name: str) -> tuple[tuple[str, str | None], ...]:
+        raw = topology_value[name]
+        if not isinstance(raw, dict) or any(
+            not isinstance(key, str) or (item is not None and not isinstance(item, str))
+            for key, item in raw.items()
+        ):
+            raise ValueError(f"preflight topology {name} is invalid")
+        return tuple(sorted((str(key), item) for key, item in raw.items()))
 
     required_services = topology_value["required_services"]
     enabled_apis = value["enabled_apis"]
@@ -95,7 +105,8 @@ def parse_platform_preflight_receipt(value: object) -> PlatformPreflightReceipt:
             evidence_bucket=str(topology_value["evidence_bucket"]),
             runtime_bucket=str(topology_value["runtime_bucket"]),
             gateway_resources=string_map("gateway_resources"),
-            gateway_policy_resources=string_map("gateway_policy_resources"),
+            gateway_policy_resources=optional_string_map("gateway_policy_resources"),
+            gateway_policy_status=string_map("gateway_policy_status"),
             model_armor_template=str(topology_value["model_armor_template"]),
             fast_fleet_model_resource=str(topology_value["fast_fleet_model_resource"]),
             fast_fleet_model_location=str(topology_value["fast_fleet_model_location"]),

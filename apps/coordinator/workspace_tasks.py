@@ -28,7 +28,7 @@ from solvan.domain import new_identifier
 from solvan.persistence import PostgresWorkspaceStore, WorkspaceConflict
 from solvan.platform.evidence_objects import GcsEvidenceWriter
 
-ADK_VERSION = "2.5.0"
+ADK_VERSION = "2.7.1"
 ADK_DISTRIBUTION_HASH = "sha256:d247ca3639921a54a86feb797a88d08c1d2c9a60c3f5ff2805e49beb29a9cb8d"
 ELIGIBILITY_POLICY_VERSION = "workspace-provider-eligibility-v1"
 

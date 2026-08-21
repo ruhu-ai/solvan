@@ -69,7 +69,7 @@ class ProviderEligibilityReceipt(WorkspaceModel):
         if self.provider is WorkspaceProviderKind.ANTIGRAVITY_SDK_CLOUD_RUN:
             topology_exact = (
                 self.implementation_sdk == "google-antigravity"
-                and self.implementation_sdk_version == "0.1.10"
+                and self.implementation_sdk_version == "0.1.13"
                 and self.hosting_control_plane == "CLOUD_RUN"
                 and self.hosting_data_plane == "PRIVATE_HTTPS"
                 and self.required_processing_location == "europe-west1"

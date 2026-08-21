@@ -158,7 +158,7 @@ def main() -> None:
                 raise SystemExit(f"{key} implementation boundary differs: {mismatches}")
             if not str(item.get("implementation_sdk_version", "")).strip():
                 raise SystemExit(f"{key} must pin the official SDK version")
-            if item.get("implementation_sdk_version") != "0.1.10":
+            if item.get("implementation_sdk_version") != "0.1.13":
                 raise SystemExit(f"{key} must use the competition-frozen SDK version")
             if item.get("location") != platform["location"]:
                 raise SystemExit(f"{key} must use the release region")

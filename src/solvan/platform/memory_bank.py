@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Protocol, cast
 
-import vertexai
+import agentplatform  # type: ignore[import-untyped]
 
 from solvan.application import MemoryBankReceipt, MemoryBankUnavailable, MemoryHint
 from solvan.application.memory import MemorySearchCandidate, MemorySearchQuery
@@ -40,7 +40,7 @@ class VertexMemoryAPI:
     """Thin wrapper around `client.agent_engines.memories`."""
 
     def __init__(self, *, project: str, location: str) -> None:
-        client = vertexai.Client(project=project, location=location)
+        client = agentplatform.Client(project=project, location=location)
         self._memories = client.agent_engines.memories
 
     def retrieve(self, *, name: str, scope: dict[str, str]) -> tuple[PlatformMemory, ...]:

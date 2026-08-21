@@ -106,7 +106,7 @@ class AntigravityEligibilityEvaluator:
             provider=WorkspaceProviderKind.ANTIGRAVITY_SDK_CLOUD_RUN,
             provider_revision=policy.provider_revision,
             implementation_sdk="google-antigravity",
-            implementation_sdk_version="0.1.10",
+            implementation_sdk_version="0.1.13",
             implementation_sdk_distribution_hash=(policy.implementation_sdk_distribution_hash),
             hosting_control_plane="CLOUD_RUN",
             hosting_data_plane="PRIVATE_HTTPS",

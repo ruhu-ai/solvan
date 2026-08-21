@@ -21,6 +21,7 @@ command -v pnpm >/dev/null || { echo "pnpm 10.25.0 is required" >&2; exit 1; }
 command -v docker >/dev/null || { echo "Docker is required for isolated PostgreSQL" >&2; exit 1; }
 
 uv sync --frozen
+uv sync --project apps/antigravity_workspace --frozen
 pnpm install --frozen-lockfile
 
 if [[ "$install_browser" -eq 1 ]]; then

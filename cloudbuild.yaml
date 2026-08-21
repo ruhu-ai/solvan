@@ -116,9 +116,7 @@ steps:
     name: gcr.io/cloud-builders/docker
     args:
       - build
-      - --file=Dockerfile.python
-      - --build-arg=APP_MODULE=apps.antigravity_workspace.main:app
-      - --build-arg=UV_EXTRAS=--extra antigravity
+      - --file=Dockerfile.antigravity
       - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/antigravity-workspace:${BUILD_ID}
       - .
   - id: build-workspace-sandbox

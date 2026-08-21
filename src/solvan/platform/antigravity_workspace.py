@@ -248,7 +248,7 @@ class AntigravityWorkspaceProvider:
     def _validate_attempt(self, attempt: WorkspaceProviderAttemptReceipt) -> None:
         if (
             attempt.implementation_sdk != "google-antigravity"
-            or attempt.implementation_sdk_version != "0.1.10"
+            or attempt.implementation_sdk_version != "0.1.13"
             or attempt.implementation_sdk_distribution_hash
             != self._config.implementation_sdk_distribution_hash
             or attempt.provider_artifact_digest != self._config.provider_artifact_digest

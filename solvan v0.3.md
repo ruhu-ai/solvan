@@ -8,7 +8,7 @@
 **Initial Wedge:** Closed-Loop Incident Resolution
 **Hackathon Track:** Fortified Enterprise Fleet
 **Hackathon Platform:** Gemini Enterprise Agent Platform
-**Optional Flagship Workspace Provider:** `google-antigravity==0.1.10` self-hosted on private regional Cloud Run, public-synthetic only
+**Optional Flagship Workspace Provider:** `google-antigravity==0.1.13` self-hosted on private regional Cloud Run, public-synthetic only
 **Required Production/Ruhu Workspace Provider:** Google ADK on regional Agent Runtime with separate `europe-west1` Cloud Run Sandbox adjudication
 **Primary Agent Framework:** Google ADK
 

@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Protocol, cast
 
 import yaml
+from google.adk.apps import App
 
 from solvan.platform.model_routes import validate_fast_fleet_route
 
@@ -199,7 +200,12 @@ def deploy(
         root_agent = getattr(module, "root_agent", None)
         if root_agent is None:
             raise RuntimeError(f"{target.agent_key} has no root_agent")
-        wrapped_agent = agent_engines.AdkApp(agent=root_agent)
+        wrapped_agent = agent_engines.AdkApp(
+            app=App(
+                name=f"solvan_{target.agent_key.replace('-', '_')}",
+                root_agent=root_agent,
+            )
+        )
         env_vars: dict[str, str] = {
             "SOLVAN_ENVIRONMENT": plan.environment,
             "GOOGLE_GENAI_USE_VERTEXAI": "true",

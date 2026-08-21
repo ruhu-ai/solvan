@@ -11,6 +11,7 @@ from typing import Any
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+EXCLUDED_DIRECTORY_NAMES = frozenset({".venv", "__pycache__"})
 
 
 @dataclass(frozen=True)
@@ -59,6 +60,10 @@ def solvan_import_layer(module: str) -> str | None:
     return None
 
 
+def is_first_party_path(path: Path) -> bool:
+    return not EXCLUDED_DIRECTORY_NAMES.intersection(path.relative_to(ROOT).parts)
+
+
 def check_python(config: dict[str, Any]) -> list[Finding]:
     findings: list[Finding] = []
     layers = config["layers"]
@@ -66,7 +71,11 @@ def check_python(config: dict[str, Any]) -> list[Finding]:
     # Matched on path boundaries, never as a bare string prefix: `apps/actuator`
     # must not hand mutation-connector rights to a future `apps/actuator_probe/`.
     allowed_mutation_roots = tuple(config["mutation_connector_allowed_roots"])
-    files = sorted((*ROOT.glob("src/**/*.py"), *ROOT.glob("apps/**/*.py")))
+    files = sorted(
+        path
+        for path in (*ROOT.glob("src/**/*.py"), *ROOT.glob("apps/**/*.py"))
+        if is_first_party_path(path)
+    )
     for path in files:
         relative = path.relative_to(ROOT).as_posix()
         source_layer = layer_for(path, layers)
@@ -173,7 +182,7 @@ def check_file_sizes(config: dict[str, Any]) -> list[Finding]:
     for base in (ROOT / "src", ROOT / "apps"):
         for path in base.rglob("*"):
             kind = suffixes.get(path.suffix)
-            if not path.is_file() or not kind:
+            if not path.is_file() or not kind or not is_first_party_path(path):
                 continue
             count = len(path.read_text(encoding="utf-8").splitlines())
             limit = limits[kind]

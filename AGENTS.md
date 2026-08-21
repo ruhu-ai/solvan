@@ -76,7 +76,7 @@ counts as a GCP release receipt.
   repository, private telemetry, customer data, production credential, GCS/SQL
   authority, or production mutation authority.
 - The flagship public-synthetic workspace uses the pinned official
-  `google-antigravity==0.1.10` SDK inside a private regional Cloud Run service;
+  `google-antigravity==0.1.13` SDK inside a private regional Cloud Run service;
   it does not use Managed Agents Agents/Interactions APIs. The regional
   production/Ruhu workspace uses Google ADK plus regional Agent Runtime; exact
   patch tests run in the separate no-egress Cloud Run Sandbox service in

@@ -10,6 +10,7 @@ class ProviderPreflightRequest(BaseModel):
 
     schema_version: int = Field(default=1, ge=1, le=1)
     nonce: str = Field(pattern=r"^[A-Za-z0-9_-]{16,128}$")
+    expected_sdk_version: str = Field(pattern=r"^0\.1\.13$")
     expected_sdk_distribution_hash: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
     expected_network_policy_hash: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
 

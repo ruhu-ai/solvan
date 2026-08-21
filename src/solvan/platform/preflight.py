@@ -65,6 +65,8 @@ _REGISTERED = frozenset(
 _GATEWAY_POLICIES = frozenset(
     {"iap_extension", "iap_policy", "model_armor_extension", "model_armor_policy"}
 )
+_GATEWAY_POLICY_STATUS = frozenset({"iap", "inline_model_armor", "in_process_model_armor"})
+_INLINE_MODEL_ARMOR_DEGRADATION = "DEGRADED_GOOGLE_AUTHZ_POLICY_CODE_13"
 _RUNTIME_PRINCIPALS = _AGENTS
 _SCENARIO_IDENTITIES = frozenset({"injector", "oracle"})
 _REQUIRED_APIS = frozenset(
@@ -134,7 +136,8 @@ class ReleaseTopology:
     evidence_bucket: str
     runtime_bucket: str
     gateway_resources: tuple[tuple[str, str], ...]
-    gateway_policy_resources: tuple[tuple[str, str], ...]
+    gateway_policy_resources: tuple[tuple[str, str | None], ...]
+    gateway_policy_status: tuple[tuple[str, str], ...]
     model_armor_template: str
     fast_fleet_model_resource: str
     fast_fleet_model_location: str
@@ -156,6 +159,7 @@ class ReleaseTopology:
             "runtime_bucket": self.runtime_bucket,
             "gateway_resources": dict(self.gateway_resources),
             "gateway_policy_resources": dict(self.gateway_policy_resources),
+            "gateway_policy_status": dict(self.gateway_policy_status),
             "model_armor_template": self.model_armor_template,
             "fast_fleet_model_resource": self.fast_fleet_model_resource,
             "fast_fleet_model_location": self.fast_fleet_model_location,
@@ -226,14 +230,41 @@ def _validate_release_topology(topology: ReleaseTopology) -> None:
     cloud_run_uri = re.compile(r"^https://[a-z0-9-]+-[0-9]+\.europe-west1\.run\.app$")
     if any(cloud_run_uri.fullmatch(uri) is None for uri in service_uris.values()):
         raise ValueError("release topology contains a noncanonical Cloud Run URI")
+    gateway_resources = _exact_string_map(
+        dict(topology.gateway_resources), {"egress", "ingress"}, "gateways"
+    )
+    gateway_policies = _exact_optional_string_map(
+        dict(topology.gateway_policy_resources), _GATEWAY_POLICIES, "gateway policies"
+    )
+    gateway_status = _exact_string_map(
+        dict(topology.gateway_policy_status), _GATEWAY_POLICY_STATUS, "gateway policy status"
+    )
+    if gateway_status["iap"] != "ENFORCED" or any(
+        gateway_policies[name] is None for name in ("iap_extension", "iap_policy")
+    ):
+        raise ValueError("release topology requires the IAP gateway policy")
+    if gateway_status["in_process_model_armor"] != "ENFORCED_FAIL_CLOSED":
+        raise ValueError("release topology requires fail-closed in-process Model Armor")
+    inline_status = gateway_status["inline_model_armor"]
+    inline_resources = (
+        gateway_policies["model_armor_extension"],
+        gateway_policies["model_armor_policy"],
+    )
+    if inline_status == "ENFORCED" and any(resource is None for resource in inline_resources):
+        raise ValueError("enforced inline Model Armor requires both gateway resources")
+    if inline_status == _INLINE_MODEL_ARMOR_DEGRADATION and (
+        gateway_policies["model_armor_extension"] is None
+        or gateway_policies["model_armor_policy"] is not None
+    ):
+        raise ValueError(
+            "degraded inline Model Armor requires the extension and omits only the policy"
+        )
+    if inline_status not in {"ENFORCED", _INLINE_MODEL_ARMOR_DEGRADATION}:
+        raise ValueError("release topology has an unsupported inline Model Armor state")
     location_bound_maps = (
-        (_exact_string_map(dict(topology.gateway_resources), {"egress", "ingress"}, "gateways")),
-        (
-            _exact_string_map(
-                dict(topology.gateway_policy_resources), _GATEWAY_POLICIES, "gateway policies"
-            )
-        ),
-        (_exact_string_map(dict(topology.registered_endpoints), _REGISTERED, "Registry endpoints")),
+        gateway_resources,
+        {name: resource for name, resource in gateway_policies.items() if resource is not None},
+        _exact_string_map(dict(topology.registered_endpoints), _REGISTERED, "Registry endpoints"),
     )
     if any(
         "/locations/europe-west1/" not in resource
@@ -326,11 +357,18 @@ def topology_from_terraform_output(value: dict[str, Any]) -> ReleaseTopology:
     )
     if any("/locations/europe-west1/" not in resource for resource in gateways.values()):
         raise ValueError("Agent Gateway is outside europe-west1")
-    policies = _exact_string_map(
+    policies = _exact_optional_string_map(
         output("gateway_policy_resources"), _GATEWAY_POLICIES, "gateway policies"
     )
-    if any("/locations/europe-west1/" not in resource for resource in policies.values()):
+    if any(
+        "/locations/europe-west1/" not in resource
+        for resource in policies.values()
+        if resource is not None
+    ):
         raise ValueError("Agent Gateway policy is outside europe-west1")
+    policy_status = _exact_string_map(
+        output("gateway_policy_status"), _GATEWAY_POLICY_STATUS, "gateway policy status"
+    )
     registered = _exact_string_map(
         output("registered_endpoints"), _REGISTERED, "Registry endpoints"
     )
@@ -406,6 +444,7 @@ def topology_from_terraform_output(value: dict[str, Any]) -> ReleaseTopology:
         runtime_bucket=runtime_bucket,
         gateway_resources=tuple(sorted(gateways.items())),
         gateway_policy_resources=tuple(sorted(policies.items())),
+        gateway_policy_status=tuple(sorted(policy_status.items())),
         model_armor_template=armor,
         fast_fleet_model_resource=model_resource,
         fast_fleet_model_location=model_location,
@@ -459,6 +498,10 @@ def evaluate_platform_preflight(
     ):
         raise ValueError("preflight requires durable GCS evidence references")
     reasons: list[str] = []
+    degraded = (
+        dict(topology.gateway_policy_status)["inline_model_armor"]
+        == _INLINE_MODEL_ARMOR_DEGRADATION
+    )
     if not billing_enabled:
         reasons.append("BILLING_DISABLED")
     for api in sorted(set(topology.required_services) - enabled_apis):
@@ -487,8 +530,12 @@ def evaluate_platform_preflight(
             json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
     )
+    if degraded:
+        reasons.append("DEGRADED:INLINE_MODEL_ARMOR_GOOGLE_AUTHZ_POLICY_CODE_13")
     return PlatformPreflightReceipt(
-        status="PASS" if not reasons else "FAIL",
+        status="FAIL"
+        if any(not reason.startswith("DEGRADED:") for reason in reasons)
+        else ("DEGRADED" if degraded else "PASS"),
         release_commit=release_commit,
         project_id=project_id,
         project_number=project_number,
@@ -514,4 +561,16 @@ def _exact_string_map(
         raise ValueError(f"{label} output keys are incomplete")
     if any(not isinstance(item, str) or not item for item in value.values()):
         raise ValueError(f"{label} output contains an empty value")
+    return value
+
+
+def _exact_optional_string_map(
+    value: Any,
+    expected: set[str] | frozenset[str],
+    label: str,
+) -> dict[str, str | None]:
+    if not isinstance(value, dict) or set(value) != set(expected):
+        raise ValueError(f"{label} output keys are incomplete")
+    if any(item is not None and (not isinstance(item, str) or not item) for item in value.values()):
+        raise ValueError(f"{label} output contains an invalid value")
     return value

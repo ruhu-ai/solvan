@@ -125,7 +125,7 @@ solvan/
 |---|---|
 | language | Python 3.12, TypeScript |
 | agent framework | Google ADK |
-| optional flagship SDK | `google-antigravity==0.1.10` in private regional Cloud Run |
+| optional flagship SDK | `google-antigravity==0.1.13` in private regional Cloud Run |
 | managed execution | Gemini Enterprise Agent Runtime |
 | application API | FastAPI on Cloud Run |
 | console | React + TypeScript, static/server delivery on Cloud Run |
@@ -692,6 +692,15 @@ Model Armor unavailability is fail-closed for model context and governed tool
 content. Deterministic health/status reads may continue only if their path
 contains no model and passes the typed connector boundary.
 
+The Gateway IAP and inline Model Armor controls have independent Terraform
+flags. Staging keeps IAP enabled. While Google rejects the inline
+`CONTENT_AUTHZ` policy with server-side code 13, the release workflow sets only
+`gateway_model_armor_enabled=false`, retains the Model Armor template and the
+in-process fail-closed prompt/response gate, runs its benign/injection/PII
+probes, and emits an explicit degraded topology status. This degradation may
+complete deployment mechanics but cannot produce a fully release-qualified
+receipt.
+
 ## 11. Memory Bank implementation
 
 - one regional Memory Bank resource for the demo environment;
@@ -890,12 +899,13 @@ Preflight records and verifies:
 - automatic/manual Registry entries and metadata;
 - Gateway/Registry association and every expected route;
 - direct bypass denial;
-- Model Armor templates and protocol coverage probes;
+- Model Armor templates, explicit inline-gateway enforcement/degradation state,
+  and fail-closed in-process protocol coverage probes;
 - Memory Bank scope/IAM and regional location;
 - OTel trace/log arrival and content-capture settings;
 - Cloud SQL migration/schema and backup;
 - demo stack versions, synthetic data, injector, and cleanup;
-- official `google-antigravity==0.1.10` PyPI provenance attestation, locked hash,
+- official `google-antigravity==0.1.13` PyPI provenance attestation, locked hash,
   successful import, and SDK-created local agent/conversation smoke test;
 - private `europe-west1` Antigravity SDK Cloud Run service image digest, revision,
   service identity, authenticated coordinator-only invocation, exact global Vertex

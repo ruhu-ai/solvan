@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import importlib
+import importlib.metadata
 import logging
 import os
 import secrets
@@ -18,6 +19,7 @@ from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2 import id_token
 from pydantic import BaseModel, ConfigDict, Field
 
+from apps.antigravity_workspace.guidance import materialize_guidance
 from apps.antigravity_workspace.preflight import (
     ProviderPreflightReceipt,
     ProviderPreflightRequest,
@@ -45,8 +47,16 @@ from solvan.domain import new_identifier
 from solvan.observability import instrument_fastapi
 
 LOGGER = logging.getLogger(__name__)
-SDK_VERSION = "0.1.10"
-SDK_DISTRIBUTION_HASH = "sha256:249c102cac831e290a4a62918a2e0c01482696b6533b2a02e8215890080d634a"
+APPROVED_SDK_VERSION = "0.1.13"
+SDK_DISTRIBUTION_HASH = "sha256:f398664b362280037f8ed6df5cd61b996f3d02be1151ff665c6d09c87cc6a992"
+try:
+    SDK_VERSION = importlib.metadata.version("google-antigravity")
+    SDK_DISTRIBUTION_INSTALLED = True
+except importlib.metadata.PackageNotFoundError:
+    # The shared developer/test environment intentionally excludes the
+    # incompatible SDK. The dedicated image verifier refuses this state.
+    SDK_VERSION = APPROVED_SDK_VERSION
+    SDK_DISTRIBUTION_INSTALLED = False
 TOOL_POLICY_VERSION = "antigravity-workspace-tools-v1"
 ALLOWED_TOOLS = ("read_workspace_artifact", "write_candidate_artifact")
 TOOL_SET_HASH = canonical_sha256(
@@ -185,9 +195,9 @@ class WorkspaceMaterialTools:
         return response
 
     def _claim_call(self) -> None:
-        # Every custom tool call requires a subsequent model turn; reserving
-        # one initial/final call makes the SDK loop respect both budgets even
-        # though v0.1.10 exposes no public pre-model-call decision hook.
+        # Every custom tool call requires a subsequent model turn. The SDK's
+        # BudgetConfig is a second ceiling; this application check remains the
+        # authoritative exact per-invocation budget.
         maximum_calls = min(
             self._invocation.budget.max_tool_calls,
             self._invocation.budget.max_model_calls - 1,
@@ -207,44 +217,6 @@ class WorkspaceMaterialTools:
         )
 
 
-#: Specification 12 §8.1. Approved Operational Guidance is the institution's own
-#: procedure for an incident class. A workspace that cannot read it re-derives
-#: from first principles what the organisation already decided.
-GUIDANCE_PREFIX = "guidance/"
-
-
-def _materialize_guidance(invocation: WorkspaceTaskInvocation, *, root: Path) -> list[str]:
-    """Write the invocation's signed guidance materials request-locally, read-only.
-
-    The SDK loads skills from the filesystem, and the coordinator materialises
-    inputs in memory precisely so the provider needs no storage credentials. The
-    bridge is a request-scoped directory that lives and dies with one call.
-
-    Guidance is data, never authority. These bytes are the approved revision at
-    its exact content hash and are as untrusted as any other workspace content:
-    a pack cannot introduce a tool, widen a ceiling, or name a step the
-    invocation did not already permit, because the tool set and policies are
-    fixed before this runs and no pack is consulted when building them.
-    """
-
-    written = False
-    for material in invocation.input_materials:
-        if not material.path.startswith(GUIDANCE_PREFIX):
-            continue
-        target = root / material.path[len(GUIDANCE_PREFIX) :]
-        # The path was validated traversal-free by WorkspaceInputMaterial, and
-        # resolving against the request-local root refuses anything that escapes
-        # it anyway.
-        resolved = target.resolve()
-        if not resolved.is_relative_to(root.resolve()):
-            raise ValueError("guidance material escapes the request-local root")
-        resolved.parent.mkdir(parents=True, exist_ok=True)
-        resolved.write_text(material.content, encoding="utf-8")
-        resolved.chmod(0o400)
-        written = True
-    return [str(root)] if written else []
-
-
 class AntigravitySdkRunner:
     """Thin, real adapter over google-antigravity's local compiled runtime."""
 
@@ -260,7 +232,7 @@ class AntigravitySdkRunner:
                 invocation,
                 settings=settings,
                 tools=tools,
-                skills_paths=_materialize_guidance(invocation, root=Path(guidance_root)),
+                skills_paths=materialize_guidance(invocation, root=Path(guidance_root)),
             )
 
     async def _run(
@@ -273,14 +245,56 @@ class AntigravitySdkRunner:
     ) -> WorkspaceModelProposal:
         antigravity = importlib.import_module("google.antigravity")
         types = importlib.import_module("google.antigravity.types")
+        hooks = importlib.import_module("google.antigravity.hooks")
         policy = importlib.import_module("google.antigravity.hooks.policy")
+        if SDK_VERSION != APPROVED_SDK_VERSION or not SDK_DISTRIBUTION_INSTALLED:
+            raise RuntimeError("installed Antigravity distribution is not release-approved")
+
+        @hooks.pre_tool_call_decide  # type: ignore[misc]
+        def enforce_tool_arguments(tool_call: Any) -> Any:
+            """Deny unknown tools and malformed arguments before dispatch."""
+
+            raw_name = getattr(tool_call, "name", "")
+            name = getattr(raw_name, "value", raw_name)
+            arguments = getattr(tool_call, "args", None)
+            if not isinstance(arguments, dict):
+                return types.HookResult(allow=False, message="tool arguments must be an object")
+            required = {
+                "read_workspace_artifact": {"path"},
+                "write_candidate_artifact": {"path", "content", "media_type"},
+            }
+            if name == "finish":
+                return types.HookResult(allow=True, modified_args=dict(arguments))
+            if name not in required or set(arguments) != required[name]:
+                return types.HookResult(allow=False, message="tool call violates Solvan policy")
+            if any(not isinstance(value, str) for value in arguments.values()):
+                return types.HookResult(allow=False, message="tool arguments must be strings")
+            return types.HookResult(allow=True, modified_args=dict(arguments))
+
+        @hooks.on_session_start  # type: ignore[misc]
+        def observe_session_start() -> None:
+            LOGGER.debug("Antigravity request-local session started")
+
+        @hooks.on_session_end  # type: ignore[misc]
+        def observe_session_end() -> None:
+            LOGGER.debug("Antigravity request-local session ended")
+
         capabilities = types.CapabilitiesConfig(
             enable_subagents=False,
+            agent_behavior=types.AgentBehavior.AUTONOMOUS,
             enabled_tools=[types.BuiltinTools.FINISH],
+            run_command_config=types.RunCommandConfig(
+                enable_daemons=False,
+                timeout_seconds=float(min(invocation.budget.max_runtime_seconds, 30)),
+            ),
         )
         retry_config = types.RetryConfig(
             api_retry=types.ModelAPIRetryConfig(max_retries=0),
             model_output_retry=types.ModelOutputRetryConfig(max_retries=0),
+        )
+        budget_config = types.BudgetConfig(
+            max_model_calls=invocation.budget.max_model_calls,
+            max_tool_calls=invocation.budget.max_tool_calls,
         )
         config = antigravity.LocalAgentConfig(
             vertex=True,
@@ -296,6 +310,7 @@ class AntigravitySdkRunner:
                 policy.allow("read_workspace_artifact"),
                 policy.allow("write_candidate_artifact"),
             ],
+            hooks=[enforce_tool_arguments, observe_session_start, observe_session_end],
             mcp_servers=[],
             triggers=[],
             subagents=[],
@@ -303,6 +318,7 @@ class AntigravitySdkRunner:
             workspaces=[],
             response_schema=WorkspaceModelProposal,
             retry_config=retry_config,
+            budget_config=budget_config,
         )
         async with antigravity.Agent(config) as agent:
             response = await agent.chat(_task_prompt(invocation))
@@ -445,6 +461,11 @@ def _validate_invocation(
         raise HTTPException(status.HTTP_403_FORBIDDEN, "network policy hash mismatch")
     if tuple(invocation.allowed_tool_names) != ALLOWED_TOOLS:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "tool allowlist mismatch")
+    if invocation.budget.max_tool_calls < 1:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Antigravity workspace requires a positive coordinator tool-call ceiling",
+        )
     if invocation.deadline <= clock.now():
         raise HTTPException(status.HTTP_408_REQUEST_TIMEOUT, "workspace request deadline expired")
 
@@ -513,6 +534,11 @@ def create_app(
             {
                 "sdk_distribution_matches": (
                     request.expected_sdk_distribution_hash == SDK_DISTRIBUTION_HASH
+                ),
+                "sdk_version_matches": (
+                    SDK_DISTRIBUTION_INSTALLED
+                    and SDK_VERSION == APPROVED_SDK_VERSION
+                    and request.expected_sdk_version == APPROVED_SDK_VERSION
                 ),
                 "network_policy_matches": (
                     request.expected_network_policy_hash

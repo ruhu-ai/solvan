@@ -319,7 +319,13 @@ variable "channel_enrollment_hmac_secret_name" {
 }
 
 variable "gateway_extensions_enabled" {
-  description = "Create the optional Network Services authorization extensions. Staging must keep this enabled; dev may disable it only when the API is unavailable in the dedicated project."
+  description = "Create the fail-closed IAP Network Services authorization extension and policy. Staging must keep this enabled."
+  type        = bool
+  default     = true
+}
+
+variable "gateway_model_armor_enabled" {
+  description = "Create the inline Model Armor AuthzPolicy independently of IAP. The staging release workflow sets this false only for the documented Google code-13 policy-creation failure; the healthy extension remains provisioned and the in-process sanitizeUserPrompt/sanitizeModelResponse gate remains fail-closed."
   type        = bool
   default     = true
 }

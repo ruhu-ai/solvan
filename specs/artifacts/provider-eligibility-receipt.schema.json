@@ -122,7 +122,7 @@
           "classification": {"const": "PUBLIC"},
           "synthetic": {"const": true},
           "implementation_sdk": {"const": "google-antigravity"},
-          "implementation_sdk_version": {"const": "0.1.10"},
+          "implementation_sdk_version": {"const": "0.1.13"},
           "hosting_control_plane": {"const": "CLOUD_RUN"},
           "hosting_data_plane": {"const": "PRIVATE_HTTPS"},
           "required_processing_location": {"const": "europe-west1"},

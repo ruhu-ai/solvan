@@ -922,7 +922,7 @@
       </tr>
       <tr>
         <td>Workspace providers</td>
-        <td>Two implementations behind one internal <code>WorkspaceAgent</code> contract: Google ADK + regional Agent Runtime (production/Ruhu), and the pinned official <code>google-antigravity==0.1.10</code> SDK self-hosted on private regional Cloud Run (public-synthetic flagship). Exact patch/test truth comes only from the separate no-egress Cloud Run Sandbox in <code>europe-west1</code>.</td>
+        <td>Two implementations behind one internal <code>WorkspaceAgent</code> contract: Google ADK + regional Agent Runtime (production/Ruhu), and the pinned official <code>google-antigravity==0.1.13</code> SDK self-hosted on private regional Cloud Run (public-synthetic flagship). Exact patch/test truth comes only from the separate no-egress Cloud Run Sandbox in <code>europe-west1</code>.</td>
         <td>The Alpha SDK provider receives only inputs classified PUBLIC and independently attested <code>synthetic=true</code>; no repository secrets, telemetry, customer data, credentials, or GCS/SQL authority. Both providers return proposals only.</td>
         <td><span class="status-ok">implemented</span></td>
       </tr>

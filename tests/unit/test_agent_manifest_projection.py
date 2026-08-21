@@ -17,7 +17,7 @@ _ENTRY = """schema_version: 1
 manifest_version: 2026-01-01.1
 platform:
   framework: google-adk
-  framework_version: 2.5.0
+  framework_version: 2.7.1
   model_resource: gemini-3.6-flash
 agents:
   - agent_key: evidence-agent
@@ -47,7 +47,7 @@ def test_entry_pinned_principal_gets_verified_facts(tmp_path: Path) -> None:
     assert facts is not None
     assert facts["owner_department"] == "sre-platform"
     assert facts["discoverable_departments"] == ["sre", "security"]
-    assert facts["framework"] == "google-adk 2.5.0"
+    assert facts["framework"] == "google-adk 2.7.1"
     assert facts["model"] == "gemini-3.6-flash"
     assert facts["lifecycle"] == "DRAFT"
     assert facts["manifest_version"] == "2026-01-01.1"

@@ -594,6 +594,11 @@ def initial_release_variables(plan: ReleasePlan, *, commit: str) -> dict[str, An
         # This command deploys the isolated fault drill only. Normal
         # dev, staging, and production Terraform applies leave it disabled.
         "fault_drill_enabled": True,
+        # Google currently returns server-side code 13 when creating only the
+        # inline Model Armor AuthzPolicy. IAP remains enabled, and the release
+        # still probes fail-closed in-process sanitizeUserPrompt and
+        # sanitizeModelResponse calls before qualification.
+        "gateway_model_armor_enabled": False,
         "images": _dummy_images(plan.project_id),
         "calibration_receipt_uri": plan.calibration_receipt_uri,
         "calibration_receipt_hash": plan.calibration_receipt_hash,

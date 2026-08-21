@@ -125,6 +125,7 @@ def test_deploy_wraps_adk_agent_and_requires_attested_identity() -> None:
     assert client.calls[0]["config"]["identity_type"].value == "AGENT_IDENTITY"
     assert client.calls[0]["config"]["min_instances"] == 0
     assert "agent_gateway_config" in client.calls[0]["config"]
+    assert client.calls[0]["agent"]._tmpl_attrs["app"].name == "solvan_incident_supervisor"
 
 
 def test_read_agent_requires_https_evidence_broker() -> None:

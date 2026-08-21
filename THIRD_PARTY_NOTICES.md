@@ -15,8 +15,8 @@ the authoritative version inventory.
 |---|---:|---|
 | FastAPI | 0.139.2 | MIT |
 | Google Auth | 2.56.3 | Apache-2.0 |
-| Google ADK | 2.5.0 | Apache-2.0 |
-| Google Cloud AI Platform | 1.163.0 | Apache-2.0 |
+| Google ADK | 2.7.1 | Apache-2.0 |
+| Google Cloud AI Platform | 1.165.1 | Apache-2.0 |
 | HTTPX | 0.28.1 | BSD-3-Clause |
 | OpenTelemetry API/SDK | 1.42.1 | Apache-2.0 |
 | OpenTelemetry GCP Logging exporter | 1.14.0a0 | Apache-2.0 |
@@ -34,7 +34,7 @@ the authoritative version inventory.
 
 | Component | Pinned version | License |
 |---|---:|---|
-| Google Gen AI | 2.17.0 | Apache-2.0 |
+| Google Gen AI | 2.19.0 | Apache-2.0 |
 | Playwright | 1.54.2 | Apache-2.0 |
 | axe-core / axe Playwright adapter | 4.12.1 | MPL-2.0 |
 | TypeScript | 5.9.2 | Apache-2.0 |

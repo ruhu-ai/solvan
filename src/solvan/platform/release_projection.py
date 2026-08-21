@@ -119,9 +119,14 @@ class GcsReleaseProjection:
                 self._verified_component(
                     name=name,
                     required=required,
-                    passed=preflight.status == "PASS"
+                    passed=preflight.status in {"PASS", "DEGRADED"}
                     and all(proofs.get(proof) is True for proof in required),
                     observed_at=preflight.observed_at,
+                    degraded=(
+                        name == "Model Armor"
+                        and dict(preflight.topology.gateway_policy_status)["inline_model_armor"]
+                        == "DEGRADED_GOOGLE_AUTHZ_POLICY_CODE_13"
+                    ),
                 )
                 for name, required in PLATFORM_PROOFS.items()
             ]
@@ -166,8 +171,30 @@ class GcsReleaseProjection:
         }
 
     def _verified_component(
-        self, *, name: str, required: tuple[str, ...], passed: bool, observed_at: datetime
+        self,
+        *,
+        name: str,
+        required: tuple[str, ...],
+        passed: bool,
+        observed_at: datetime,
+        degraded: bool = False,
     ) -> dict[str, str]:
+        if degraded and passed:
+            return {
+                "name": name,
+                "lifecycle": "Cloud degraded",
+                "health": "DEGRADED",
+                "evidence": "CLOUD_VERIFIED_DEGRADATION",
+                "detail": (
+                    "Inline Agent Gateway Model Armor is disabled after Google AuthzPolicy "
+                    "creation failed with server-side code 13; fail-closed in-process "
+                    "sanitizeUserPrompt/sanitizeModelResponse probes passed."
+                ),
+                "last_checked": observed_at.isoformat(),
+                "next_step": (
+                    "Re-enable and re-probe the inline policy after Google resolves code 13."
+                ),
+            }
         return {
             "name": name,
             "lifecycle": "Cloud verified" if passed else "Awaiting cloud evidence",

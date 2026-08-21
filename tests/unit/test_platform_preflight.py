@@ -101,6 +101,13 @@ def terraform_output() -> dict[str, object]:
                 ),
             }
         },
+        "gateway_policy_status": {
+            "value": {
+                "iap": "ENFORCED",
+                "inline_model_armor": "ENFORCED",
+                "in_process_model_armor": "ENFORCED_FAIL_CLOSED",
+            }
+        },
         "model_armor_template": {
             "value": f"projects/{PROJECT}/locations/{REGION}/templates/agent-boundary"
         },
@@ -132,9 +139,9 @@ def terraform_output() -> dict[str, object]:
                 ),
                 "provider_revision": "antigravity-workspace-20260808-01",
                 "implementation_sdk": "google-antigravity",
-                "implementation_sdk_version": "0.1.10",
+                "implementation_sdk_version": "0.1.13",
                 "implementation_distribution_hash": (
-                    "sha256:249c102cac831e290a4a62918a2e0c01482696b6533b2a02e8215890080d634a"
+                    "sha256:f398664b362280037f8ed6df5cd61b996f3d02be1151ff665c6d09c87cc6a992"
                 ),
                 "provider_artifact_digest": f"sha256:{'8' * 64}",
                 "effective_tool_set_hash": f"sha256:{'1' * 64}",
@@ -168,6 +175,31 @@ def test_preflight_pass_requires_exact_live_topology_and_all_proofs() -> None:
     assert parsed == receipt
 
 
+def test_preflight_records_scoped_inline_model_armor_degradation_with_iap_enforced() -> None:
+    output = terraform_output()
+    output["gateway_policy_resources"]["value"]["model_armor_policy"] = None
+    output["gateway_policy_status"]["value"]["inline_model_armor"] = (
+        "DEGRADED_GOOGLE_AUTHZ_POLICY_CODE_13"
+    )
+    topology = topology_from_terraform_output(output)
+    receipt = evaluate_platform_preflight(
+        topology=topology,
+        release_commit=COMMIT,
+        project_id=PROJECT,
+        project_number=PROJECT_NUMBER,
+        deployment_id="deploy-20260821",
+        observed_at=datetime(2026, 8, 21, tzinfo=UTC),
+        billing_enabled=True,
+        enabled_apis=_REQUIRED_APIS,
+        proof_results={proof: True for proof in _REQUIRED_PROOFS},
+        evidence_refs=("gs://solvan-demo-evidence/preflight/degraded.json",),
+    )
+    assert receipt.status == "DEGRADED"
+    assert receipt.reason_codes == ("DEGRADED:INLINE_MODEL_ARMOR_GOOGLE_AUTHZ_POLICY_CODE_13",)
+    assert dict(receipt.topology.gateway_policy_status)["iap"] == "ENFORCED"
+    assert parse_platform_preflight_receipt(receipt.canonical_dict()) == receipt
+
+
 def test_enabled_antigravity_topology_requires_its_exact_proof_set() -> None:
     output = terraform_output()
     provider_uri = f"https://solvan-antigravity-{PROJECT_NUMBER}.{REGION}.run.app"
@@ -184,9 +216,9 @@ def test_enabled_antigravity_topology_requires_its_exact_proof_set() -> None:
             ),
             "provider_revision": "antigravity-workspace-20260808-01",
             "implementation_sdk": "google-antigravity",
-            "implementation_sdk_version": "0.1.10",
+            "implementation_sdk_version": "0.1.13",
             "implementation_distribution_hash": (
-                "sha256:249c102cac831e290a4a62918a2e0c01482696b6533b2a02e8215890080d634a"
+                "sha256:f398664b362280037f8ed6df5cd61b996f3d02be1151ff665c6d09c87cc6a992"
             ),
             "provider_artifact_digest": f"sha256:{'8' * 64}",
             "effective_tool_set_hash": f"sha256:{'1' * 64}",

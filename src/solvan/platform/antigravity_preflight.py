@@ -6,7 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-SDK_DISTRIBUTION_HASH = "sha256:249c102cac831e290a4a62918a2e0c01482696b6533b2a02e8215890080d634a"
+SDK_DISTRIBUTION_HASH = "sha256:f398664b362280037f8ed6df5cd61b996f3d02be1151ff665c6d09c87cc6a992"
 ANTIGRAVITY_PROOFS = frozenset(
     {
         "antigravity_health",
@@ -183,7 +183,7 @@ def validate_antigravity_topology(topology: AntigravityPreflightTopology) -> Non
         raise ValueError("provider, coordinator, and attester identities must be independent")
     if (
         topology.implementation_sdk != "google-antigravity"
-        or topology.implementation_sdk_version != "0.1.10"
+        or topology.implementation_sdk_version != "0.1.13"
         or topology.implementation_distribution_hash != SDK_DISTRIBUTION_HASH
         or sha256.fullmatch(topology.provider_artifact_digest) is None
     ):

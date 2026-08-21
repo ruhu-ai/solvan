@@ -143,7 +143,7 @@ model_endpoints:
     model: gemini-3.6-flash
   antigravity_deep_workspace: global # Gemini 3.1 Pro Preview exception
 antigravity_sdk:
-  package: google-antigravity==0.1.10
+  package: google-antigravity==0.1.13
   hosting: private Cloud Run
   permitted_data: PUBLIC independently-attested synthetic fixture only
   required_fallback: AdkWorkspaceProvider

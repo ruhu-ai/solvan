@@ -46,7 +46,7 @@ from solvan.platform import (
 from solvan.platform.evidence_objects import GcsEvidenceReader, GcsEvidenceWriter
 from solvan.platform.google_rest import authorized_session
 
-SDK_DISTRIBUTION_HASH = "sha256:249c102cac831e290a4a62918a2e0c01482696b6533b2a02e8215890080d634a"
+SDK_DISTRIBUTION_HASH = "sha256:f398664b362280037f8ed6df5cd61b996f3d02be1151ff665c6d09c87cc6a992"
 
 
 def dispatch_antigravity_repair(
@@ -339,7 +339,7 @@ def ensure_antigravity_incident_workspace(
             reliability_case_id=plan.reliability_case_id,
             provider=WorkspaceProviderKind.ANTIGRAVITY_SDK_CLOUD_RUN,
             implementation_sdk="google-antigravity",
-            implementation_sdk_version="0.1.10",
+            implementation_sdk_version="0.1.13",
             provider_revision=config.provider_revision,
             registry_agent_key="antigravity-workspace-provider",
             provider_agent_resource=config.base_url,

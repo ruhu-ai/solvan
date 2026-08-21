@@ -383,7 +383,7 @@ and patch receipt.
 
 Flagship Alpha implementation for the optional competition demonstration. A
 dedicated private Cloud Run service embeds the pinned official
-`google-antigravity==0.1.10` wheel. Its local compiled runtime owns the bounded
+`google-antigravity==0.1.13` wheel. Its local compiled runtime owns the bounded
 agent loop, `Agent`, per-task `Conversation`, custom tools, hooks,
 capabilities, and policies. `LocalAgentConfig(vertex=True, project=...,
 location="global")` sends model inference to exact model

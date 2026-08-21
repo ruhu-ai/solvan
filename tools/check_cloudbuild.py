@@ -64,9 +64,12 @@ def validate(value: dict[str, Any]) -> None:
     if len(antigravity_steps) != 1:
         raise ValueError("Antigravity SDK image build is required")
     antigravity_args = antigravity_steps[0].get("args")
-    sdk_extra = "--build-arg=UV_EXTRAS=--extra antigravity"
-    if not isinstance(antigravity_args, list) or sdk_extra not in antigravity_args:
-        raise ValueError("Antigravity image must install the locked SDK extra")
+    if not isinstance(antigravity_args, list):
+        raise ValueError("Antigravity image build arguments are malformed")
+    if "--file=Dockerfile.antigravity" not in antigravity_args:
+        raise ValueError("Antigravity image must use its isolated dependency closure")
+    if any("UV_EXTRAS" in str(argument) for argument in antigravity_args):
+        raise ValueError("Antigravity image must not inherit the shared application lock")
     image_names = {str(image).split("/")[-1].split(":")[0] for image in images}
     if image_names != all_outputs:
         raise ValueError("Cloud Build published image set drifted")

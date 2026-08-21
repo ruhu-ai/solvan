@@ -45,7 +45,8 @@ def test_agent_identity_matrix_has_separate_read_execute_verify_and_memory_autho
     assert 'member  = google_service_account.workload["actuator"].member' in terraform
     assert 'member  = google_service_account.workload["verifier"].member' in terraform
     assert 'member  = google_service_account.workload["coordinator"].member' in terraform
-    assert 'account_id   = "solvan-${replace(each.key, "_", "-")}"' in terraform
+    assert "account_id   = local.service_account_ids[each.key]" in terraform
+    assert "service_account_id_overrides" in locals
     assert "execution_agent_principal" in variables
     assert "evidence_agent_principal" in variables
     assert "verification_agent_principal" in variables
@@ -96,6 +97,9 @@ def test_gateway_is_registry_governed_fail_closed_and_has_no_generic_mutation_ro
 
 def test_model_armor_covers_both_gateway_directions_and_pii_fail_closed() -> None:
     platform = _text("infra/terraform/environments/gcp/platform.tf")
+    variables = _text("infra/terraform/environments/gcp/variables.tf")
+    outputs = _text("infra/terraform/environments/gcp/outputs.tf")
+    deploy = _text("tools/deploy_release.py")
     assert 'filter_enforcement = "ENABLED"' in platform
     assert "pi_and_jailbreak_filter_settings" in platform
     assert "malicious_uri_filter_settings" in platform
@@ -105,6 +109,17 @@ def test_model_armor_covers_both_gateway_directions_and_pii_fail_closed() -> Non
     assert "google_network_services_agent_gateway.egress.id" in platform
     assert "google_network_services_agent_gateway.ingress.id" in platform
     assert 'enforcement_type                         = "INSPECT_AND_BLOCK"' in platform
+    assert "count       = var.gateway_extensions_enabled ? 1 : 0" in platform
+    assert (
+        "count          = var.gateway_extensions_enabled && var.gateway_model_armor_enabled ? 1 : 0"
+    ) in platform
+    assert 'variable "gateway_model_armor_enabled"' in variables
+    assert (
+        'inline_model_armor     = !var.gateway_extensions_enabled ? "DISABLED" : '
+        '(var.gateway_model_armor_enabled ? "ENFORCED"'
+    ) in outputs
+    assert 'iap                    = var.gateway_extensions_enabled ? "ENFORCED"' in outputs
+    assert '"gateway_model_armor_enabled": False' in deploy
 
 
 def test_oracle_and_injector_are_outside_every_agent_visible_namespace() -> None:

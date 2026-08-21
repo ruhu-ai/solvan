@@ -53,6 +53,7 @@ def provider_preflight(
         json={
             "schema_version": 1,
             "nonce": nonce,
+            "expected_sdk_version": topology.implementation_sdk_version,
             "expected_sdk_distribution_hash": topology.implementation_distribution_hash,
             "expected_network_policy_hash": topology.effective_network_policy_hash,
         },
@@ -67,6 +68,7 @@ def provider_preflight(
         receipt.provider_revision == topology.provider_revision
         and receipt.sdk_version == topology.implementation_sdk_version
         and receipt.sdk_distribution_hash == topology.implementation_distribution_hash
+        and observations.get("sdk_version_matches") is True
         and observations.get("sdk_distribution_matches") is True
         and observations.get("network_policy_matches") is True
         and observations.get("hosting_region_europe_west1") is True

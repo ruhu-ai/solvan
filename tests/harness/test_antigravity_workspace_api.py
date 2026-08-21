@@ -185,7 +185,7 @@ def _invocation(**changes: object) -> WorkspaceTaskInvocation:
         "provider_resource": "https://antigravity-workspace.example.run.app",
         "provider_revision": _settings().provider_revision,
         "implementation_sdk_distribution_hash": (
-            "sha256:249c102cac831e290a4a62918a2e0c01482696b6533b2a02e8215890080d634a"
+            "sha256:f398664b362280037f8ed6df5cd61b996f3d02be1151ff665c6d09c87cc6a992"
         ),
         "provider_artifact_digest": _settings().provider_artifact_digest,
         "workflow_version": 3,
@@ -269,7 +269,7 @@ def test_private_provider_executes_bounded_request_and_returns_bound_receipt() -
     assert receipt.request_hash == invocation.request_hash
     assert receipt.provider_service_revision == _settings().service_revision
     assert receipt.implementation_sdk == "google-antigravity"
-    assert receipt.implementation_sdk_version == "0.1.10"
+    assert receipt.implementation_sdk_version == "0.1.13"
     assert receipt.proposal.citations == ("repository/app.py:1",)
     diff = "diff --git a/app.py b/app.py\n"
     assert receipt.candidate_artifacts == (
@@ -323,15 +323,17 @@ def test_provider_fails_closed_on_policy_hash_or_unsigned_citation() -> None:
 def test_provider_health_does_not_require_cloud_configuration() -> None:
     with TestClient(create_app()) as client:
         response = client.get("/live")
-    assert response.json() == {"status": "live", "sdk": "google-antigravity/0.1.10"}
+    assert response.json() == {"status": "live", "sdk": "google-antigravity/0.1.13"}
 
 
-def test_private_preflight_reports_exact_sdk_tools_and_live_denials() -> None:
+def test_private_preflight_reports_exact_sdk_tools_and_live_denials(monkeypatch) -> None:
+    monkeypatch.setattr("apps.antigravity_workspace.main.SDK_DISTRIBUTION_INSTALLED", True)
     request = {
         "schema_version": 1,
         "nonce": "preflight-20260808",
+        "expected_sdk_version": "0.1.13",
         "expected_sdk_distribution_hash": (
-            "sha256:249c102cac831e290a4a62918a2e0c01482696b6533b2a02e8215890080d634a"
+            "sha256:f398664b362280037f8ed6df5cd61b996f3d02be1151ff665c6d09c87cc6a992"
         ),
         "expected_network_policy_hash": _settings().effective_network_policy_hash,
     }
@@ -382,7 +384,7 @@ def _rehydration_request(**changes: object) -> WorkspaceRehydrationRequest:
         "checkpoint_id": _id("wck", "2"),
         "provider_revision": _settings().provider_revision,
         "implementation_sdk_distribution_hash": (
-            "sha256:249c102cac831e290a4a62918a2e0c01482696b6533b2a02e8215890080d634a"
+            "sha256:f398664b362280037f8ed6df5cd61b996f3d02be1151ff665c6d09c87cc6a992"
         ),
         "provider_artifact_digest": _settings().provider_artifact_digest,
         "previous_provider_service_revision": "antigravity-workspace-00000-old",

@@ -24,7 +24,7 @@ def _topology() -> AntigravityPreflightTopology:
         coordinator_service_account="coordinator@solvan-demo.iam.gserviceaccount.com",
         provider_revision="antigravity-workspace-20260808-01",
         implementation_sdk="google-antigravity",
-        implementation_sdk_version="0.1.10",
+        implementation_sdk_version="0.1.13",
         implementation_distribution_hash=SDK_DISTRIBUTION_HASH,
         provider_artifact_digest=f"sha256:{'8' * 64}",
         effective_tool_set_hash=f"sha256:{'1' * 64}",
@@ -55,7 +55,7 @@ def test_provider_preflight_derives_security_proofs_from_live_receipt(monkeypatc
                 "provider_revision": topology.provider_revision,
                 "provider_service_revision": "service-revision-2",
                 "provider_boot_hash": f"sha256:{'3' * 64}",
-                "sdk_version": "0.1.10",
+                "sdk_version": "0.1.13",
                 "sdk_distribution_hash": SDK_DISTRIBUTION_HASH,
                 "enabled_builtin_tools": ["finish"],
                 "enabled_custom_tools": [
@@ -63,6 +63,7 @@ def test_provider_preflight_derives_security_proofs_from_live_receipt(monkeypatc
                     "write_candidate_artifact",
                 ],
                 "observations": {
+                    "sdk_version_matches": True,
                     "sdk_distribution_matches": True,
                     "network_policy_matches": True,
                     "custom_tool_set_exact": True,

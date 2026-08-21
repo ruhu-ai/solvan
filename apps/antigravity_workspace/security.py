@@ -5,10 +5,25 @@ from __future__ import annotations
 import asyncio
 from typing import Protocol
 
+import google.auth
 import httpx
+from google.auth.transport.requests import AuthorizedSession
 
 from solvan.application import WorkspaceModelProposal, WorkspaceTaskInvocation
-from solvan.platform.google_rest import authorized_session
+
+
+def authorized_session() -> AuthorizedSession:
+    """Create the provider's own ADC-backed REST session without Agent Platform.
+
+    This service has a deliberately separate dependency and image boundary from
+    the ADK/Agent Platform fleet. Importing the shared ``solvan.platform``
+    package would load ``agentplatform`` and silently defeat that boundary.
+    """
+
+    credentials, _project = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
+    return AuthorizedSession(credentials)  # type: ignore[no-untyped-call]
 
 
 class ProviderSecuritySettings(Protocol):

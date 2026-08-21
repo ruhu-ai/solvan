@@ -134,8 +134,8 @@ output "antigravity_workspace_provider" {
     coordinator_service_account      = try(google_service_account.workload["coordinator"].email, null)
     provider_revision                = var.antigravity_provider_revision
     implementation_sdk               = "google-antigravity"
-    implementation_sdk_version       = "0.1.10"
-    implementation_distribution_hash = "sha256:249c102cac831e290a4a62918a2e0c01482696b6533b2a02e8215890080d634a"
+    implementation_sdk_version       = "0.1.13"
+    implementation_distribution_hash = "sha256:f398664b362280037f8ed6df5cd61b996f3d02be1151ff665c6d09c87cc6a992"
     provider_artifact_digest         = split("@", var.images.antigravity_workspace)[1]
     effective_tool_set_hash          = local.antigravity_tool_set_hash
     effective_network_policy_hash    = local.antigravity_network_policy_hash
@@ -248,9 +248,18 @@ output "registered_endpoints" {
 output "gateway_policy_resources" {
   value = {
     model_armor_extension = var.gateway_extensions_enabled ? google_network_services_authz_extension.model_armor[0].id : null
-    model_armor_policy    = var.gateway_extensions_enabled ? google_network_security_authz_policy.model_armor[0].id : null
+    model_armor_policy    = var.gateway_extensions_enabled && var.gateway_model_armor_enabled ? google_network_security_authz_policy.model_armor[0].id : null
     iap_extension         = var.gateway_extensions_enabled ? google_network_services_authz_extension.iap[0].id : null
     iap_policy            = var.gateway_extensions_enabled ? google_network_security_authz_policy.iap[0].id : null
+  }
+}
+
+output "gateway_policy_status" {
+  description = "Exact enforcement/degradation state; inline Model Armor is independent from IAP and the fail-closed in-process gate."
+  value = {
+    iap                    = var.gateway_extensions_enabled ? "ENFORCED" : "DISABLED"
+    inline_model_armor     = !var.gateway_extensions_enabled ? "DISABLED" : (var.gateway_model_armor_enabled ? "ENFORCED" : "DEGRADED_GOOGLE_AUTHZ_POLICY_CODE_13")
+    in_process_model_armor = "ENFORCED_FAIL_CLOSED"
   }
 }
 

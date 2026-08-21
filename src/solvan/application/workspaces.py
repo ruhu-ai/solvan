@@ -391,7 +391,7 @@ class WorkspaceSpec(WorkspaceModel):
                 self.classification is not WorkspaceClassification.PUBLIC
                 or not self.synthetic
                 or self.implementation_sdk != "google-antigravity"
-                or self.implementation_sdk_version != "0.1.10"
+                or self.implementation_sdk_version != "0.1.13"
                 or self.synthetic_attestation_ref is None
                 or self.synthetic_attestation_hash is None
             ):

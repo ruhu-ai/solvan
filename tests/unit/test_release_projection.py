@@ -138,6 +138,11 @@ def _topology() -> ReleaseTopology:
                 "model_armor_policy",
             )
         ),
+        gateway_policy_status=(
+            ("iap", "ENFORCED"),
+            ("in_process_model_armor", "ENFORCED_FAIL_CLOSED"),
+            ("inline_model_armor", "ENFORCED"),
+        ),
         model_armor_template=f"projects/{PROJECT}/locations/europe-west1/templates/boundary",
         fast_fleet_model_resource="gemini-3.6-flash",
         fast_fleet_model_location="eu",
