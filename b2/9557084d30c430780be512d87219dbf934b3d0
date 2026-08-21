@@ -1,0 +1,21 @@
+infra/terraform/environments/gcp/iam.tf
+  s_625ed20cba13d5::t_1c7f16050a84e7 157-174,210-216,271-277,297-303
+infra/terraform/environments/gcp/platform.tf
+  s_625ed20cba13d5::t_6a5ab55eec1b96 202-211
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "b29557084d30c430780be512d87219dbf934b3d0",
+  "prompts": {},
+  "sessions": {
+    "s_625ed20cba13d5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "08fb3abf-9b51-41b4-b5bb-cdc3d792f92b",
+        "model": "unknown"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
