@@ -1,0 +1,2515 @@
+.dockerignore
+  s_625ed20cba13d5::t_03c5990d5da04e 1-16
+.env.example
+  s_625ed20cba13d5::t_98bb67664944a8 1-41
+.github/workflows/ci.yml
+  s_625ed20cba13d5::t_d05be5942c9bcf 1-43
+.gitignore
+  s_625ed20cba13d5::t_e73aecbfae67d5 1-39
+.python-version
+  s_625ed20cba13d5::t_4447f068de2aa0 1-2
+.worktreeinclude
+  s_625ed20cba13d5::t_49f5efa5944b76 1-3
+AGENTS.md
+  s_625ed20cba13d5::t_3d01286c5e4f7b 1-156
+ARCHITECTURE.md
+  s_625ed20cba13d5::t_59c8381a09c041 1-215
+CLAUDE.md
+  s_625ed20cba13d5::t_8a49875f9c301e 1-13
+Dockerfile.python
+  s_625ed20cba13d5::t_095c8ae078fcff 1-29
+Dockerfile.release
+  s_625ed20cba13d5::t_ad3776d7564824 1-23
+Dockerfile.solvant-relay
+  s_625ed20cba13d5::t_c94b5caf46ca2d 1-23
+Dockerfile.workspace-sandbox
+  s_625ed20cba13d5::t_7a900ce101c83b 1-27
+LICENSE
+  s_625ed20cba13d5::t_5e3d61d631b4a9 1-202
+PLAN.md
+  s_625ed20cba13d5::t_901350dde4e573 1-20
+README.md
+  s_625ed20cba13d5::t_9fd3cd63de215a 1-222
+Solvan_Competition_Architecture.html
+  s_625ed20cba13d5::t_150b09290b128e 1-2724
+Solvan_Enterprise_Architecture.html
+  s_625ed20cba13d5::t_631840b516174d 1-1398
+THIRD_PARTY_NOTICES.md
+  s_625ed20cba13d5::t_25e01e94d29a5b 1-72
+apps/__init__.py
+  s_625ed20cba13d5::t_c401b71d566683 1
+apps/actuator/__init__.py
+  s_625ed20cba13d5::t_36026fbfd7ef36 1
+apps/actuator/local_policy.py
+  s_625ed20cba13d5::t_51c228660a283f 1-127
+apps/actuator/main.py
+  s_625ed20cba13d5::t_cfef9cf9ef48c9 1-293
+apps/agents/__init__.py
+  s_625ed20cba13d5::t_851a86c3091b4c 1
+apps/agents/evidence_agent/__init__.py
+  s_625ed20cba13d5::t_97c88d80cb18f5 1
+apps/agents/evidence_agent/agent.py
+  s_625ed20cba13d5::t_4b8044d322393b 1-43
+apps/agents/execution_agent/__init__.py
+  s_625ed20cba13d5::t_b969e82a1ff42d 1
+apps/agents/execution_agent/agent.py
+  s_625ed20cba13d5::t_3233729be04486 1-17
+apps/agents/incident_supervisor/__init__.py
+  s_625ed20cba13d5::t_b3e6e1f93de554 1
+apps/agents/incident_supervisor/agent.py
+  s_625ed20cba13d5::t_26e2ab5e7c92da 1-15
+apps/agents/infrastructure_agent/__init__.py
+  s_625ed20cba13d5::t_7745cfe295e014 1
+apps/agents/infrastructure_agent/agent.py
+  s_625ed20cba13d5::t_8b5cbe9de2eb9d 1-53
+apps/agents/runtime-requirements.txt
+  s_625ed20cba13d5::t_8e3a44f9e5fe8d 1-6
+apps/agents/verification_agent/__init__.py
+  s_625ed20cba13d5::t_305190ffb59b17 1
+apps/agents/verification_agent/agent.py
+  s_625ed20cba13d5::t_becd6200e58bb4 1-17
+apps/agents/workspace_agent/__init__.py
+  s_625ed20cba13d5::t_f713e4c144c7a6 1
+apps/agents/workspace_agent/agent.py
+  s_625ed20cba13d5::t_3bbe044fd4c9b9 1-25
+apps/alert_ingress/main.py
+  s_625ed20cba13d5::t_2e5e9b46cbf920 1-43
+apps/antigravity_workspace/__init__.py
+  s_625ed20cba13d5::t_bbd12c7dfdf48b 1
+apps/antigravity_workspace/main.py
+  s_625ed20cba13d5::t_b48cfff2c8df2f 1-645
+apps/antigravity_workspace/preflight.py
+  s_625ed20cba13d5::t_27d02887e13bfa 1-29
+apps/antigravity_workspace/security.py
+  s_625ed20cba13d5::t_a04357e6d68159 1-130
+apps/api/__init__.py
+  s_625ed20cba13d5::t_cd6ade254705db 1
+apps/api/agent_manifest_projection.py
+  s_625ed20cba13d5::t_aa10b0c2e3b031 1-76
+apps/api/agent_skills.py
+  s_625ed20cba13d5::t_135b515f667f92 1-1688
+apps/api/alert_console.py
+  s_625ed20cba13d5::t_334a8c762c6db2 1-611
+apps/api/alert_console_fixture.py
+  s_625ed20cba13d5::t_886c287be3ef93 1-360
+apps/api/alert_console_queries.py
+  s_625ed20cba13d5::t_e8a8eeadf0f893 1-112
+apps/api/alerts.py
+  s_625ed20cba13d5::t_18742db15a7377 1-169
+apps/api/api_models.py
+  s_625ed20cba13d5::t_76072075a81d4a 1-29
+apps/api/auth_routes.py
+  s_625ed20cba13d5::t_7addeca19a9f75 1-593
+apps/api/code_change_decisions.py
+  s_625ed20cba13d5::t_1dda2506ac5536 1-248
+apps/api/code_delivery_profiles.py
+  s_625ed20cba13d5::t_8984d3ef95457b 1-107
+apps/api/connection_contracts.py
+  s_625ed20cba13d5::t_323932d1da384d 1-26
+apps/api/connections.py
+  s_625ed20cba13d5::t_c2c91e1342e3d3 1-570
+apps/api/console_fixture.py
+  s_625ed20cba13d5::t_56241ce24a7a20 1-172
+apps/api/console_fleet_fixture.py
+  s_625ed20cba13d5::t_eea653adf25b82 1-697
+apps/api/console_incident_fixture.py
+  s_625ed20cba13d5::t_b8b06765ed6abc 1-555
+apps/api/console_incident_history.py
+  s_625ed20cba13d5::t_dc77d2174b376b 1-127
+apps/api/console_integration_fixture.py
+  s_625ed20cba13d5::t_2cb6dde0b33e6d 1-272
+apps/api/console_projection.py
+  s_625ed20cba13d5::t_f9bc39aa573687 1-657
+apps/api/console_release_fixture.py
+  s_625ed20cba13d5::t_01205dabfd8d50 1-45
+apps/api/console_settings.py
+  s_625ed20cba13d5::t_9ac763737d9c34 1-319
+apps/api/detection_connections.py
+  s_625ed20cba13d5::t_e0b8e561cd057d 1-103
+apps/api/direct_gcp_probe.py
+  s_625ed20cba13d5::t_5bee4c7bde923e 1-219
+apps/api/estate_onboarding_flow.py
+  s_625ed20cba13d5::t_6a93e678c5a2f4 1-229
+apps/api/fleet_capability_projection.py
+  s_625ed20cba13d5::t_42d924192e75ff 1-345
+apps/api/fleet_governance_projection.py
+  s_625ed20cba13d5::t_7708cf823d9bca 1-124
+apps/api/fleet_operability.py
+  s_625ed20cba13d5::t_c3866992f9de25 1-289
+apps/api/github_app_configuration.py
+  s_625ed20cba13d5::t_9f4df57bfd8ea6 1-183
+apps/api/github_binding_material.py
+  s_625ed20cba13d5::t_7834f4f1bf93e5 1-82
+apps/api/github_connect.py
+  s_625ed20cba13d5::t_49c117324eab06 1-493
+apps/api/github_conversation.py
+  s_625ed20cba13d5::t_a8ac946beab167 1-197
+apps/api/github_install_flow.py
+  s_625ed20cba13d5::t_12aa0d877bdac8 1-304
+apps/api/github_onboarding.py
+  s_625ed20cba13d5::t_d72cd7e496e958 1-540
+apps/api/github_refusals.py
+  s_625ed20cba13d5::t_7e62967d85355b 1-40
+apps/api/guidance_inspection.py
+  s_625ed20cba13d5::t_7407fef8c77fcd 1-33
+apps/api/guidance_projection.py
+  s_625ed20cba13d5::t_08c637d62ee0ac 1-41
+apps/api/human_identity.py
+  s_625ed20cba13d5::t_a96fe201870c84 1-107
+apps/api/identity_configuration.py
+  s_625ed20cba13d5::t_614fc454eb904a 1-237
+apps/api/incident_evidence.py
+  s_625ed20cba13d5::t_29d831a9b2d6e9 1-227
+apps/api/incident_projection.py
+  s_625ed20cba13d5::t_de6a90dacdb357 1-563
+apps/api/liaison.py
+  s_625ed20cba13d5::t_f77db60002a445 1-383
+apps/api/liaison_attachment_routes.py
+  s_625ed20cba13d5::t_b37ebba0908bb4 1-221
+apps/api/liaison_channel_routes.py
+  s_625ed20cba13d5::t_2e5f059dc81272 1-402
+apps/api/liaison_errors.py
+  s_625ed20cba13d5::t_eb51cf748a00a7 1-118
+apps/api/liaison_http_support.py
+  s_625ed20cba13d5::t_863126e6843519 1-313
+apps/api/liaison_maintenance.py
+  s_625ed20cba13d5::t_d93162fada113e 1-424
+apps/api/liaison_participant_routes.py
+  s_625ed20cba13d5::t_2985db32d495be 1-399
+apps/api/liaison_projection_sync.py
+  s_625ed20cba13d5::t_dd3807483572cc 1-34
+apps/api/liaison_reader.py
+  s_625ed20cba13d5::t_f40f1836cbdd47 1-498
+apps/api/liaison_replay_routes.py
+  s_625ed20cba13d5::t_090a8f6b29a53b 1-441
+apps/api/liaison_selection_routes.py
+  s_625ed20cba13d5::t_5140a0f19e24ed 1-472
+apps/api/liaison_service.py
+  s_625ed20cba13d5::t_558769d2381325 1-562
+apps/api/liaison_service_channels.py
+  s_625ed20cba13d5::t_0477e61f8f81f1 1-489
+apps/api/liaison_service_composition.py
+  s_625ed20cba13d5::t_78b994459c46c7 1-700
+apps/api/liaison_service_turns.py
+  s_625ed20cba13d5::t_2387fa94f6e936 1-359
+apps/api/liaison_steer.py
+  s_625ed20cba13d5::t_26bf0187a906a7 1-365
+apps/api/liaison_subscription_routes.py
+  s_625ed20cba13d5::t_8cab0d24f89db8 1-249
+apps/api/liaison_turn_routes.py
+  s_625ed20cba13d5::t_b25987a5fb34b0 1-418
+apps/api/liaison_types.py
+  s_625ed20cba13d5::t_627b3f5c16f077 1-51
+apps/api/local_cloud_development.py
+  s_625ed20cba13d5::t_d152fd5c8174ee 1-391
+apps/api/main.py
+  s_625ed20cba13d5::t_01be366812958c 1-690
+apps/api/operational_guidance_admin.py
+  s_625ed20cba13d5::t_8b92d4c4ae4a61 1-497
+apps/api/operational_trigger_policy_admin.py
+  s_625ed20cba13d5::t_baa63fc924bd3e 1-283
+apps/api/operator_administration.py
+  s_625ed20cba13d5::t_982c658d19a7b6 1-336
+apps/api/patch_reviews.py
+  s_625ed20cba13d5::t_e4b7bb2a9cb839 1-91
+apps/api/production_graph.py
+  s_625ed20cba13d5::t_566664a7aacd40 1-375
+apps/api/projection_format.py
+  s_625ed20cba13d5::t_556ea0f4f2b59a 1-25
+apps/api/relay_admin.py
+  s_625ed20cba13d5::t_dc40ec27baa2ac 1-361
+apps/api/release_authority.py
+  s_625ed20cba13d5::t_0fec765f6b85de 1-195
+apps/api/repair_commands.py
+  s_625ed20cba13d5::t_dd055baaa8b54c 1-208
+apps/api/session_authorization.py
+  s_625ed20cba13d5::t_6322b7727dff07 1-200
+apps/api/tool_probe.py
+  s_625ed20cba13d5::t_7bbf6cc933640a 1-347
+apps/api/vendor_scope.py
+  s_625ed20cba13d5::t_52704c8176f644 1-19
+apps/api/workspace_projection.py
+  s_625ed20cba13d5::t_3d43eec146ca92 1-163
+apps/channel_liaison/__init__.py
+  s_625ed20cba13d5::t_12c0b2368723ea 1
+apps/channel_liaison/subscriptions.py
+  s_625ed20cba13d5::t_38b62bf8a604e1 1-185
+apps/console/Dockerfile
+  s_625ed20cba13d5::t_a3cb6d1200e7f7 1-18
+apps/console/index.html
+  s_625ed20cba13d5::t_d00733023c58e7 1-19
+apps/console/package.json
+  s_625ed20cba13d5::t_f2cc2888b9330e 1-23
+apps/console/public/favicon.svg
+  s_625ed20cba13d5::t_18acdf359d5bb7 1-9
+apps/console/public/theme-init.js
+  s_625ed20cba13d5::t_32e06b73e00a85 1-24
+apps/console/server.mjs
+  s_625ed20cba13d5::t_8df45aa09ccdc6 1-315
+apps/console/src/AlertSourceSetup.tsx
+  s_625ed20cba13d5::t_e9bb9afaa01587 1-197
+apps/console/src/Alerts.tsx
+  s_625ed20cba13d5::t_4cb9d4428768fe 1-326
+apps/console/src/App.tsx
+  s_625ed20cba13d5::t_ed9c4bed494068 1-384
+apps/console/src/Ask.tsx
+  s_625ed20cba13d5::t_ba79811039e586 1-498
+apps/console/src/AskCollaboration.tsx
+  s_625ed20cba13d5::t_58302fb8ac1d9b 1-219
+apps/console/src/AskParts.tsx
+  s_625ed20cba13d5::t_7558758f73f7e1 1-295
+apps/console/src/AskRailView.tsx
+  s_625ed20cba13d5::t_df5191b0d6ed6e 1-443
+apps/console/src/AskRailView.types.ts
+  s_625ed20cba13d5::t_c50b14235cfe98 1-93
+apps/console/src/AskSupport.tsx
+  s_625ed20cba13d5::t_ad7a550269d4cd 1-356
+apps/console/src/AskTurnStatus.tsx
+  s_625ed20cba13d5::t_ad54c1e230e1bc 1-92
+apps/console/src/CentralChat.tsx
+  s_625ed20cba13d5::t_601cdb5f38676b 1-258
+apps/console/src/ChannelSettings.tsx
+  s_625ed20cba13d5::t_7ef9d90955026d 1-211
+apps/console/src/Fleet.tsx
+  s_625ed20cba13d5::t_02ddd94393dd8b 1-467
+apps/console/src/FleetAgents.tsx
+  s_625ed20cba13d5::t_7123c34e4a5549 1-165
+apps/console/src/FleetCapabilities.tsx
+  s_625ed20cba13d5::t_3f7f364ce133a2 1-244
+apps/console/src/FleetGovernance.tsx
+  s_625ed20cba13d5::t_8bfb0b93c28072 1-162
+apps/console/src/FleetSkills.tsx
+  s_625ed20cba13d5::t_eda1ff129c264d 1-231
+apps/console/src/FleetTools.tsx
+  s_625ed20cba13d5::t_8fe7cdcd340f53 1-127
+apps/console/src/GcpConnectionGuide.tsx
+  s_625ed20cba13d5::t_5d35e52d45ae7f 1-66
+apps/console/src/GitHubConversation.tsx
+  s_625ed20cba13d5::t_59078ccce1896d 1-474
+apps/console/src/GitHubIntegration.tsx
+  s_625ed20cba13d5::t_c9439658e50db1 1-405
+apps/console/src/GitHubRepositorySetup.tsx
+  s_625ed20cba13d5::t_efe14f6ab6c781 1-268
+apps/console/src/IncidentActions.tsx
+  s_625ed20cba13d5::t_ee2dd047fbdacc 1-50
+apps/console/src/IncidentRepair.tsx
+  s_625ed20cba13d5::t_e01bb3e5d2b004 1-331
+apps/console/src/Incidents.tsx
+  s_625ed20cba13d5::t_759009d08eb27d 1-457
+apps/console/src/Integrations.tsx
+  s_625ed20cba13d5::t_6b0aef3e1cdf53 1-927
+apps/console/src/OperatorAccess.tsx
+  s_625ed20cba13d5::t_46aa927f821cd3 1-220
+apps/console/src/OperatorControl.tsx
+  s_625ed20cba13d5::t_2c834a6cf928f2 1-69
+apps/console/src/ProductionGraphPanel.tsx
+  s_625ed20cba13d5::t_6d8994b5e3c97f 1-339
+apps/console/src/RelatedAlerts.tsx
+  s_625ed20cba13d5::t_03a928540800ed 1-37
+apps/console/src/ReleaseAuthority.tsx
+  s_625ed20cba13d5::t_a84ba689afcc03 1-173
+apps/console/src/RouteBoundary.tsx
+  s_625ed20cba13d5::t_28e4cf401fe279 1-51
+apps/console/src/Settings.tsx
+  s_625ed20cba13d5::t_ffaa9d03bf5f01 1-359
+apps/console/src/SignIn.tsx
+  s_625ed20cba13d5::t_eb72bb617361d8 1-76
+apps/console/src/StepUpDialog.tsx
+  s_625ed20cba13d5::t_f821224f530c4c 1-56
+apps/console/src/api.ts
+  s_625ed20cba13d5::t_a038c3cc953050 1-33
+apps/console/src/components.tsx
+  s_625ed20cba13d5::t_ddb60688e78dc4 1-84
+apps/console/src/conversation.ts
+  s_625ed20cba13d5::t_994bb09e9fc0d4 1-155
+apps/console/src/conversationEvidence.ts
+  s_625ed20cba13d5::t_776fcb9dcf7220 1-39
+apps/console/src/fleetFormat.tsx
+  s_625ed20cba13d5::t_683f64326a5fe4 1-29
+apps/console/src/fleetTypes.ts
+  s_625ed20cba13d5::t_37727659be6f9b 1-195
+apps/console/src/main.tsx
+  s_625ed20cba13d5::t_e59fc380e203d9 1-22
+apps/console/src/operabilityTypes.ts
+  s_625ed20cba13d5::t_12654d01ffdf7f 1-170
+apps/console/src/preferences.ts
+  s_625ed20cba13d5::t_8cd4cb2ff75550 1-150
+apps/console/src/session.ts
+  s_625ed20cba13d5::t_0fc476b70ca0b5 1-174
+apps/console/src/settingsFallback.ts
+  s_625ed20cba13d5::t_cc36c2f5a5ff91 1-137
+apps/console/src/styles/alerts.css
+  s_625ed20cba13d5::t_8330863a75ebfe 1-71
+apps/console/src/styles/app.css
+  s_625ed20cba13d5::t_eac77f153b5029 1-500
+apps/console/src/styles/code-change.css
+  s_625ed20cba13d5::t_dd85f462b6a2b9 1-4
+apps/console/src/styles/incident.css
+  s_625ed20cba13d5::t_3d75eec01e2065 1-439
+apps/console/src/styles/operability.css
+  s_625ed20cba13d5::t_53c19ce691d67b 1-142
+apps/console/src/styles/production-graph.css
+  s_625ed20cba13d5::t_8f4064ae25786d 1-27
+apps/console/src/styles/responsive.css
+  s_625ed20cba13d5::t_d7f420c3cd0d58 1-105
+apps/console/src/styles/settings.css
+  s_625ed20cba13d5::t_ee6d24f6a0e658 1-167
+apps/console/src/styles/states.css
+  s_625ed20cba13d5::t_9c0c3ba26a4603 1-23
+apps/console/src/styles/tokens.css
+  s_625ed20cba13d5::t_84edce8997ee5c 1-156
+apps/console/src/types.ts
+  s_625ed20cba13d5::t_8a0e60a2bbbd29 1-414
+apps/console/src/useAskComposer.ts
+  s_625ed20cba13d5::t_1c5e84848db35e 1-194
+apps/console/src/useAskControls.ts
+  s_625ed20cba13d5::t_c7e0e2d121de15 1-259
+apps/console/src/useLiaisonSubscription.ts
+  s_625ed20cba13d5::t_68e4a0f4709a2d 1-71
+apps/console/src/useThreadStream.ts
+  s_625ed20cba13d5::t_5e645f5d31d055 1-182
+apps/console/src/vite-env.d.ts
+  s_625ed20cba13d5::t_a4d81e86f00143 1-2
+apps/console/tsconfig.json
+  s_625ed20cba13d5::t_6bbc42c6801314 1-22
+apps/console/vite.config.ts
+  s_625ed20cba13d5::t_a9fa1faab72add 1-44
+apps/coordinator/__init__.py
+  s_625ed20cba13d5::t_7516cfd2f4e1c7 1
+apps/coordinator/action_polling.py
+  s_625ed20cba13d5::t_abfd6fb076e51e 1-303
+apps/coordinator/alert_triage.py
+  s_625ed20cba13d5::t_6b1690bc61028f 1-337
+apps/coordinator/antigravity_tasks.py
+  s_625ed20cba13d5::t_cd18dd7999f8da 1-398
+apps/coordinator/case_handlers.py
+  s_625ed20cba13d5::t_5455a9861f3cd6 1-549
+apps/coordinator/case_repair_start.py
+  s_625ed20cba13d5::t_019c88e9e479a3 1-260
+apps/coordinator/code_change_delivery.py
+  s_625ed20cba13d5::t_39c9ec3785e813 1-761
+apps/coordinator/code_change_qualification.py
+  s_625ed20cba13d5::t_5795064897bc02 1-144
+apps/coordinator/contracts.py
+  s_625ed20cba13d5::t_690a7bd45569fe 1-498
+apps/coordinator/event_handlers.py
+  s_625ed20cba13d5::t_1a11bea32fcd5b 1-168
+apps/coordinator/guidance_progress.py
+  s_625ed20cba13d5::t_d202e4cb2fb587 1-36
+apps/coordinator/liaison_steer.py
+  s_625ed20cba13d5::t_afdafee3591ec2 1-201
+apps/coordinator/main.py
+  s_625ed20cba13d5::t_ac3e76d17c5837 1-617
+apps/coordinator/memory_context.py
+  s_625ed20cba13d5::t_12ac3c9fe57443 1-139
+apps/coordinator/mitigation_handlers.py
+  s_625ed20cba13d5::t_ec636246ef4e4f 1-96
+apps/coordinator/production_graph.py
+  s_625ed20cba13d5::t_9abc6428396217 1-392
+apps/coordinator/relay_job_authoring.py
+  s_625ed20cba13d5::t_4838765ab03eee 1-470
+apps/coordinator/release_candidates.py
+  s_625ed20cba13d5::t_2a1e3f2d406199 1-117
+apps/coordinator/runtime_polling.py
+  s_625ed20cba13d5::t_4369fca1629753 1-554
+apps/coordinator/runtime_starters.py
+  s_625ed20cba13d5::t_3dbf3efd5dc6de 1-424
+apps/coordinator/security_ingestion.py
+  s_625ed20cba13d5::t_3805a213cbe683 1-157
+apps/coordinator/tool_binding.py
+  s_625ed20cba13d5::t_5f28bdc842f044 1-135
+apps/coordinator/trigger_handlers.py
+  s_625ed20cba13d5::t_eb7d167b1c7e55 1-73
+apps/coordinator/workspace_adjudication.py
+  s_625ed20cba13d5::t_ad335f66b81c90 1-654
+apps/coordinator/workspace_rehydration.py
+  s_625ed20cba13d5::t_417f7a0ffb7c47 1-373
+apps/coordinator/workspace_runtime_polling.py
+  s_625ed20cba13d5::t_68c0284bac2786 1-109
+apps/coordinator/workspace_tasks.py
+  s_625ed20cba13d5::t_334cdf6d388ef1 1-275
+apps/coordinator/workspace_tool_binding.py
+  s_625ed20cba13d5::t_27fca67fb98d9b 1-73
+apps/coordinator/workspace_tool_broker.py
+  s_625ed20cba13d5::t_6007489ae7d0cb 1-213
+apps/deployment_controller/main.py
+  s_625ed20cba13d5::t_fa3a470a04f777 1-1503
+apps/detector/__init__.py
+  s_625ed20cba13d5::t_fc36ddad616ade 1
+apps/detector/main.py
+  s_625ed20cba13d5::t_766d76c85c4de3 1-323
+apps/dev_identity_provider/main.py
+  s_625ed20cba13d5::t_b0e9d4d3f4e277 1-383
+apps/direct_gcp_reader/__init__.py
+  s_625ed20cba13d5::t_4cec3438b33f78 1
+apps/direct_gcp_reader/main.py
+  s_625ed20cba13d5::t_24a5606dfad853 1-356
+apps/discord_liaison/__init__.py
+  s_625ed20cba13d5::t_a175599ec5b6e7 1
+apps/discord_liaison/main.py
+  s_625ed20cba13d5::t_590d035c561667 1-469
+apps/email_liaison/__init__.py
+  s_625ed20cba13d5::t_ff5c6f1a8e0e98 1
+apps/email_liaison/main.py
+  s_625ed20cba13d5::t_1f55d518436d0e 1-454
+apps/evidence_broker/__init__.py
+  s_625ed20cba13d5::t_fc3c8013229ca0 1
+apps/evidence_broker/contracts.py
+  s_625ed20cba13d5::t_5378a95747bb22 1-253
+apps/evidence_broker/helpers.py
+  s_625ed20cba13d5::t_fa279531fc0801 1-128
+apps/evidence_broker/main.py
+  s_625ed20cba13d5::t_ca25330efe407d 1-485
+apps/evidence_broker/projections.py
+  s_625ed20cba13d5::t_255325e9000244 1-184
+apps/evidence_broker/reader.py
+  s_625ed20cba13d5::t_7b3677ac3c1a4d 1-652
+apps/fixture_attester/__init__.py
+  s_625ed20cba13d5::t_ae8899fedb2672 1
+apps/fixture_attester/main.py
+  s_625ed20cba13d5::t_f45cc9e28aa107 1-296
+apps/github_identity_broker/__init__.py
+  s_625ed20cba13d5::t_0999a07bd7e594 1
+apps/github_identity_broker/main.py
+  s_625ed20cba13d5::t_c59ca40adffd89 1-465
+apps/github_provider/__init__.py
+  s_625ed20cba13d5::t_743a55e6e6c249 1
+apps/github_provider/code_change.py
+  s_625ed20cba13d5::t_c066a5a67e5c78 1-691
+apps/github_provider/code_change_merge.py
+  s_625ed20cba13d5::t_848bc7f0111d0b 1-449
+apps/github_provider/code_change_merge_transition.py
+  s_625ed20cba13d5::t_e4dea21e1b7eca 1-110
+apps/github_provider/code_change_ready.py
+  s_625ed20cba13d5::t_443e508660da3e 1-161
+apps/github_provider/code_change_sync.py
+  s_625ed20cba13d5::t_c59e144a80d27a 1-335
+apps/github_provider/code_change_sync_transitions.py
+  s_625ed20cba13d5::t_2a792ff356fd53 1-140
+apps/github_provider/code_change_transitions.py
+  s_625ed20cba13d5::t_cd09cbc6d47baf 1-201
+apps/github_provider/conversation.py
+  s_625ed20cba13d5::t_ea3586565abd0b 1-379
+apps/github_provider/conversation_ingest.py
+  s_625ed20cba13d5::t_ae6ab7217ee73a 1-114
+apps/github_provider/conversation_reads.py
+  s_625ed20cba13d5::t_9bdb70d5b185c5 1-462
+apps/github_provider/evidence_requests.py
+  s_625ed20cba13d5::t_e0a35ad077127e 1-44
+apps/github_provider/main.py
+  s_625ed20cba13d5::t_e979ca720d911f 1-626
+apps/github_provider/qualification.py
+  s_625ed20cba13d5::t_2df9d18f2c9e2e 1-352
+apps/liaison_maintenance/__init__.py
+  s_625ed20cba13d5::t_5f2a89d1e00662 1
+apps/liaison_maintenance/main.py
+  s_625ed20cba13d5::t_059362faac68ec 1-170
+apps/local_cloud_worker/__init__.py
+  s_625ed20cba13d5::t_e5d9bf424e2883 1
+apps/local_cloud_worker/main.py
+  s_625ed20cba13d5::t_d0f304c52fd34d 1-162
+apps/local_detector/__init__.py
+  s_625ed20cba13d5::t_dc4e3d9d165f4b 1
+apps/local_detector/main.py
+  s_625ed20cba13d5::t_3ee4f0ab686aa4 1-20
+apps/local_direct_gcp_reader/__init__.py
+  s_625ed20cba13d5::t_06bd91d15d1de8 1
+apps/local_direct_gcp_reader/main.py
+  s_625ed20cba13d5::t_02a7df7afa6dc2 1-51
+apps/mcp_facade/__init__.py
+  s_625ed20cba13d5::t_7ec2cc8ba8bbac 1
+apps/mcp_facade/main.py
+  s_625ed20cba13d5::t_41ad04c38190ee 1-380
+apps/memory_promoter/__init__.py
+  s_625ed20cba13d5::t_45ecd800e324b7 1
+apps/memory_promoter/main.py
+  s_625ed20cba13d5::t_9484c9df538e8e 1-131
+apps/payments_fixture/__init__.py
+  s_625ed20cba13d5::t_c3ede62b0feb2b 1
+apps/payments_fixture/main.py
+  s_625ed20cba13d5::t_89e45f384db741 1-226
+apps/payments_fixture/service.py
+  s_625ed20cba13d5::t_6168f84f53d110 1-288
+apps/pilot_qualification_verifier/main.py
+  s_625ed20cba13d5::t_7a945bfe122fe0 1-396
+apps/publisher/__init__.py
+  s_625ed20cba13d5::t_8573552735aa60 1
+apps/publisher/main.py
+  s_625ed20cba13d5::t_d18ef3a2df80e0 1-159
+apps/relay_control/__init__.py
+  s_625ed20cba13d5::t_50c717c55f352a 1
+apps/relay_control/main.py
+  s_625ed20cba13d5::t_96c6c16dd5bb86 1-1349
+apps/release_verifier/__init__.py
+  s_625ed20cba13d5::t_c1a5349a40bd13 1
+apps/release_verifier/main.py
+  s_625ed20cba13d5::t_74bc53ecaa9aad 1-670
+apps/slack_liaison/__init__.py
+  s_625ed20cba13d5::t_a9aa8f98f6588b 1
+apps/slack_liaison/contracts.py
+  s_625ed20cba13d5::t_2d01c31f6d4920 1-86
+apps/slack_liaison/main.py
+  s_625ed20cba13d5::t_193bc9bc9d1eba 1-216
+apps/slack_liaison/service.py
+  s_625ed20cba13d5::t_78512ff65a3293 1-580
+apps/solvant_relay/__init__.py
+  s_625ed20cba13d5::t_ad7479dbb31b74 1
+apps/solvant_relay/cloud_logging.py
+  s_625ed20cba13d5::t_92267a20c2ed47 1-111
+apps/solvant_relay/cloud_monitoring.py
+  s_625ed20cba13d5::t_2b62893c247fe2 1-256
+apps/solvant_relay/cloud_trace.py
+  s_625ed20cba13d5::t_1caef88475322a 1-96
+apps/solvant_relay/control_client.py
+  s_625ed20cba13d5::t_249c0d402a59a6 1-207
+apps/solvant_relay/kubernetes_metadata.py
+  s_625ed20cba13d5::t_559b000b6537c1 1-135
+apps/solvant_relay/ledger.py
+  s_625ed20cba13d5::t_a1015f5e836bba 1-208
+apps/solvant_relay/main.py
+  s_625ed20cba13d5::t_edfb09ff737c6e 1-204
+apps/solvant_relay/managed_prometheus.py
+  s_625ed20cba13d5::t_f84d46d06cd5a7 1-150
+apps/solvant_relay/policy.py
+  s_625ed20cba13d5::t_2816876d18f477 1-186
+apps/solvant_relay/readiness.py
+  s_625ed20cba13d5::t_3aa757e3aa1efd 1-176
+apps/solvant_relay/redaction.py
+  s_625ed20cba13d5::t_54928b232d2b33 1-316
+apps/solvant_relay/runtime.py
+  s_625ed20cba13d5::t_9fbf289bc17bdd 1-510
+apps/solvant_relay/signatures.py
+  s_625ed20cba13d5::t_c58ddc68c26fc9 1-55
+apps/trigger_scheduler/__init__.py
+  s_625ed20cba13d5::t_6e653f1b7b78be 1
+apps/trigger_scheduler/main.py
+  s_625ed20cba13d5::t_7b6ae5587a7916 1-210
+apps/verifier/__init__.py
+  s_625ed20cba13d5::t_815192fa686ac0 1
+apps/verifier/main.py
+  s_625ed20cba13d5::t_d33c39e7f794c4 1-320
+apps/workspace_adapter/main.py
+  s_625ed20cba13d5::t_c76d6c57d84203 1-600
+apps/workspace_sandbox/__init__.py
+  s_625ed20cba13d5::t_c3054f4ae34344 1
+apps/workspace_sandbox/main.py
+  s_625ed20cba13d5::t_89d6ec2a2da15b 1-496
+cloudbuild.yaml
+  s_625ed20cba13d5::t_fcd4b6a9155833 1-291
+config/architecture-exceptions.yaml
+  s_625ed20cba13d5::t_be5a3ac1b2363e 1-62
+config/architecture-rules.yaml
+  s_625ed20cba13d5::t_f1d26dd212caa2 1-71
+config/challenge-coverage.yaml
+  s_625ed20cba13d5::t_0147bd142d6df7 1-268
+config/github-comment-templates.yaml
+  s_625ed20cba13d5::t_97dc5016c7bb1c 1-187
+config/harness.yaml
+  s_625ed20cba13d5::t_af5d828211bdf4 1-23
+config/liaison-claim-templates.yaml
+  s_625ed20cba13d5::t_55f5ad76d42ec5 1-282
+docs/assets/architecture.svg
+  s_625ed20cba13d5::t_542cfd20e4eaf3 1-185
+docs/documentation-policy.md
+  s_625ed20cba13d5::t_68729cfbe09bfb 1-36
+docs/generated/repository-map.md
+  s_625ed20cba13d5::t_c9ae16d6384264 1-61
+docs/google-sign-in-setup.md
+  s_625ed20cba13d5::t_86c4f5382b2194 1-123
+docs/index.md
+  s_625ed20cba13d5::t_18c659832dcc32 1-31
+docs/quality.md
+  s_625ed20cba13d5::t_081ce53bae3959 1-51
+docs/references/README.md
+  s_625ed20cba13d5::t_9aa65aadc76cdd 1-56
+docs/references/google-cloud-well-architected.md
+  s_625ed20cba13d5::t_e01539f08ff308 1-38
+docs/references/google-sre.md
+  s_625ed20cba13d5::t_d3b4604b9ab9fe 1-31
+docs/references/observability-and-otel.md
+  s_625ed20cba13d5::t_a6069227410133 1-33
+docs/references/review-checklists/agent-fleet.md
+  s_625ed20cba13d5::t_8325310aa46117 1-26
+docs/references/review-checklists/incident-console.md
+  s_625ed20cba13d5::t_faf8f2caab997b 1-21
+docs/references/review-checklists/security-governance.md
+  s_625ed20cba13d5::t_3368ebecd987ce 1-25
+docs/references/ui-ux-patterns.md
+  s_625ed20cba13d5::t_14b0cf41e84a7f 1-41
+docs/release-runbook.md
+  s_625ed20cba13d5::t_17fe4b7cf04164 1-208
+docs/sources/cloud-monitoring-alert-ingress.md
+  s_625ed20cba13d5::t_ba29a5808edbdd 1-50
+docs/sources/gemini-enterprise-agent-platform.md
+  s_625ed20cba13d5::t_4f2210f6b2d936 1-458
+docs/sources/production-environment-model.md
+  s_625ed20cba13d5::t_63af5fe40b45ae 1-217
+docs/sources/saas-scale-and-isolation.md
+  s_625ed20cba13d5::t_953a12470b7313 1-172
+docs/tech-debt.md
+  s_625ed20cba13d5::t_d344ccd6333a39 1-34
+evals/cases/agent-trajectories.yaml
+  s_625ed20cba13d5::t_68998e866b4a2d 1-349
+evals/cases/model-quality.yaml
+  s_625ed20cba13d5::t_6967e29e93fc87 1-66
+evals/cases/safety-smoke.yaml
+  s_625ed20cba13d5::t_f24db27389e9ef 1-54
+evals/optimization/evidence-agent-v1.yaml
+  s_625ed20cba13d5::t_1a22ab9bd09c0c 1-28
+evals/schemas/agent-trajectory-case.schema.json
+  s_625ed20cba13d5::t_5551543f61ef90 1-100
+guidance/payments/payments-checkout-slo/PROVENANCE.yaml
+  s_625ed20cba13d5::t_061ab3164bba46 1-7
+guidance/payments/payments-checkout-slo/REFERENCES.md
+  s_625ed20cba13d5::t_378580f134eb29 1-8
+guidance/payments/payments-checkout-slo/SKILL.md
+  s_625ed20cba13d5::t_b527e3dd133b51 1-40
+guidance/payments/payments-connection-pool/PROVENANCE.yaml
+  s_625ed20cba13d5::t_0df4731007e4f2 1-7
+guidance/payments/payments-connection-pool/REFERENCES.md
+  s_625ed20cba13d5::t_777495689b92d3 1-8
+guidance/payments/payments-connection-pool/SKILL.md
+  s_625ed20cba13d5::t_def6c8555ad9c9 1-41
+guidance/platform/interpret-slo-burn/PROVENANCE.yaml
+  s_625ed20cba13d5::t_4dfbb23b5d30c6 1-7
+guidance/platform/interpret-slo-burn/REFERENCES.md
+  s_625ed20cba13d5::t_8dc943b3823404 1-8
+guidance/platform/interpret-slo-burn/SKILL.md
+  s_625ed20cba13d5::t_441fb80d946fae 1-38
+guidance/platform/lookup-change-history/PROVENANCE.yaml
+  s_625ed20cba13d5::t_87f72ff9b15315 1-7
+guidance/platform/lookup-change-history/REFERENCES.md
+  s_625ed20cba13d5::t_ff4dfe25f2b164 1-8
+guidance/platform/lookup-change-history/SKILL.md
+  s_625ed20cba13d5::t_6272664be27987 1-34
+guidance/platform/lookup-quota-saturation/PROVENANCE.yaml
+  s_625ed20cba13d5::t_502b94d6bc3b27 1-7
+guidance/platform/lookup-quota-saturation/REFERENCES.md
+  s_625ed20cba13d5::t_c8064f1b719f7e 1-8
+guidance/platform/lookup-quota-saturation/SKILL.md
+  s_625ed20cba13d5::t_99e5fe5e56904d 1-35
+guidance/platform/lookup-service-topology/PROVENANCE.yaml
+  s_625ed20cba13d5::t_afcb0ba2918497 1-7
+guidance/platform/lookup-service-topology/REFERENCES.md
+  s_625ed20cba13d5::t_8d53fba8240b0b 1-8
+guidance/platform/lookup-service-topology/SKILL.md
+  s_625ed20cba13d5::t_4c6d3df5c285db 1-36
+guidance/reliability/ci-failure-triage/PROVENANCE.yaml
+  s_625ed20cba13d5::t_d128726089bfbb 1-7
+guidance/reliability/ci-failure-triage/REFERENCES.md
+  s_625ed20cba13d5::t_d364f5a4a65eb4 1-4
+guidance/reliability/ci-failure-triage/SKILL.md
+  s_625ed20cba13d5::t_bc7095865cc68b 1-16
+guidance/reliability/code-repair/PROVENANCE.yaml
+  s_625ed20cba13d5::t_566c7b1a569659 1-7
+guidance/reliability/code-repair/REFERENCES.md
+  s_625ed20cba13d5::t_74b690cc770fd6 1-4
+guidance/reliability/code-repair/SKILL.md
+  s_625ed20cba13d5::t_8d67e3f76edadb 1-18
+guidance/reliability/triage-connection-exhaustion/PROVENANCE.yaml
+  s_625ed20cba13d5::t_97a5b412777ed9 1-7
+guidance/reliability/triage-connection-exhaustion/REFERENCES.md
+  s_625ed20cba13d5::t_9a524f9a97c55f 1-9
+guidance/reliability/triage-connection-exhaustion/SKILL.md
+  s_625ed20cba13d5::t_ec4fe61d59f6b3 1-42
+guidance/reliability/triage-deployment-regression/PROVENANCE.yaml
+  s_625ed20cba13d5::t_184a335de0c50f 1-7
+guidance/reliability/triage-deployment-regression/REFERENCES.md
+  s_625ed20cba13d5::t_74f8de2b35ef9a 1-8
+guidance/reliability/triage-deployment-regression/SKILL.md
+  s_625ed20cba13d5::t_a37d70323313c3 1-38
+guidance/reliability/triage-error-rate/PROVENANCE.yaml
+  s_625ed20cba13d5::t_6c3cac4bfde539 1-7
+guidance/reliability/triage-error-rate/REFERENCES.md
+  s_625ed20cba13d5::t_cd26cc943f46c0 1-8
+guidance/reliability/triage-error-rate/SKILL.md
+  s_625ed20cba13d5::t_2d94172852dedd 1-36
+guidance/reliability/triage-latency/PROVENANCE.yaml
+  s_625ed20cba13d5::t_768da22d9a188a 1-7
+guidance/reliability/triage-latency/REFERENCES.md
+  s_625ed20cba13d5::t_29a195c4064872 1-5
+guidance/reliability/triage-latency/SKILL.md
+  s_625ed20cba13d5::t_25830891df4eea 1-16
+guidance/reliability/triage-memory-pressure/PROVENANCE.yaml
+  s_625ed20cba13d5::t_70c043b376c3e5 1-7
+guidance/reliability/triage-memory-pressure/REFERENCES.md
+  s_625ed20cba13d5::t_5ff87583764fb2 1-8
+guidance/reliability/triage-memory-pressure/SKILL.md
+  s_625ed20cba13d5::t_4995bb9690fc27 1-35
+guidance/reliability/triage-queue-backlog/PROVENANCE.yaml
+  s_625ed20cba13d5::t_8f6013a95477a5 1-7
+guidance/reliability/triage-queue-backlog/REFERENCES.md
+  s_625ed20cba13d5::t_8980386072510f 1-8
+guidance/reliability/triage-queue-backlog/SKILL.md
+  s_625ed20cba13d5::t_477c063d881ad9 1-36
+guidance/reliability/triage-scaling-stall/PROVENANCE.yaml
+  s_625ed20cba13d5::t_60a3ff02d10de2 1-7
+guidance/reliability/triage-scaling-stall/REFERENCES.md
+  s_625ed20cba13d5::t_790c24652643b0 1-8
+guidance/reliability/triage-scaling-stall/SKILL.md
+  s_625ed20cba13d5::t_c14aaf12e1142d 1-37
+guidance/reporting/incident-summary/PROVENANCE.yaml
+  s_625ed20cba13d5::t_67a278ef9435a0 1-7
+guidance/reporting/incident-summary/REFERENCES.md
+  s_625ed20cba13d5::t_3d2b4b595b6528 1-8
+guidance/reporting/incident-summary/SKILL.md
+  s_625ed20cba13d5::t_b514e5d61c73bf 1-41
+guidance/reporting/postmortem-draft/PROVENANCE.yaml
+  s_625ed20cba13d5::t_c76f7fb18937a6 1-7
+guidance/reporting/postmortem-draft/REFERENCES.md
+  s_625ed20cba13d5::t_dc47c15603feb0 1-8
+guidance/reporting/postmortem-draft/SKILL.md
+  s_625ed20cba13d5::t_f21d1b22281936 1-42
+infra/customer-relay/README.md
+  s_625ed20cba13d5::t_cd5c85b8de40d1 1-66
+infra/customer-relay/cloud-run-job.yaml
+  s_625ed20cba13d5::t_165748a51690b1 1-42
+infra/customer-relay/gke-cronjob.yaml
+  s_625ed20cba13d5::t_46856b66d838af 1-59
+infra/customer-relay/onprem-compose.yaml
+  s_625ed20cba13d5::t_1554fdc77c33dc 1-33
+infra/customer-relay/qualification-receipt.template.json
+  s_625ed20cba13d5::t_8281a2e99fe862 1-33
+infra/customer-relay/solvant-relay.service
+  s_625ed20cba13d5::t_30132aefe09fa8 1-20
+infra/customer-relay/solvant-relay.timer
+  s_625ed20cba13d5::t_eefc4745298ee3 1-10
+infra/local/compose.yaml
+  s_625ed20cba13d5::t_9f2aa3d5ccd7fc 1-20
+infra/terraform/environments/gcp/.terraform.lock.hcl
+  s_625ed20cba13d5::t_78a2918a880943 1-22
+infra/terraform/environments/gcp/README.md
+  s_625ed20cba13d5::t_e1fac4f796ec9a 1-63
+infra/terraform/environments/gcp/artifacts.tf
+  s_625ed20cba13d5::t_aa8e6cc5fd4384 1-19
+infra/terraform/environments/gcp/budget.tf
+  s_625ed20cba13d5::t_54113cee4fb079 1-27
+infra/terraform/environments/gcp/cloud_run.tf
+  s_625ed20cba13d5::t_c6f87a522795bd 1-3462
+infra/terraform/environments/gcp/dev.tfbackend.example
+  s_625ed20cba13d5::t_e721b5fe4a74ad 1-2
+infra/terraform/environments/gcp/dev.tfvars.example
+  s_625ed20cba13d5::t_33f0cde48896fb 1-195
+infra/terraform/environments/gcp/iam.tf
+  s_625ed20cba13d5::t_8719b1e240f248 1-643
+infra/terraform/environments/gcp/kms.tf
+  s_625ed20cba13d5::t_76ea6c2fcb7c3a 1-282
+infra/terraform/environments/gcp/locals.tf
+  s_625ed20cba13d5::t_fa84abd1640dc7 1-378
+infra/terraform/environments/gcp/network.tf
+  s_625ed20cba13d5::t_4761f944511990 1-135
+infra/terraform/environments/gcp/observability.tf
+  s_625ed20cba13d5::t_049df7375f839f 1-47
+infra/terraform/environments/gcp/outputs.tf
+  s_625ed20cba13d5::t_259ec3188ce6c6 1-283
+infra/terraform/environments/gcp/platform.tf
+  s_625ed20cba13d5::t_db85aea3c425c0 1-469
+infra/terraform/environments/gcp/production.tfbackend.example
+  s_625ed20cba13d5::t_82bb6d99820335 1-2
+infra/terraform/environments/gcp/production.tfvars.example
+  s_625ed20cba13d5::t_3bd1613e4141a8 1-78
+infra/terraform/environments/gcp/pubsub.tf
+  s_625ed20cba13d5::t_600f89f4d904d3 1-120
+infra/terraform/environments/gcp/services.tf
+  s_625ed20cba13d5::t_82f34b48689d85 1-28
+infra/terraform/environments/gcp/sql.tf
+  s_625ed20cba13d5::t_6aafa1bdb621ed 1-93
+infra/terraform/environments/gcp/staging.tfbackend.example
+  s_625ed20cba13d5::t_d7bdc37082dcfa 1-2
+infra/terraform/environments/gcp/staging.tfvars.example
+  s_625ed20cba13d5::t_eace42ea54e707 1-202
+infra/terraform/environments/gcp/storage.tf
+  s_625ed20cba13d5::t_ef8039f8195a11 1-331
+infra/terraform/environments/gcp/variables.tf
+  s_625ed20cba13d5::t_2f9b3a14d15e41 1-1092
+infra/terraform/environments/gcp/versions.tf
+  s_625ed20cba13d5::t_f93eefae8f2454 1-19
+logo/solvan-app-icon.svg
+  s_625ed20cba13d5::t_0d49ec2c14acbf 1-9
+logo/solvan-brand-sheet.html
+  s_625ed20cba13d5::t_1868a771ed8e38 1-75
+logo/solvan-icon.svg
+  s_625ed20cba13d5::t_722db11248b9c0 1-6
+logo/solvan-logo-dark.svg
+  s_625ed20cba13d5::t_0496f75d9d954c 1-9
+logo/solvan-logo-horizontal.svg
+  s_625ed20cba13d5::t_4eec2e550b693c 1-8
+logo/solvan-logo-mono.svg
+  s_625ed20cba13d5::t_b839b1a047e712 1-9
+package.json
+  s_625ed20cba13d5::t_58946cca8b3704 1-16
+platform/guidance_evaluation.py
+  s_625ed20cba13d5::t_0094b16f7336bd 1-78
+playwright.config.ts
+  s_625ed20cba13d5::t_aa478f09dbdc7d 1-37
+pnpm-lock.yaml
+  s_625ed20cba13d5::t_c92d45613e00e6 1-1219
+pnpm-workspace.yaml
+  s_625ed20cba13d5::t_d900ddaef067c2 1-4
+pyproject.toml
+  s_625ed20cba13d5::t_d47f72cb3e2a7d 1-89
+scripts/bootstrap
+  s_625ed20cba13d5::t_e9bf0022880891 1-34
+scripts/check
+  s_625ed20cba13d5::t_fc13d36fded13f 1-63
+scripts/check-browser
+  s_625ed20cba13d5::t_549695822e43e2 1-72
+scripts/check-contracts
+  s_625ed20cba13d5::t_0a0b2d0ab49980 1-548
+scripts/check-terraform
+  s_625ed20cba13d5::t_71c34fe07fee85 1-10
+scripts/cleanup-demo
+  s_625ed20cba13d5::t_7bf0aafa4e1f27 1-8
+scripts/deploy
+  s_625ed20cba13d5::t_6ff9f0fe6f6893 1-7
+scripts/dev-env
+  s_625ed20cba13d5::t_7ac4d185ca410f 1-95
+scripts/eval-adk-workflow-pilot
+  s_625ed20cba13d5::t_e1e54d963ec525 1-8
+scripts/eval-agent
+  s_625ed20cba13d5::t_95667f5d156531 1-19
+scripts/eval-model-quality
+  s_625ed20cba13d5::t_1278856c1daf35 1-7
+scripts/eval-trajectories
+  s_625ed20cba13d5::t_31303402261b6f 1-8
+scripts/freeze-submission
+  s_625ed20cba13d5::t_e1d15d287e78ff 1-7
+scripts/generate
+  s_625ed20cba13d5::t_0bb196ceba9829 1-6
+scripts/load-dotenv
+  s_625ed20cba13d5::t_36c81e9f148bea 1-36
+scripts/observe
+  s_625ed20cba13d5::t_a7a34abed35183 1-16
+scripts/preflight
+  s_625ed20cba13d5::t_26fb8d32c7d60e 1-7
+scripts/prepare-optimizer-experiment
+  s_625ed20cba13d5::t_50a48c62db16ab 1-8
+scripts/probe-platform
+  s_625ed20cba13d5::t_48665241c36183 1-7
+scripts/promote
+  s_625ed20cba13d5::t_0a60d2031732c5 1-7
+scripts/qualify-antigravity
+  s_625ed20cba13d5::t_5bd35eb4cb1b93 1-7
+scripts/restore-fault-drill
+  s_625ed20cba13d5::t_32f944683effe5 1-7
+scripts/run-fault-drill
+  s_625ed20cba13d5::t_d6f09c8ecc41bf 1-7
+scripts/run-scenarios
+  s_625ed20cba13d5::t_3efb05b4b4a0ce 1-7
+scripts/scenarios-cloud
+  s_625ed20cba13d5::t_32163bafd31dbf 1-7
+scripts/seed-demo
+  s_625ed20cba13d5::t_025628ffed5257 1-8
+scripts/seed-fault-drill
+  s_625ed20cba13d5::t_5cc88cf92d0981 1-7
+scripts/start
+  s_625ed20cba13d5::t_4e4ff887ae3492 1-278
+scripts/start-cloud-dev
+  s_625ed20cba13d5::t_2500d691aae0f1 1-150
+scripts/stop
+  s_625ed20cba13d5::t_38c53aa553459d 1-33
+scripts/validate_skill_packs.py
+  s_625ed20cba13d5::t_6abadea485fd4f 1-203
+"solvan v0.3.md"
+  s_625ed20cba13d5::t_48d0daaca79e22 1-3266
+specs/01-product-requirements.md
+  s_625ed20cba13d5::t_e3fcb36aa8008f 1-337
+specs/02-system-architecture.md
+  s_625ed20cba13d5::t_5b2f4287d0e8de 1-487
+specs/03-agent-model-runtime.md
+  s_625ed20cba13d5::t_b637299ed3379d 1-624
+specs/04-data-event-api.md
+  s_625ed20cba13d5::t_b35251383c7835 1-1361
+specs/05-security-governance.md
+  s_625ed20cba13d5::t_589a13074d8367 1-803
+specs/06-ui-ux.md
+  s_625ed20cba13d5::t_7b6e69aa53d69e 1-1041
+specs/07-implementation-deployment.md
+  s_625ed20cba13d5::t_df344a4430b68e 1-976
+specs/08-test-evaluation-acceptance.md
+  s_625ed20cba13d5::t_1f7b27369bc93f 1-797
+specs/09-competition-demo-submission.md
+  s_625ed20cba13d5::t_bd8cebeb27cb0f 1-263
+specs/10-design-system.md
+  s_625ed20cba13d5::t_f232403aa2732e 1-612
+specs/11-ruhu-integration-profile.md
+  s_625ed20cba13d5::t_fb6a77fd334e81 1-382
+specs/12-workspace-cognition-architecture.md
+  s_625ed20cba13d5::t_6f7e13be647aaf 1-736
+specs/13-tenant-integration.md
+  s_625ed20cba13d5::t_9035646c082db8 1-977
+specs/14-conversational-surface.md
+  s_625ed20cba13d5::t_1f334bd1db10ff 1-3348
+specs/15-console-settings.md
+  s_625ed20cba13d5::t_b45f119eba9dae 1-761
+specs/16-governed-tool-catalog.md
+  s_625ed20cba13d5::t_80b18f79aebcf5 1-991
+specs/17-governed-operational-guidance.md
+  s_625ed20cba13d5::t_aa60133b14675d 1-763
+specs/18-agent-skills-interchange.md
+  s_625ed20cba13d5::t_90d43f63ab5837 1-1067
+specs/19-saas-scale-and-isolation.md
+  s_625ed20cba13d5::t_e2ce05e6aabb0f 1-911
+specs/20-production-environment-model.md
+  s_625ed20cba13d5::t_5629febfe29dac 1-378
+specs/21-alert-triage.md
+  s_625ed20cba13d5::t_2c17d556100c17 1-1740
+specs/22-solvant-relay.md
+  s_625ed20cba13d5::t_3e373c06f49256 1-706
+specs/23-code-repair-workspace-profile.md
+  s_625ed20cba13d5::t_1424da9b8ae053 1-500
+specs/24-governed-github-conversation.md
+  s_625ed20cba13d5::t_2c2dc5c495d3e2 1-257
+specs/artifacts/agent-manifests.yaml
+  s_625ed20cba13d5::t_837e7716e3c4dc 1-280
+specs/artifacts/agent-skills-api.md
+  s_625ed20cba13d5::t_76bd502eaf1961 1-141
+specs/artifacts/alert-triage-profile-hash-vectors.yaml
+  s_625ed20cba13d5::t_317fcb999ffa23 1-136
+specs/artifacts/alert-triage-schema-contract-tests.sql
+  s_625ed20cba13d5::t_1b4a5a396e5bd7 1-293
+specs/artifacts/alert-triage-schema-contract-tests.v2.sql
+  s_625ed20cba13d5::t_c2e7375c278da1 1-71
+specs/artifacts/alert-triage-schema-contract-tests.v3.sql
+  s_625ed20cba13d5::t_29bbcfb1d1dee5 1-30
+specs/artifacts/alert-triage-schema-contract-tests.v4.sql
+  s_625ed20cba13d5::t_5f93e03cc0da52 1-28
+specs/artifacts/alert-triage-schema-contract-tests.v5.sql
+  s_625ed20cba13d5::t_c74aba6e48c0bf 1-34
+specs/artifacts/alert-triage-schema.target.sql
+  s_625ed20cba13d5::t_a67a84d476c913 1-799
+specs/artifacts/alert-triage-schema.target.v2.sql
+  s_625ed20cba13d5::t_031e86c6d41cb0 1-286
+specs/artifacts/alert-triage-schema.target.v3.sql
+  s_625ed20cba13d5::t_b73195ffdc534e 1-115
+specs/artifacts/alert-triage-schema.target.v4.sql
+  s_625ed20cba13d5::t_471d587a8b6bdf 1-28
+specs/artifacts/alert-triage-schema.target.v5.sql
+  s_625ed20cba13d5::t_37594f3b556dd4 1-180
+specs/artifacts/alert-triage-schema.target.v6.sql
+  s_625ed20cba13d5::t_c714182cce7c71 1-156
+specs/artifacts/alert-triage-schema.target.v7.sql
+  s_625ed20cba13d5::t_88d37f516c8173 1-15
+specs/artifacts/alert-triage-target-requirements.yaml
+  s_625ed20cba13d5::t_074cf98a414f41 1-37
+specs/artifacts/calibration-receipt.template.json
+  s_625ed20cba13d5::t_4291bde394c916 1-43
+specs/artifacts/channel-provider-qualification-receipt.schema.json
+  s_625ed20cba13d5::t_4652c904ae508c 1-66
+specs/artifacts/code-change-release-acceptance.yaml
+  s_625ed20cba13d5::t_04897815e88705 1-222
+specs/artifacts/code-change-release-database-authority.md
+  s_625ed20cba13d5::t_e86f18fc092ae8 1-35
+specs/artifacts/code-change-release-private-api.md
+  s_625ed20cba13d5::t_22154672867d05 1-204
+specs/artifacts/code-change-release-schema-contract-tests.sql
+  s_625ed20cba13d5::t_d061fe3909e69f 1-357
+specs/artifacts/code-change-release-schema.target.sql
+  s_625ed20cba13d5::t_018a01a4f77dd5 1-774
+specs/artifacts/code-change-release-schema.target.v10.sql
+  s_625ed20cba13d5::t_a9f20f3197168b 1-120
+specs/artifacts/code-change-release-schema.target.v11.sql
+  s_625ed20cba13d5::t_5e395a8602af09 1-29
+specs/artifacts/code-change-release-schema.target.v12.sql
+  s_625ed20cba13d5::t_d08acb96d9fd75 1-12
+specs/artifacts/code-change-release-schema.target.v13.sql
+  s_625ed20cba13d5::t_2b700441206f59 1-15
+specs/artifacts/code-change-release-schema.target.v14.sql
+  s_625ed20cba13d5::t_a2aba2015c4ac6 1-138
+specs/artifacts/code-change-release-schema.target.v15.sql
+  s_625ed20cba13d5::t_bbe9bccd07491c 1-212
+specs/artifacts/code-change-release-schema.target.v16.sql
+  s_625ed20cba13d5::t_2cdb112da4fff2 1-15
+specs/artifacts/code-change-release-schema.target.v17.sql
+  s_625ed20cba13d5::t_2a25d4e99a2565 1-79
+specs/artifacts/code-change-release-schema.target.v18.sql
+  s_625ed20cba13d5::t_b4da4b560ce4fe 1-83
+specs/artifacts/code-change-release-schema.target.v19.sql
+  s_625ed20cba13d5::t_035f7df5e20efb 1-62
+specs/artifacts/code-change-release-schema.target.v2.sql
+  s_625ed20cba13d5::t_5d3cde36411a09 1-50
+specs/artifacts/code-change-release-schema.target.v3.sql
+  s_625ed20cba13d5::t_9637b6a6bfb9a3 1-97
+specs/artifacts/code-change-release-schema.target.v4.sql
+  s_625ed20cba13d5::t_7701c856def9f5 1-140
+specs/artifacts/code-change-release-schema.target.v5.sql
+  s_625ed20cba13d5::t_81550d8b358158 1-79
+specs/artifacts/code-change-release-schema.target.v6.sql
+  s_625ed20cba13d5::t_b1bfc1305000a9 1-273
+specs/artifacts/code-change-release-schema.target.v7.sql
+  s_625ed20cba13d5::t_0b28a6b161799e 1-161
+specs/artifacts/code-change-release-schema.target.v8.sql
+  s_625ed20cba13d5::t_3b757ad01fe57e 1-116
+specs/artifacts/code-change-release-schema.target.v9.sql
+  s_625ed20cba13d5::t_e2fa82cd1dc0f3 1-212
+specs/artifacts/code-repair-workspace-acceptance.yaml
+  s_625ed20cba13d5::t_ab5ac4e891d1c1 1-130
+specs/artifacts/concurrency.sql
+  s_625ed20cba13d5::t_af8c7d33d6f1ba 1-496
+specs/artifacts/connection-scope-schema-contract-tests.sql
+  s_625ed20cba13d5::t_7def23cfabf17d 1-249
+specs/artifacts/connection-scope-schema-contract-tests.v2.sql
+  s_625ed20cba13d5::t_1f784f55762113 1-63
+specs/artifacts/connection-scope-schema-contract-tests.v3.sql
+  s_625ed20cba13d5::t_0ee7ff3c5d3bcc 1-111
+specs/artifacts/connection-scope-schema-contract-tests.v4.sql
+  s_625ed20cba13d5::t_f926cd1b79bba7 1-69
+specs/artifacts/connection-scope-schema.target.sql
+  s_625ed20cba13d5::t_c5d1da79d96788 1-180
+specs/artifacts/connection-scope-schema.target.v2.sql
+  s_625ed20cba13d5::t_9c4651d98a1e12 1-46
+specs/artifacts/connection-scope-schema.target.v3.sql
+  s_625ed20cba13d5::t_35ceb992955d98 1-61
+specs/artifacts/connection-scope-schema.target.v4.sql
+  s_625ed20cba13d5::t_8fc62863a76c01 1-23
+specs/artifacts/direct-gcp-pilot-acceptance.yaml
+  s_625ed20cba13d5::t_61c0b895ecc70f 1-48
+specs/artifacts/direct-gcp-pilot-qualification-receipt.schema.json
+  s_625ed20cba13d5::t_c94aa21751ba2b 1-90
+specs/artifacts/github-conversation-schema-contract-tests.sql
+  s_625ed20cba13d5::t_f1470f013d29ba 1-259
+specs/artifacts/github-conversation-schema-contract-tests.v2.sql
+  s_625ed20cba13d5::t_2603e01dd81cca 1-108
+specs/artifacts/github-conversation-schema-contract-tests.v3.sql
+  s_625ed20cba13d5::t_8a0ca31d145122 1-91
+specs/artifacts/github-conversation-schema.target.sql
+  s_625ed20cba13d5::t_844f268f3d696f 1-167
+specs/artifacts/github-conversation-schema.target.v2.sql
+  s_625ed20cba13d5::t_519258cc76dc59 1-55
+specs/artifacts/github-conversation-schema.target.v3.sql
+  s_625ed20cba13d5::t_ee872a68914030 1-41
+specs/artifacts/incident-transitions.yaml
+  s_625ed20cba13d5::t_0978362e1d5a36 1-58
+specs/artifacts/liaison-errors.yaml
+  s_625ed20cba13d5::t_2bb4f09cc1e496 1-75
+specs/artifacts/liaison-schema-contract-tests.sql
+  s_625ed20cba13d5::t_ea55efb0600b7c 1-950
+specs/artifacts/liaison-schema-contract-tests.v2.sql
+  s_625ed20cba13d5::t_c132986f6407d2 1-27
+specs/artifacts/liaison-schema-contract-tests.v3.sql
+  s_625ed20cba13d5::t_25996df780e6b3 1-99
+specs/artifacts/liaison-schema.target.sql
+  s_625ed20cba13d5::t_6db77a7d4e1bbc 1-1726
+specs/artifacts/liaison-schema.target.v2.sql
+  s_625ed20cba13d5::t_70f903e662bc30 1-28
+specs/artifacts/liaison-schema.target.v3.sql
+  s_625ed20cba13d5::t_08ffbbd0d551dc 1-50
+specs/artifacts/liaison-turn-input-manifest.schema.json
+  s_625ed20cba13d5::t_ad75f59cab8a0b 1-370
+specs/artifacts/operability-schema-contract-tests.sql
+  s_625ed20cba13d5::t_bf9926c4e91cb6 1-288
+specs/artifacts/operability-schema.target.sql
+  s_625ed20cba13d5::t_65158db965d7e1 1-1794
+specs/artifacts/operability-schema.target.v2.sql
+  s_625ed20cba13d5::t_b9eb7b54e9eee8 1-26
+specs/artifacts/operability-schema.target.v3.sql
+  s_625ed20cba13d5::t_5be15c7b12f072 1-558
+specs/artifacts/operability-schema.target.v4.sql
+  s_625ed20cba13d5::t_ae58836ca8822c 1-67
+specs/artifacts/operability-schema.target.v5.sql
+  s_625ed20cba13d5::t_c07fc9a8950176 1-10
+specs/artifacts/operability-schema.target.v6.sql
+  s_625ed20cba13d5::t_158fbf0290ed03 1-139
+specs/artifacts/operability-schema.target.v7.sql
+  s_625ed20cba13d5::t_427bca60ac7586 1-33
+specs/artifacts/operator-identity-schema-contract-tests.sql
+  s_625ed20cba13d5::t_4212cf7e1c8308 1-237
+specs/artifacts/operator-identity-schema.target.sql
+  s_625ed20cba13d5::t_54961e27ff27d8 1-187
+specs/artifacts/operator-identity-schema.target.v2.sql
+  s_625ed20cba13d5::t_4b009231cbe95b 1-26
+specs/artifacts/operator-identity-schema.target.v3.sql
+  s_625ed20cba13d5::t_bbe61e98add7be 1-66
+specs/artifacts/operator-identity-schema.target.v4.sql
+  s_625ed20cba13d5::t_60a2df4c359671 1-110
+specs/artifacts/outcome-quality-schema-contract-tests.sql
+  s_625ed20cba13d5::t_8ff5793a080971 1-312
+specs/artifacts/outcome-quality-schema.target.sql
+  s_625ed20cba13d5::t_16e6010375ac85 1-786
+specs/artifacts/production-graph-schema-contract-tests.sql
+  s_625ed20cba13d5::t_5537a4d06e8dcb 1-340
+specs/artifacts/production-graph-schema.target.sql
+  s_625ed20cba13d5::t_14c5592e11b0d2 1-884
+specs/artifacts/provider-eligibility-receipt.schema.json
+  s_625ed20cba13d5::t_80f4213d2c0f7c 1-152
+specs/artifacts/relay-acceptance.yaml
+  s_625ed20cba13d5::t_b492c1adc9f2a0 1-141
+specs/artifacts/relay-api.md
+  s_625ed20cba13d5::t_824e48000c5482 1-313
+specs/artifacts/relay-connectors.yaml
+  s_625ed20cba13d5::t_c3ebfa32ccdd61 1-186
+specs/artifacts/relay-evidence-envelope.schema.json
+  s_625ed20cba13d5::t_040494a52c11de 1-145
+specs/artifacts/relay-local-policy.schema.json
+  s_625ed20cba13d5::t_0743a8f9630179 1-207
+specs/artifacts/relay-qualification-receipt.schema.json
+  s_625ed20cba13d5::t_55770bf9c59c1c 1-66
+specs/artifacts/relay-redaction-profile.yaml
+  s_625ed20cba13d5::t_409b5a021213e7 1-70
+specs/artifacts/relay-resource-binding-hash-vectors.yaml
+  s_625ed20cba13d5::t_59cd18b9451f36 1-49
+specs/artifacts/relay-schema-contract-tests.sql
+  s_625ed20cba13d5::t_b219c23993dd84 1-444
+specs/artifacts/relay-schema-contract-tests.v2.sql
+  s_625ed20cba13d5::t_32db9c69bad911 1-19
+specs/artifacts/relay-schema.target.sql
+  s_625ed20cba13d5::t_9a9e0748b5ee1f 1-1413
+specs/artifacts/relay-schema.target.v2.sql
+  s_625ed20cba13d5::t_04064710b56cbf 1-20
+specs/artifacts/relay-schema.target.v3.sql
+  s_625ed20cba13d5::t_862421c75e2d6a 1-18
+specs/artifacts/relay-schema.target.v4.sql
+  s_625ed20cba13d5::t_bbb0f48fa18eb9 1-18
+specs/artifacts/relay-schema.target.v5.sql
+  s_625ed20cba13d5::t_62ae14d2917add 1-76
+specs/artifacts/relay-schema.target.v6.sql
+  s_625ed20cba13d5::t_cdcedf0bb1df16 1-38
+specs/artifacts/relay-schema.target.v7.sql
+  s_625ed20cba13d5::t_3b8e150b583bb9 1-26
+specs/artifacts/relay-schema.target.v8.sql
+  s_625ed20cba13d5::t_043b3c30053017 1-13
+specs/artifacts/relay-transitions.yaml
+  s_625ed20cba13d5::t_85c6070df3eee6 1-51
+specs/artifacts/release-fixtures.yaml
+  s_625ed20cba13d5::t_495e7d59cef777 1-116
+specs/artifacts/release-policy.template.yaml
+  s_625ed20cba13d5::t_06d03dbb56dd75 1-79
+specs/artifacts/reliability-case-transitions.yaml
+  s_625ed20cba13d5::t_4fd57fd05c408f 1-73
+specs/artifacts/requirements-tests.csv
+  s_625ed20cba13d5::t_d89fbf58e60a83 1-51
+specs/artifacts/ruhu-integration-profile.template.yaml
+  s_625ed20cba13d5::t_711d224476c47e 1-183
+specs/artifacts/saas-scale-schema-contract-tests.sql
+  s_625ed20cba13d5::t_4b5db81b70e177 1-520
+specs/artifacts/saas-scale-schema.target.sql
+  s_625ed20cba13d5::t_a2a261fe1995e1 1-1093
+specs/artifacts/saas-scale-target-tests.yaml
+  s_625ed20cba13d5::t_f94d55b20e9423 1-39
+specs/artifacts/schema-contract-tests.sql
+  s_625ed20cba13d5::t_d4274db9c95a29 1-726
+specs/artifacts/schema.sql
+  s_625ed20cba13d5::t_fc24f53972bfc5 1-2380
+specs/artifacts/skill-canonicalization.md
+  s_625ed20cba13d5::t_6d5d1c2fbb9537 1-59
+specs/artifacts/skills-acceptance-registry.yaml
+  s_625ed20cba13d5::t_1bf6812fb56ad5 1-119
+specs/artifacts/skills-interchange-schema-contract-tests.sql
+  s_625ed20cba13d5::t_87c9fdf693823b 1-137
+specs/artifacts/submission-freeze-manifest.template.yaml
+  s_625ed20cba13d5::t_bcc21d1f3f794b 1-53
+specs/artifacts/synthetic-data-attestation.schema.json
+  s_625ed20cba13d5::t_46a9e8f7e67665 1-59
+specs/artifacts/test-implementations.yaml
+  s_625ed20cba13d5::t_661ed5cb2390c1 1-91
+specs/artifacts/workspace-artifact-manifest.schema.json
+  s_625ed20cba13d5::t_9eb26b70afa575 1-96
+specs/artifacts/workspace-cognition.schema.json
+  s_625ed20cba13d5::t_2c895fb38a2683 1-67
+src/solvan/__init__.py
+  s_625ed20cba13d5::t_6fb2cefed06bd5 1-5
+src/solvan/agents/__init__.py
+  s_625ed20cba13d5::t_dfaff3f396d8d2 1-55
+src/solvan/agents/adk_agents.py
+  s_625ed20cba13d5::t_7bf5b85e1b32fd 1-214
+src/solvan/agents/contracts.py
+  s_625ed20cba13d5::t_2aad558b52c005 1-194
+src/solvan/agents/execution_tools.py
+  s_625ed20cba13d5::t_00db1ee5c1c3cf 1-51
+src/solvan/agents/private_service_auth.py
+  s_625ed20cba13d5::t_820eba0f4ebd72 1-30
+src/solvan/agents/read_tools.py
+  s_625ed20cba13d5::t_866ac3d79d06d7 1-635
+src/solvan/agents/result_adapter.py
+  s_625ed20cba13d5::t_d0ca0558fc4646 1-182
+src/solvan/agents/safety.py
+  s_625ed20cba13d5::t_a47d7c428a10ba 1-53
+src/solvan/agents/verification_tools.py
+  s_625ed20cba13d5::t_7892409c77564b 1-50
+src/solvan/agents/workflows/__init__.py
+  s_625ed20cba13d5::t_cc8b30f2dcd818 1
+src/solvan/agents/workflows/_pilot/__init__.py
+  s_625ed20cba13d5::t_889b1aad5a6585 1-17
+src/solvan/agents/workflows/_pilot/read_only_research.py
+  s_625ed20cba13d5::t_6fc5cc5de8da2f 1-191
+src/solvan/agents/workspace_tools.py
+  s_625ed20cba13d5::t_6365aa1128aa35 1-84
+src/solvan/application/__init__.py
+  s_625ed20cba13d5::t_fd957c3a7071f8 1-343
+src/solvan/application/action_challenge.py
+  s_625ed20cba13d5::t_4c5d888688c4f5 1-168
+src/solvan/application/action_gates.py
+  s_625ed20cba13d5::t_19fd9ba4b9e355 1-50
+src/solvan/application/actions.py
+  s_625ed20cba13d5::t_c9320227cc5c19 1-65
+src/solvan/application/actuator.py
+  s_625ed20cba13d5::t_0307571ed39618 1-504
+src/solvan/application/agent_results.py
+  s_625ed20cba13d5::t_5ca690e4c33472 1-114
+src/solvan/application/alert_admission.py
+  s_625ed20cba13d5::t_326543381a80cb 1-119
+src/solvan/application/alert_disposition.py
+  s_625ed20cba13d5::t_835ec1734a9de4 1-43
+src/solvan/application/alert_ingress_parser.py
+  s_625ed20cba13d5::t_820db624207b29 1-213
+src/solvan/application/alert_list.py
+  s_625ed20cba13d5::t_c2f80a17235209 1-377
+src/solvan/application/alert_policy_matching.py
+  s_625ed20cba13d5::t_ccf85d23d58983 1-101
+src/solvan/application/alert_policy_products.py
+  s_625ed20cba13d5::t_cfecb5670d519c 1-183
+src/solvan/application/alert_predicates.py
+  s_625ed20cba13d5::t_03b538144a3dfa 1-413
+src/solvan/application/alert_triage.py
+  s_625ed20cba13d5::t_80e5dc50d43def 1-469
+src/solvan/application/approval_audience.py
+  s_625ed20cba13d5::t_0751a8aa8b7bd7 1-95
+src/solvan/application/capability_resolution.py
+  s_625ed20cba13d5::t_6914246135831f 1-182
+src/solvan/application/cases.py
+  s_625ed20cba13d5::t_bf46b1553fd89b 1-86
+src/solvan/application/channel_provider_qualification.py
+  s_625ed20cba13d5::t_a91d31f2a6a59e 1-106
+src/solvan/application/code_change_decisions.py
+  s_625ed20cba13d5::t_6716fa7f661ee8 1-349
+src/solvan/application/code_change_github_observation.py
+  s_625ed20cba13d5::t_5cd3a64cb36c77 1-194
+src/solvan/application/code_change_qualification.py
+  s_625ed20cba13d5::t_f789fa4fead7ac 1-192
+src/solvan/application/code_change_transform.py
+  s_625ed20cba13d5::t_35b4db94f80016 1-383
+src/solvan/application/code_delivery_profiles.py
+  s_625ed20cba13d5::t_dad7dd201606e0 1-92
+src/solvan/application/credential_scope_verification.py
+  s_625ed20cba13d5::t_a027116e8a4bab 1-435
+src/solvan/application/default_tool_catalog.py
+  s_625ed20cba13d5::t_b51e738afffee7 1-570
+src/solvan/application/delivery_commands.py
+  s_625ed20cba13d5::t_a0ae764d35dcee 1-332
+src/solvan/application/detection.py
+  s_625ed20cba13d5::t_703c283b6b8759 1-111
+src/solvan/application/effective_tool_set.py
+  s_625ed20cba13d5::t_652b3663ea8688 1-198
+src/solvan/application/github.py
+  s_625ed20cba13d5::t_4aa893dc665cc4 1-179
+src/solvan/application/github_body.py
+  s_625ed20cba13d5::t_c138b039878857 1-154
+src/solvan/application/github_conversation.py
+  s_625ed20cba13d5::t_e08059eda653bf 1-438
+src/solvan/application/github_identity.py
+  s_625ed20cba13d5::t_aa12207fd0e6c7 1-82
+src/solvan/application/github_tool_seeds.py
+  s_625ed20cba13d5::t_a5acd572bc723c 1-151
+src/solvan/application/guidance_content.py
+  s_625ed20cba13d5::t_8eceba66d005bc 1-95
+src/solvan/application/guidance_evaluation.py
+  s_625ed20cba13d5::t_23825a08dcbe4a 1-99
+src/solvan/application/incidents.py
+  s_625ed20cba13d5::t_ced274d1e653c0 1-186
+src/solvan/application/investigation.py
+  s_625ed20cba13d5::t_cb6de79fccbf3a 1-285
+src/solvan/application/liaison/__init__.py
+  s_625ed20cba13d5::t_c7826eec8b97fd 1-135
+src/solvan/application/liaison/adk_composer.py
+  s_625ed20cba13d5::t_01489fb29e7ee0 1-634
+src/solvan/application/liaison/anchors.py
+  s_625ed20cba13d5::t_cb99f6939672d8 1-169
+src/solvan/application/liaison/budgets.py
+  s_625ed20cba13d5::t_029603989d3329 1-109
+src/solvan/application/liaison/claims.py
+  s_625ed20cba13d5::t_9ef413d3564bb6 1-319
+src/solvan/application/liaison/context_compiler.py
+  s_625ed20cba13d5::t_3d832f5c8c7f74 1-543
+src/solvan/application/liaison/engine.py
+  s_625ed20cba13d5::t_712b8b739e6dad 1-454
+src/solvan/application/liaison/granted_reader.py
+  s_625ed20cba13d5::t_9b1057ef4cd3f9 1-360
+src/solvan/application/liaison/grants.py
+  s_625ed20cba13d5::t_190b98f9541028 1-262
+src/solvan/application/liaison/intents.py
+  s_625ed20cba13d5::t_f22538d9110068 1-214
+src/solvan/application/liaison/manifest_contract.py
+  s_625ed20cba13d5::t_f8af8debd24329 1-154
+src/solvan/application/liaison/memory_candidates.py
+  s_625ed20cba13d5::t_8f7ffc1e21f6c9 1-115
+src/solvan/application/liaison/parts.py
+  s_625ed20cba13d5::t_1ae56ea7187524 1-241
+src/solvan/application/liaison/predicates.py
+  s_625ed20cba13d5::t_7814a93604376f 1-457
+src/solvan/application/liaison/question_registry.py
+  s_625ed20cba13d5::t_c556dc69c0f665 1-326
+src/solvan/application/liaison/questions.py
+  s_625ed20cba13d5::t_2fefd82e2c64b3 1-476
+src/solvan/application/liaison/redaction.py
+  s_625ed20cba13d5::t_d49809e146ffc8 1-129
+src/solvan/application/liaison/replies.py
+  s_625ed20cba13d5::t_caf269142ac957 1-94
+src/solvan/application/liaison/templates.py
+  s_625ed20cba13d5::t_6feedeea61ddf7 1-308
+src/solvan/application/memory.py
+  s_625ed20cba13d5::t_b84f961f8c70ed 1-286
+src/solvan/application/oauth_login.py
+  s_625ed20cba13d5::t_9316c8ca90fdad 1-180
+src/solvan/application/onboarding.py
+  s_625ed20cba13d5::t_bc58d6f149f107 1-365
+src/solvan/application/operational_compute.py
+  s_625ed20cba13d5::t_98761a6caadd17 1-362
+src/solvan/application/operational_guidance.py
+  s_625ed20cba13d5::t_fe5cd160c0e20e 1-496
+src/solvan/application/operator_identity.py
+  s_625ed20cba13d5::t_0b07d3033b0687 1-137
+src/solvan/application/operator_step_up.py
+  s_625ed20cba13d5::t_daa746544d8c2d 1-111
+src/solvan/application/patch_diff.py
+  s_625ed20cba13d5::t_83f92915e9be8c 1-150
+src/solvan/application/ports.py
+  s_625ed20cba13d5::t_0dcef61e85afaf 1-86
+src/solvan/application/production_graph_review.py
+  s_625ed20cba13d5::t_5fd66d007ce05d 1-55
+src/solvan/application/production_graph_types.py
+  s_625ed20cba13d5::t_093b4b513a79c2 1-98
+src/solvan/application/release_authority.py
+  s_625ed20cba13d5::t_7ced75495127ad 1-187
+src/solvan/application/release_candidates.py
+  s_625ed20cba13d5::t_45b1ca42cfd77e 1-142
+src/solvan/application/release_evidence.py
+  s_625ed20cba13d5::t_167988b1b33a81 1-236
+src/solvan/application/release_targets.py
+  s_625ed20cba13d5::t_1aad3db9127451 1-31
+src/solvan/application/release_verification.py
+  s_625ed20cba13d5::t_f4290e6a9dc9bb 1-352
+src/solvan/application/repair_commands.py
+  s_625ed20cba13d5::t_cfab4e1c246658 1-73
+src/solvan/application/repairs.py
+  s_625ed20cba13d5::t_572c5fe3f35dea 1-46
+src/solvan/application/saas_scale.py
+  s_625ed20cba13d5::t_380143ebaccf51 1-572
+src/solvan/application/saas_scale_events.py
+  s_625ed20cba13d5::t_199ccc7251b4ad 1-291
+src/solvan/application/saas_scale_profiles.py
+  s_625ed20cba13d5::t_2bc4c84196b91e 1-66
+src/solvan/application/saas_scale_runtime.py
+  s_625ed20cba13d5::t_b0779a40c67ee3 1-324
+src/solvan/application/saas_scale_scheduling.py
+  s_625ed20cba13d5::t_226e79b52ac469 1-161
+src/solvan/application/skills_governance.py
+  s_625ed20cba13d5::t_d5fb152633f895 1-343
+src/solvan/application/skills_interchange.py
+  s_625ed20cba13d5::t_22d0db8e677064 1-472
+src/solvan/application/skills_interchange_service.py
+  s_625ed20cba13d5::t_331810038aa81f 1-220
+src/solvan/application/skills_retention.py
+  s_625ed20cba13d5::t_8519dac6401f5a 1-112
+src/solvan/application/skills_security.py
+  s_625ed20cba13d5::t_a2b742e5f127f5 1-325
+src/solvan/application/skills_selection.py
+  s_625ed20cba13d5::t_786626498deb4c 1-522
+src/solvan/application/slack_channel.py
+  s_625ed20cba13d5::t_fe1e03b4d11ad9 1-154
+src/solvan/application/tenant_integration.py
+  s_625ed20cba13d5::t_9ba4ca47956058 1-651
+src/solvan/application/tool_capability_evidence.py
+  s_625ed20cba13d5::t_82d955fbc671f9 1-80
+src/solvan/application/tool_catalog.py
+  s_625ed20cba13d5::t_23950ca33c7546 1-689
+src/solvan/application/tool_output_security.py
+  s_625ed20cba13d5::t_b56ca8e67f91de 1-67
+src/solvan/application/tool_seed.py
+  s_625ed20cba13d5::t_6f8a56b98642a9 1-38
+src/solvan/application/workspace_attestation.py
+  s_625ed20cba13d5::t_1bd3d10097cbdf 1-88
+src/solvan/application/workspace_candidate.py
+  s_625ed20cba13d5::t_7f72985edf5ac4 1-242
+src/solvan/application/workspace_cognition.py
+  s_625ed20cba13d5::t_2b706f93296bca 1-75
+src/solvan/application/workspace_coordination.py
+  s_625ed20cba13d5::t_3c511c66329244 1-90
+src/solvan/application/workspace_eligibility.py
+  s_625ed20cba13d5::t_e4c768521f8cad 1-118
+src/solvan/application/workspace_hashing.py
+  s_625ed20cba13d5::t_9cbf56ce8a3d4d 1-30
+src/solvan/application/workspace_manifests.py
+  s_625ed20cba13d5::t_690581f1651394 1-62
+src/solvan/application/workspace_rehydration.py
+  s_625ed20cba13d5::t_39ba5c293cb52b 1-117
+src/solvan/application/workspace_results.py
+  s_625ed20cba13d5::t_c4c2feadf171a3 1-231
+src/solvan/application/workspaces.py
+  s_625ed20cba13d5::t_270ffc4c3d9636 1-616
+src/solvan/connectors/__init__.py
+  s_625ed20cba13d5::t_71a37763023a5e 1-9
+src/solvan/connectors/mutation/__init__.py
+  s_625ed20cba13d5::t_dfcd40f8c1cd42 1
+src/solvan/connectors/mutation/cloud_run.py
+  s_625ed20cba13d5::t_02dac26527d804 1-235
+src/solvan/connectors/mutation/payments_admin.py
+  s_625ed20cba13d5::t_8339e5675a2bbc 1-177
+src/solvan/connectors/ruhu_profile.py
+  s_625ed20cba13d5::t_490494ea0f7447 1-220
+src/solvan/domain/__init__.py
+  s_625ed20cba13d5::t_8b450ced763f91 1-185
+src/solvan/domain/action_policy.py
+  s_625ed20cba13d5::t_4d34c935db4065 1-308
+src/solvan/domain/actions.py
+  s_625ed20cba13d5::t_5e891b664ea4b6 1-237
+src/solvan/domain/identifiers.py
+  s_625ed20cba13d5::t_6df6df2426e4e4 1-49
+src/solvan/domain/investigation.py
+  s_625ed20cba13d5::t_eea1b21596931e 1-220
+src/solvan/domain/memory.py
+  s_625ed20cba13d5::t_4ccc352872d7d6 1-275
+src/solvan/domain/relay.py
+  s_625ed20cba13d5::t_b8a2a2ff4de212 1-548
+src/solvan/domain/scope.py
+  s_625ed20cba13d5::t_e8f73c9ed04d9b 1-32
+src/solvan/domain/transitions.py
+  s_625ed20cba13d5::t_6d27c244f37bc8 1-161
+src/solvan/domain/verification.py
+  s_625ed20cba13d5::t_4a49c47c9ecb8b 1-176
+src/solvan/domain/workflow.py
+  s_625ed20cba13d5::t_85bb947485a1a7 1-78
+src/solvan/evaluation/__init__.py
+  s_625ed20cba13d5::t_36d9641af5829b 1-10
+src/solvan/evaluation/prompt_optimization.py
+  s_625ed20cba13d5::t_1af93fb954b2e2 1-137
+src/solvan/evaluation/trajectory.py
+  s_625ed20cba13d5::t_58c103321eea93 1-161
+src/solvan/observability.py
+  s_625ed20cba13d5::t_7351c0a15b50bc 1-140
+src/solvan/persistence/__init__.py
+  s_625ed20cba13d5::t_a4a0a4f233e2d2 1-199
+src/solvan/persistence/action_challenge_store.py
+  s_625ed20cba13d5::t_44c58539bb3b49 1-189
+src/solvan/persistence/action_invocation.py
+  s_625ed20cba13d5::t_bdc79c8b6b323e 1-65
+src/solvan/persistence/action_material.py
+  s_625ed20cba13d5::t_472aa61efdaf37 1-38
+src/solvan/persistence/action_release.py
+  s_625ed20cba13d5::t_79fdaa49726d9c 1-67
+src/solvan/persistence/action_store.py
+  s_625ed20cba13d5::t_14541b1b475d5c 1-585
+src/solvan/persistence/actuator_dispatch_settlement.py
+  s_625ed20cba13d5::t_b5c2a262dff99b 1-154
+src/solvan/persistence/actuator_dispatch_store.py
+  s_625ed20cba13d5::t_55a81521be2d7b 1-565
+src/solvan/persistence/alert_liaison.py
+  s_625ed20cba13d5::t_1b9122737c4acb 1-72
+src/solvan/persistence/alert_policy_errors.py
+  s_625ed20cba13d5::t_9ee2941954a92d 1-5
+src/solvan/persistence/alert_policy_products.py
+  s_625ed20cba13d5::t_795270bdf803bf 1-462
+src/solvan/persistence/alert_related_projection.py
+  s_625ed20cba13d5::t_5098cb9fea12b8 1-202
+src/solvan/persistence/alert_triage.py
+  s_625ed20cba13d5::t_32f4b46ff0a31a 1-41
+src/solvan/persistence/alert_triage_admission_retry.py
+  s_625ed20cba13d5::t_355159c77c8dc9 1-212
+src/solvan/persistence/alert_triage_admission_store.py
+  s_625ed20cba13d5::t_46cfd0ee79c226 1-258
+src/solvan/persistence/alert_triage_commands.py
+  s_625ed20cba13d5::t_9a35a9a9aa9a24 1-471
+src/solvan/persistence/alert_triage_completion.py
+  s_625ed20cba13d5::t_177b5d58352c80 1-546
+src/solvan/persistence/alert_triage_ingress.py
+  s_625ed20cba13d5::t_dc7bb580990bb0 1-381
+src/solvan/persistence/alert_triage_leases.py
+  s_625ed20cba13d5::t_673456b14b2888 1-153
+src/solvan/persistence/alert_triage_projection.py
+  s_625ed20cba13d5::t_f09ca719306838 1-566
+src/solvan/persistence/alert_triage_read.py
+  s_625ed20cba13d5::t_030d9f7663cfe1 1-680
+src/solvan/persistence/alert_triage_read_projection.py
+  s_625ed20cba13d5::t_b0742c0a404070 1-251
+src/solvan/persistence/alert_triage_runtime.py
+  s_625ed20cba13d5::t_87d9eb9fd7ee48 1-283
+src/solvan/persistence/alert_triage_scheduling.py
+  s_625ed20cba13d5::t_133d4eae6d9ac5 1-594
+src/solvan/persistence/alert_triage_scheduling_types.py
+  s_625ed20cba13d5::t_c556087f5dd5b9 1-59
+src/solvan/persistence/alert_triage_source.py
+  s_625ed20cba13d5::t_c9796af779b5f1 1-396
+src/solvan/persistence/alert_triage_types.py
+  s_625ed20cba13d5::t_f4fb674b6677ac 1-51
+src/solvan/persistence/approval_store.py
+  s_625ed20cba13d5::t_a18affc006b616 1-314
+src/solvan/persistence/capability_matrix.py
+  s_625ed20cba13d5::t_760c4fec1fac33 1-132
+src/solvan/persistence/case_store.py
+  s_625ed20cba13d5::t_53f278d9b30052 1-405
+src/solvan/persistence/case_wakeups.py
+  s_625ed20cba13d5::t_34b0f9e5b63d17 1-394
+src/solvan/persistence/claim_sql.py
+  s_625ed20cba13d5::t_76bff5fe566c2f 1-114
+src/solvan/persistence/code_change_decision_store.py
+  s_625ed20cba13d5::t_77a4b039a24230 1-752
+src/solvan/persistence/code_change_merge_store.py
+  s_625ed20cba13d5::t_a628ca579f7097 1-392
+src/solvan/persistence/code_change_operation_store.py
+  s_625ed20cba13d5::t_591dc2fd41fe9c 1-692
+src/solvan/persistence/code_change_qualification_store.py
+  s_625ed20cba13d5::t_a6da167d8ad440 1-703
+src/solvan/persistence/code_change_read_store.py
+  s_625ed20cba13d5::t_851a848d0e03ef 1-312
+src/solvan/persistence/code_change_sync_types.py
+  s_625ed20cba13d5::t_92db76701a8f55 1-44
+src/solvan/persistence/code_delivery_profile_store.py
+  s_625ed20cba13d5::t_5bdf4073b9e423 1-155
+src/solvan/persistence/connection_store.py
+  s_625ed20cba13d5::t_10596618bff405 1-527
+src/solvan/persistence/delivery_command_store.py
+  s_625ed20cba13d5::t_3d36aea0fb2c95 1-438
+src/solvan/persistence/detection_connection_store.py
+  s_625ed20cba13d5::t_aeb34045a91e89 1-175
+src/solvan/persistence/detection_store.py
+  s_625ed20cba13d5::t_54287857f3c06f 1-199
+src/solvan/persistence/earned_autonomy.py
+  s_625ed20cba13d5::t_6bcd8f0a10a744 1-130
+src/solvan/persistence/evidence_alert_predicates.py
+  s_625ed20cba13d5::t_d855264fb41ad1 1-122
+src/solvan/persistence/evidence_completion.py
+  s_625ed20cba13d5::t_789e0f51104dc5 1-168
+src/solvan/persistence/evidence_errors.py
+  s_625ed20cba13d5::t_fc1872a78e3279 1-9
+src/solvan/persistence/evidence_store.py
+  s_625ed20cba13d5::t_b98e476a57c8a1 1-676
+src/solvan/persistence/evidence_types.py
+  s_625ed20cba13d5::t_0d6fe6500baf6f 1-86
+src/solvan/persistence/github_binding_store.py
+  s_625ed20cba13d5::t_d95ccf406ec29e 1-155
+src/solvan/persistence/github_conversation_participant_store.py
+  s_625ed20cba13d5::t_bcf70f90f77100 1-254
+src/solvan/persistence/github_conversation_store.py
+  s_625ed20cba13d5::t_30071b389e731f 1-573
+src/solvan/persistence/github_identity_store.py
+  s_625ed20cba13d5::t_cfc9ac0a60ed77 1-441
+src/solvan/persistence/github_installation_store.py
+  s_625ed20cba13d5::t_b1aa711bb281a5 1-219
+src/solvan/persistence/github_operation_failure_store.py
+  s_625ed20cba13d5::t_35ca6d533e2c11 1-33
+src/solvan/persistence/github_projection_store.py
+  s_625ed20cba13d5::t_e5d93c889d8188 1-73
+src/solvan/persistence/github_store.py
+  s_625ed20cba13d5::t_afa0a159b766f4 1-588
+src/solvan/persistence/github_webhook_store.py
+  s_625ed20cba13d5::t_fa923754b90fbc 1-167
+src/solvan/persistence/inbox_store.py
+  s_625ed20cba13d5::t_b11bdde25da326 1-66
+src/solvan/persistence/investigation_dispatch.py
+  s_625ed20cba13d5::t_1e5b3907cc4fea 1-123
+src/solvan/persistence/investigation_material.py
+  s_625ed20cba13d5::t_b687afb9f4c911 1-62
+src/solvan/persistence/investigation_projection.py
+  s_625ed20cba13d5::t_f71c87c6460cbb 1-136
+src/solvan/persistence/investigation_results.py
+  s_625ed20cba13d5::t_f9e375256bfba9 1-473
+src/solvan/persistence/investigation_store.py
+  s_625ed20cba13d5::t_7c235972b0ae84 1-610
+src/solvan/persistence/liaison_budget.py
+  s_625ed20cba13d5::t_b1a7ffa1d1ada1 1-78
+src/solvan/persistence/liaison_catchup.py
+  s_625ed20cba13d5::t_67ea5e941ce596 1-277
+src/solvan/persistence/liaison_channels.py
+  s_625ed20cba13d5::t_22089e13cedfcd 1-963
+src/solvan/persistence/liaison_compaction.py
+  s_625ed20cba13d5::t_4d65b2bae60937 1-322
+src/solvan/persistence/liaison_completion.py
+  s_625ed20cba13d5::t_7466f9c2d65435 1-347
+src/solvan/persistence/liaison_delivery.py
+  s_625ed20cba13d5::t_5cbb433b1055e5 1-486
+src/solvan/persistence/liaison_inbound.py
+  s_625ed20cba13d5::t_35b004f4520bc0 1-138
+src/solvan/persistence/liaison_manifest.py
+  s_625ed20cba13d5::t_7b1787b4d3ce52 1-542
+src/solvan/persistence/liaison_parked.py
+  s_625ed20cba13d5::t_ba37916f967734 1-371
+src/solvan/persistence/liaison_parts_store.py
+  s_625ed20cba13d5::t_b2de8ae57c530c 1-352
+src/solvan/persistence/liaison_policy.py
+  s_625ed20cba13d5::t_700dbfeacb9249 1-81
+src/solvan/persistence/liaison_projection_grants.py
+  s_625ed20cba13d5::t_eeb448bff1e5d9 1-176
+src/solvan/persistence/liaison_records.py
+  s_625ed20cba13d5::t_2542e33a3bf545 1-32
+src/solvan/persistence/liaison_retry.py
+  s_625ed20cba13d5::t_5f568544f12f6d 1-274
+src/solvan/persistence/liaison_runtime.py
+  s_625ed20cba13d5::t_679408e17d2b82 1-562
+src/solvan/persistence/liaison_runtime_failures.py
+  s_625ed20cba13d5::t_610d3c369ac3a8 1-43
+src/solvan/persistence/liaison_selection.py
+  s_625ed20cba13d5::t_e3f0b3c21eaac3 1-205
+src/solvan/persistence/liaison_sequence.py
+  s_625ed20cba13d5::t_e4eb4eb266b587 1-94
+src/solvan/persistence/liaison_service_selection.py
+  s_625ed20cba13d5::t_f35f9b8e1f530b 1-195
+src/solvan/persistence/liaison_store.py
+  s_625ed20cba13d5::t_4a3ff1d673e716 1-488
+src/solvan/persistence/liaison_stream.py
+  s_625ed20cba13d5::t_2fe70f625e58a8 1-97
+src/solvan/persistence/liaison_subscriptions.py
+  s_625ed20cba13d5::t_08044ceef8250d 1-314
+src/solvan/persistence/liaison_transcript_store.py
+  s_625ed20cba13d5::t_90ee1c1648a414 1-161
+src/solvan/persistence/liaison_turn_control.py
+  s_625ed20cba13d5::t_b03978d663afbf 1-530
+src/solvan/persistence/liaison_visibility.py
+  s_625ed20cba13d5::t_5d4c7d1273d3bf 1-81
+src/solvan/persistence/memory_store.py
+  s_625ed20cba13d5::t_f2b200173bfba8 1-354
+src/solvan/persistence/mitigation_policy.py
+  s_625ed20cba13d5::t_51a2dba89a907f 1-90
+src/solvan/persistence/mitigation_rollback.py
+  s_625ed20cba13d5::t_60bf496e7aa1ec 1-484
+src/solvan/persistence/mitigation_store.py
+  s_625ed20cba13d5::t_3ce01c8c9de1d3 1-320
+src/solvan/persistence/mitigation_types.py
+  s_625ed20cba13d5::t_a50e8e99deb547 1-29
+src/solvan/persistence/operational_guidance_annotations.py
+  s_625ed20cba13d5::t_de70ef690eefa7 1-132
+src/solvan/persistence/operational_guidance_authoring.py
+  s_625ed20cba13d5::t_ae7012bdf504a0 1-629
+src/solvan/persistence/operational_guidance_base.py
+  s_625ed20cba13d5::t_ec7388e838092f 1-258
+src/solvan/persistence/operational_guidance_lifecycle.py
+  s_625ed20cba13d5::t_6f330c39e76e3b 1-387
+src/solvan/persistence/operational_guidance_predicates.py
+  s_625ed20cba13d5::t_2c0d720e6e5dce 1-316
+src/solvan/persistence/operational_guidance_projection.py
+  s_625ed20cba13d5::t_7dcdde0f58f874 1-85
+src/solvan/persistence/operational_guidance_runtime.py
+  s_625ed20cba13d5::t_125fab5ced4da1 1-484
+src/solvan/persistence/operational_guidance_store.py
+  s_625ed20cba13d5::t_c118cac6dd8cb2 1-29
+src/solvan/persistence/operational_guidance_types.py
+  s_625ed20cba13d5::t_632d6c4535b90e 1-38
+src/solvan/persistence/operator_identity_store.py
+  s_625ed20cba13d5::t_be8eef6c6eebf3 1-317
+src/solvan/persistence/operator_session_store.py
+  s_625ed20cba13d5::t_1b6ab5e92af1e8 1-218
+src/solvan/persistence/operator_step_up_store.py
+  s_625ed20cba13d5::t_10ee00d4fcf0ab 1-227
+src/solvan/persistence/outbox_store.py
+  s_625ed20cba13d5::t_0b0007689ae7b3 1-69
+src/solvan/persistence/outcome_quality.py
+  s_625ed20cba13d5::t_c3267d74920a93 1-269
+src/solvan/persistence/patch_review_store.py
+  s_625ed20cba13d5::t_0aea63a80a349f 1-332
+src/solvan/persistence/postgres.py
+  s_625ed20cba13d5::t_16f9c2986983dc 1-414
+src/solvan/persistence/postgres_types.py
+  s_625ed20cba13d5::t_3d8eedf2b610fd 1-57
+src/solvan/persistence/production_graph.py
+  s_625ed20cba13d5::t_2b7e1e4e8706ae 1-1644
+src/solvan/persistence/relay_store.py
+  s_625ed20cba13d5::t_3a25c3e8234cd3 1-2698
+src/solvan/persistence/release_authority_store.py
+  s_625ed20cba13d5::t_aa4c6c5d2ccb64 1-238
+src/solvan/persistence/release_candidate_store.py
+  s_625ed20cba13d5::t_b2dc864ff48a8d 1-177
+src/solvan/persistence/release_effect_verification_store.py
+  s_625ed20cba13d5::t_6fdefc751eb965 1-468
+src/solvan/persistence/release_health_baseline_store.py
+  s_625ed20cba13d5::t_6015480bb8c031 1-347
+src/solvan/persistence/release_rollback_verification_store.py
+  s_625ed20cba13d5::t_e59c23f5f68bcd 1-235
+src/solvan/persistence/release_rollout_store.py
+  s_625ed20cba13d5::t_7e67861843d801 1-2444
+src/solvan/persistence/release_target_observation_store.py
+  s_625ed20cba13d5::t_58a6e3d490c636 1-299
+src/solvan/persistence/repair_command_registry.py
+  s_625ed20cba13d5::t_9637083649425e 1-144
+src/solvan/persistence/repair_policy.py
+  s_625ed20cba13d5::t_eaa4f0b7d55473 1-88
+src/solvan/persistence/repair_store.py
+  s_625ed20cba13d5::t_532b698c29a6c9 1-596
+src/solvan/persistence/runtime_dispatch_projection.py
+  s_625ed20cba13d5::t_a166c220f1e0ba 1-109
+src/solvan/persistence/runtime_queues.py
+  s_625ed20cba13d5::t_d7c778da7901e2 1-110
+src/solvan/persistence/runtime_reservations.py
+  s_625ed20cba13d5::t_3a7c414fc3e4ae 1-606
+src/solvan/persistence/runtime_run_store.py
+  s_625ed20cba13d5::t_b71599c362871b 1-667
+src/solvan/persistence/runtime_supervisor_reservation.py
+  s_625ed20cba13d5::t_4ff3f39a2be8ee 1-211
+src/solvan/persistence/runtime_types.py
+  s_625ed20cba13d5::t_73ac58e6cc058f 1-56
+src/solvan/persistence/saas_scale.py
+  s_625ed20cba13d5::t_4fecf5e7418962 1-571
+src/solvan/persistence/saas_scale_capacity.py
+  s_625ed20cba13d5::t_cffca99a2a6946 1-272
+src/solvan/persistence/saas_scale_cursors.py
+  s_625ed20cba13d5::t_affbc057051d02 1-87
+src/solvan/persistence/skills_interchange_store.py
+  s_625ed20cba13d5::t_7be23ba376952c 1-1617
+src/solvan/persistence/skills_retention_store.py
+  s_625ed20cba13d5::t_59985881928a2d 1-187
+src/solvan/persistence/target_action_gates.py
+  s_625ed20cba13d5::t_5ff4167ce0cb0a 1-261
+src/solvan/persistence/target_purge.py
+  s_625ed20cba13d5::t_f9b29d15565db8 1-47
+src/solvan/persistence/tool_capability_attestation.py
+  s_625ed20cba13d5::t_c3a5f86a8a818f 1-174
+src/solvan/persistence/tool_catalog_projection.py
+  s_625ed20cba13d5::t_c2258069ab4d4c 1-64
+src/solvan/persistence/tool_catalog_run_binding.py
+  s_625ed20cba13d5::t_a8bee47427a59f 1-582
+src/solvan/persistence/tool_catalog_store.py
+  s_625ed20cba13d5::t_b109d13fd85521 1-430
+src/solvan/persistence/trigger_policy_authoring.py
+  s_625ed20cba13d5::t_b7550dd7a3a723 1-465
+src/solvan/persistence/trigger_policy_base.py
+  s_625ed20cba13d5::t_f9e001a734369d 1-227
+src/solvan/persistence/trigger_policy_claims.py
+  s_625ed20cba13d5::t_834276ea4e5af6 1-458
+src/solvan/persistence/trigger_policy_eligibility.py
+  s_625ed20cba13d5::t_20d1b3bd2b44fb 1-147
+src/solvan/persistence/trigger_policy_lifecycle.py
+  s_625ed20cba13d5::t_958d8828e78102 1-623
+src/solvan/persistence/trigger_policy_replacement.py
+  s_625ed20cba13d5::t_0a01af2a483fc6 1-523
+src/solvan/persistence/trigger_policy_runtime.py
+  s_625ed20cba13d5::t_cb162e0a95165f 1-395
+src/solvan/persistence/trigger_policy_store.py
+  s_625ed20cba13d5::t_8e395fabd27ec2 1-22
+src/solvan/persistence/trigger_policy_types.py
+  s_625ed20cba13d5::t_5b1e92e98df8f5 1-60
+src/solvan/persistence/verification_store.py
+  s_625ed20cba13d5::t_20331254ae947d 1-253
+src/solvan/persistence/workflow_ingress.py
+  s_625ed20cba13d5::t_51f2dc7c4df67c 1-212
+src/solvan/persistence/workspace_lifecycle.py
+  s_625ed20cba13d5::t_32c764483e0d9c 1-41
+src/solvan/persistence/workspace_lineage.py
+  s_625ed20cba13d5::t_2ad24fdddcad1e 1-116
+src/solvan/persistence/workspace_projection.py
+  s_625ed20cba13d5::t_010f0840a98ad5 1-142
+src/solvan/persistence/workspace_provider_results.py
+  s_625ed20cba13d5::t_51a738443246b4 1-293
+src/solvan/persistence/workspace_repair_history.py
+  s_625ed20cba13d5::t_2a09948525e7e8 1-347
+src/solvan/persistence/workspace_repair_store.py
+  s_625ed20cba13d5::t_8f268d841da92f 1-650
+src/solvan/persistence/workspace_store.py
+  s_625ed20cba13d5::t_c5678b9d3a7739 1-581
+src/solvan/platform/__init__.py
+  s_625ed20cba13d5::t_e2cb56a3c605fa 1-162
+src/solvan/platform/agent_runtime.py
+  s_625ed20cba13d5::t_cd303388c65dc7 1-390
+src/solvan/platform/antigravity_preflight.py
+  s_625ed20cba13d5::t_37554d246dd9a4 1-232
+src/solvan/platform/antigravity_workspace.py
+  s_625ed20cba13d5::t_81652c62378499 1-306
+src/solvan/platform/asset_inventory_source.py
+  s_625ed20cba13d5::t_6e3fd42eebd850 1-273
+src/solvan/platform/capability_probe.py
+  s_625ed20cba13d5::t_7c123e5826296a 1-217
+src/solvan/platform/cloud_monitoring.py
+  s_625ed20cba13d5::t_033c2f005e97d1 1-270
+src/solvan/platform/cloud_monitoring_alerts.py
+  s_625ed20cba13d5::t_81b7c59512ae3c 1-61
+src/solvan/platform/cloud_run_health.py
+  s_625ed20cba13d5::t_6890d031312072 1-163
+src/solvan/platform/cloud_run_observer.py
+  s_625ed20cba13d5::t_abfe2898212cef 1-96
+src/solvan/platform/cloud_run_release.py
+  s_625ed20cba13d5::t_f362242729c9b0 1-221
+src/solvan/platform/cloud_run_sandbox.py
+  s_625ed20cba13d5::t_9834007e38aea3 1-242
+src/solvan/platform/customer_audit.py
+  s_625ed20cba13d5::t_69ff64e41af092 1-70
+src/solvan/platform/database.py
+  s_625ed20cba13d5::t_4f8b52f12bb808 1-325
+src/solvan/platform/deployment_authority.py
+  s_625ed20cba13d5::t_780a3a67f7eca4 1-41
+src/solvan/platform/deployment_controller.py
+  s_625ed20cba13d5::t_aa1dbc380b5ccd 1-58
+src/solvan/platform/direct_gcp_detection_client.py
+  s_625ed20cba13d5::t_f59bdf7e1deadd 1-125
+src/solvan/platform/discord.py
+  s_625ed20cba13d5::t_84f8fea17777c5 1-70
+src/solvan/platform/email_enrollment.py
+  s_625ed20cba13d5::t_d2a6639bc52e4d 1-68
+src/solvan/platform/evidence_objects.py
+  s_625ed20cba13d5::t_8aec65d801346a 1-163
+src/solvan/platform/exploratory_sandbox.py
+  s_625ed20cba13d5::t_73045a96299627 1-154
+src/solvan/platform/fixture_attester.py
+  s_625ed20cba13d5::t_1c0108f2e154fd 1-53
+src/solvan/platform/github.py
+  s_625ed20cba13d5::t_ff5d708d261925 1-682
+src/solvan/platform/github_app_auth.py
+  s_625ed20cba13d5::t_8007f0422a0234 1-347
+src/solvan/platform/github_code_change.py
+  s_625ed20cba13d5::t_c21f0618989d0e 1-627
+src/solvan/platform/github_contracts.py
+  s_625ed20cba13d5::t_e9ee983d3a6483 1-53
+src/solvan/platform/github_conversation.py
+  s_625ed20cba13d5::t_3befe8e28bfd69 1-635
+src/solvan/platform/github_conversation_events.py
+  s_625ed20cba13d5::t_7be1f048b17bc2 1-235
+src/solvan/platform/github_delivery_reads.py
+  s_625ed20cba13d5::t_76f447572307ba 1-354
+src/solvan/platform/github_evidence.py
+  s_625ed20cba13d5::t_b71a3830eb76c3 1-177
+src/solvan/platform/github_release.py
+  s_625ed20cba13d5::t_3bf64a30a11b4d 1-86
+src/solvan/platform/github_repository_qualification.py
+  s_625ed20cba13d5::t_e10bddc4e2644a 1-134
+src/solvan/platform/github_skills.py
+  s_625ed20cba13d5::t_143e2cc96bdace 1-73
+src/solvan/platform/github_user_oauth.py
+  s_625ed20cba13d5::t_ea6e5e73216743 1-115
+src/solvan/platform/github_webhook.py
+  s_625ed20cba13d5::t_dddb45ef0c9690 1-164
+src/solvan/platform/gitlab_skills.py
+  s_625ed20cba13d5::t_a3c744c9d096ae 1-198
+src/solvan/platform/google_oauth.py
+  s_625ed20cba13d5::t_ebe7bce0b8398f 1-261
+src/solvan/platform/google_rest.py
+  s_625ed20cba13d5::t_536edd16d4d859 1-161
+src/solvan/platform/guidance_evaluation.py
+  s_625ed20cba13d5::t_9959c9ec030ddf 1-91
+src/solvan/platform/kms_envelope.py
+  s_625ed20cba13d5::t_7dd104bccf3982 1-75
+src/solvan/platform/local_gcp_credentials.py
+  s_625ed20cba13d5::t_0a5037c907828f 1-55
+src/solvan/platform/local_service_token.py
+  s_625ed20cba13d5::t_26de0afbd6d3bf 1-42
+src/solvan/platform/memory_bank.py
+  s_625ed20cba13d5::t_fd3ed5cde6aad5 1-229
+src/solvan/platform/model_armor.py
+  s_625ed20cba13d5::t_2660caa4e780d1 1-47
+src/solvan/platform/model_routes.py
+  s_625ed20cba13d5::t_e4cf442671c405 1-39
+src/solvan/platform/operator_step_up_email.py
+  s_625ed20cba13d5::t_ea4eff0f3d6c5d 1-128
+src/solvan/platform/preflight.py
+  s_625ed20cba13d5::t_ee7a971aad4a24 1-517
+src/solvan/platform/preflight_receipt.py
+  s_625ed20cba13d5::t_0b132088a1196a 1-126
+src/solvan/platform/production_graph_source_errors.py
+  s_625ed20cba13d5::t_ad7cc0e607ff19 1-13
+src/solvan/platform/production_graph_source_normalization.py
+  s_625ed20cba13d5::t_04cdfd9dcf9548 1-121
+src/solvan/platform/production_graph_sources.py
+  s_625ed20cba13d5::t_dd0c3f30675ebd 1-553
+src/solvan/platform/pubsub.py
+  s_625ed20cba13d5::t_92dfed971e7b35 1-65
+src/solvan/platform/relay_signing.py
+  s_625ed20cba13d5::t_8a34744f86e7a3 1-29
+src/solvan/platform/release_projection.py
+  s_625ed20cba13d5::t_b7f8cb26afb796 1-284
+src/solvan/platform/release_verifier.py
+  s_625ed20cba13d5::t_016f8fa29b9d98 1-58
+src/solvan/platform/repository_snapshot.py
+  s_625ed20cba13d5::t_1e67755de57c6c 1-88
+src/solvan/platform/secret_manager.py
+  s_625ed20cba13d5::t_9fdc5910dd4bf3 1-51
+src/solvan/platform/service_identity.py
+  s_625ed20cba13d5::t_3553fb35c5d183 1-122
+src/solvan/platform/slack.py
+  s_625ed20cba13d5::t_ded8a905e63e5f 1-94
+src/solvan/platform/telemetry.py
+  s_625ed20cba13d5::t_75566e227b6344 1-73
+src/solvan/platform/tool_capability_probe.py
+  s_625ed20cba13d5::t_d6f54be40cd0bd 1-199
+src/solvan/platform/workspace_attestation.py
+  s_625ed20cba13d5::t_f2128df4f9a1bf 1-125
+src/solvan/platform/workspace_eligibility.py
+  s_625ed20cba13d5::t_c958a65ec3b809 1-160
+src/solvan/platform/workspace_validation.py
+  s_625ed20cba13d5::t_5a7e6296e799c5 1-161
+tests/e2e/.auth/.gitignore
+  s_625ed20cba13d5::t_fec160af481502 1
+tests/e2e/auth.setup.ts
+  s_625ed20cba13d5::t_ae01791fbc8771 1-31
+tests/e2e/critical-path.spec.ts
+  s_625ed20cba13d5::t_7314629b62e10d 1-1431
+tests/e2e/fleet-governance.spec.ts
+  s_625ed20cba13d5::t_020b11ba2bcf8b 1-116
+tests/harness/test_actuator_api.py
+  s_625ed20cba13d5::t_52d9b224b1958c 1-38
+tests/harness/test_agent_runtime_requirements.py
+  s_625ed20cba13d5::t_2097767245a7d0 1-134
+tests/harness/test_antigravity_workspace_api.py
+  s_625ed20cba13d5::t_e7fd832a2e2f7f 1-427
+tests/harness/test_api.py
+  s_625ed20cba13d5::t_c708634bff9b7a 1-256
+tests/harness/test_architecture_checker.py
+  s_625ed20cba13d5::t_c50b42d6b23dca 1-111
+tests/harness/test_console_session_transport.py
+  s_625ed20cba13d5::t_4bd549dc0e1c84 1-173
+tests/harness/test_console_transport_allowlist.py
+  s_625ed20cba13d5::t_4d64750f4d4f9c 1-245
+tests/harness/test_contract_gate_coverage.py
+  s_625ed20cba13d5::t_d35f86e9559e4d 1-54
+tests/harness/test_dev_env.py
+  s_625ed20cba13d5::t_4a0812b69c38e2 1-48
+tests/harness/test_fixture_attester_api.py
+  s_625ed20cba13d5::t_2ba9448523e379 1-181
+tests/harness/test_relay_control_api.py
+  s_625ed20cba13d5::t_4e67dbedbcfc6c 1-393
+tests/integration/test_action_challenge_persistence.py
+  s_625ed20cba13d5::t_22ed005b3ac9ff 1-383
+tests/integration/test_alert_reader_session_api.py
+  s_625ed20cba13d5::t_f76a8a78fa4692 1-186
+tests/integration/test_alert_triage_persistence.py
+  s_625ed20cba13d5::t_f19dcce2a9e8b7 1-703
+tests/integration/test_builtin_guidance_lifecycle.py
+  s_625ed20cba13d5::t_256cf2e56a07ae 1-458
+tests/integration/test_code_repair_predicates.py
+  s_625ed20cba13d5::t_77cffd7c506360 1-448
+tests/integration/test_console_capability_projection.py
+  s_625ed20cba13d5::t_8089f9dbe86929 1-417
+tests/integration/test_guidance_projection.py
+  s_625ed20cba13d5::t_17b09ac8c5e3e4 1-185
+tests/integration/test_liaison_conversation_api.py
+  s_625ed20cba13d5::t_64bcbe919a4973 1-966
+tests/integration/test_liaison_persistence.py
+  s_625ed20cba13d5::t_4749fe902f04cb 1-3170
+tests/integration/test_operator_administration_api.py
+  s_625ed20cba13d5::t_59562e73b28796 1-395
+tests/integration/test_operator_identity_persistence.py
+  s_625ed20cba13d5::t_bf5fcd36c5c7c0 1-806
+tests/integration/test_persistence.py
+  s_625ed20cba13d5::t_947c3831d6abef 1-5526
+tests/integration/test_saas_scale_capacity.py
+  s_625ed20cba13d5::t_3e39e8955f26e1 1-222
+tests/integration/test_skill_retention_persistence.py
+  s_625ed20cba13d5::t_8f9fde3fa65714 1-264
+tests/integration/test_skill_selection_persistence.py
+  s_625ed20cba13d5::t_3f1ab66104c722 1-452
+tests/integration/test_skills_interchange_persistence.py
+  s_625ed20cba13d5::t_c5383240044b88 1-499
+tests/integration/test_tool_catalog_persistence.py
+  s_625ed20cba13d5::t_c05d2ab8c192dd 1-3213
+tests/unit/test_action_authorization.py
+  s_625ed20cba13d5::t_4853991184a209 1-38
+tests/unit/test_action_challenge.py
+  s_625ed20cba13d5::t_cbc59af4e83760 1-132
+tests/unit/test_action_gates.py
+  s_625ed20cba13d5::t_252494e32688a5 1-309
+tests/unit/test_action_invocation.py
+  s_625ed20cba13d5::t_22f87df2432f98 1-46
+tests/unit/test_action_policy.py
+  s_625ed20cba13d5::t_81026b8c66f4b2 1-161
+tests/unit/test_actions.py
+  s_625ed20cba13d5::t_11e3b27ce9c92d 1-167
+tests/unit/test_actuator.py
+  s_625ed20cba13d5::t_c0c48d84ce5329 1-473
+tests/unit/test_actuator_local_policy.py
+  s_625ed20cba13d5::t_0419a748bf07f3 1-70
+tests/unit/test_adk_workflow_pilot.py
+  s_625ed20cba13d5::t_015b3bc0da7c4d 1-52
+tests/unit/test_agent_contracts.py
+  s_625ed20cba13d5::t_1d12281f9f3cd2 1-221
+tests/unit/test_agent_governed_entry_tools.py
+  s_625ed20cba13d5::t_d7d3ea2700c501 1-154
+tests/unit/test_agent_iap.py
+  s_625ed20cba13d5::t_972ba02c130566 1-116
+tests/unit/test_agent_manifest_projection.py
+  s_625ed20cba13d5::t_921ba64d8ebcc8 1-90
+tests/unit/test_agent_platform_deploy.py
+  s_625ed20cba13d5::t_1f1d4db305856b 1-294
+tests/unit/test_agent_read_tools.py
+  s_625ed20cba13d5::t_bedd28761a5e59 1-136
+tests/unit/test_agent_route_principal_binding.py
+  s_625ed20cba13d5::t_00dd2a23bbec43 1-172
+tests/unit/test_agent_runtime.py
+  s_625ed20cba13d5::t_20b58acf670dac 1-450
+tests/unit/test_agent_skills_api.py
+  s_625ed20cba13d5::t_fa2ce1cde216f8 1-214
+tests/unit/test_alert_admission.py
+  s_625ed20cba13d5::t_d672e4dbc562a7 1-89
+tests/unit/test_alert_console_api.py
+  s_625ed20cba13d5::t_2b4bc99ceec50f 1-163
+tests/unit/test_alert_disposition.py
+  s_625ed20cba13d5::t_9bbe572c1c270d 1-41
+tests/unit/test_alert_ingress_api.py
+  s_625ed20cba13d5::t_720944ac8861be 1-297
+tests/unit/test_alert_ingress_boundary.py
+  s_625ed20cba13d5::t_e8ff1532afb461 1-29
+tests/unit/test_alert_list.py
+  s_625ed20cba13d5::t_c910cc6409de23 1-102
+tests/unit/test_alert_predicates.py
+  s_625ed20cba13d5::t_a05902b1d31378 1-317
+tests/unit/test_alert_triage.py
+  s_625ed20cba13d5::t_73d6857ac796c6 1-495
+tests/unit/test_antigravity_platform_probes.py
+  s_625ed20cba13d5::t_fe442d4c42fbe0 1-183
+tests/unit/test_antigravity_qualification_tool.py
+  s_625ed20cba13d5::t_a57e346d8f2e98 1-134
+tests/unit/test_antigravity_workspace_provider.py
+  s_625ed20cba13d5::t_e4f45e7469f4f8 1-496
+tests/unit/test_approval_audience.py
+  s_625ed20cba13d5::t_9a18453937e940 1-81
+tests/unit/test_approval_transport.py
+  s_625ed20cba13d5::t_a93926157bbc82 1-28
+tests/unit/test_asset_inventory_source.py
+  s_625ed20cba13d5::t_41fb764334ce35 1-259
+tests/unit/test_auth_routes.py
+  s_625ed20cba13d5::t_09da2dcc07c98e 1-440
+tests/unit/test_brand_assets.py
+  s_625ed20cba13d5::t_334c45d68d133a 1-89
+tests/unit/test_capability_resolution.py
+  s_625ed20cba13d5::t_6d63fb885c3f6b 1-213
+tests/unit/test_channel_adapter_contracts.py
+  s_625ed20cba13d5::t_710ff737396c2d 1-131
+tests/unit/test_channel_provider_qualification.py
+  s_625ed20cba13d5::t_e1279b03722132 1-113
+tests/unit/test_cleanup_demo.py
+  s_625ed20cba13d5::t_12b1d1f90f41c4 1-51
+tests/unit/test_cloud_platform_adapters.py
+  s_625ed20cba13d5::t_208fbd497ab522 1-259
+tests/unit/test_cloud_run_connector.py
+  s_625ed20cba13d5::t_ad5d45caf02560 1-140
+tests/unit/test_cloud_run_release.py
+  s_625ed20cba13d5::t_f64d3ab76d14f6 1-96
+tests/unit/test_cloud_run_sandbox.py
+  s_625ed20cba13d5::t_c94eebbab4eb84 1-188
+tests/unit/test_cloudbuild_contract.py
+  s_625ed20cba13d5::t_8e23796b41dacb 1-13
+tests/unit/test_code_change_decisions.py
+  s_625ed20cba13d5::t_16d429b744d090 1-163
+tests/unit/test_code_change_github_observation.py
+  s_625ed20cba13d5::t_332e38852b3d5d 1-118
+tests/unit/test_code_change_qualification.py
+  s_625ed20cba13d5::t_58ea0f97dd206b 1-135
+tests/unit/test_code_change_transform.py
+  s_625ed20cba13d5::t_0729d656fc8991 1-137
+tests/unit/test_code_delivery_profiles.py
+  s_625ed20cba13d5::t_12b84a043429de 1-46
+tests/unit/test_connection_onboarding.py
+  s_625ed20cba13d5::t_6b6a2c1ce78b8e 1-486
+tests/unit/test_console_settings.py
+  s_625ed20cba13d5::t_3138b9dac053a1 1-80
+tests/unit/test_coordinator_contracts.py
+  s_625ed20cba13d5::t_b0653c3ed6e63e 1-62
+tests/unit/test_coordinator_internal_route_identity.py
+  s_625ed20cba13d5::t_6bd3bd839ce755 1-166
+tests/unit/test_coordinator_recovery.py
+  s_625ed20cba13d5::t_f67a2cda8496e0 1-597
+tests/unit/test_coordinator_service.py
+  s_625ed20cba13d5::t_890d9ac046e8ed 1-210
+tests/unit/test_credential_scope_verification.py
+  s_625ed20cba13d5::t_1d0bc85ecd458a 1-339
+tests/unit/test_customer_audit.py
+  s_625ed20cba13d5::t_6a89dbbd3197f1 1-66
+tests/unit/test_database.py
+  s_625ed20cba13d5::t_97fe9d6a13313b 1-314
+tests/unit/test_database_bootstrap.py
+  s_625ed20cba13d5::t_33cb7cda90b6c5 1-256
+tests/unit/test_delivery_command_store.py
+  s_625ed20cba13d5::t_e9e9bf1d980b60 1-188
+tests/unit/test_delivery_commands.py
+  s_625ed20cba13d5::t_f7b02395773fc1 1-169
+tests/unit/test_deploy_release.py
+  s_625ed20cba13d5::t_a1700dda21a311 1-191
+tests/unit/test_deployment_authority.py
+  s_625ed20cba13d5::t_9566465e5961e5 1-86
+tests/unit/test_detection.py
+  s_625ed20cba13d5::t_0256819a50d334 1-52
+tests/unit/test_detection_evaluator.py
+  s_625ed20cba13d5::t_ee4b68f372a57b 1-71
+tests/unit/test_detector_service.py
+  s_625ed20cba13d5::t_7a7c9cc51de90e 1-28
+tests/unit/test_direct_gcp_pilot_boundaries.py
+  s_625ed20cba13d5::t_dfed3ad7c99d33 1-141
+tests/unit/test_discord_platform.py
+  s_625ed20cba13d5::t_308b7a98d51816 1-119
+tests/unit/test_earned_autonomy.py
+  s_625ed20cba13d5::t_18d04d62b30a42 1-123
+tests/unit/test_estate_connection_api.py
+  s_625ed20cba13d5::t_5a48cdfc93cc0a 1-522
+tests/unit/test_evidence_broker.py
+  s_625ed20cba13d5::t_fc62d7b242202a 1-606
+tests/unit/test_exploratory_sandbox.py
+  s_625ed20cba13d5::t_402edac6e8f8e8 1-104
+tests/unit/test_first_party_pack_loader.py
+  s_625ed20cba13d5::t_285f021ff099a1 1-288
+tests/unit/test_fixture_attester_client.py
+  s_625ed20cba13d5::t_b9277b57c6ec31 1-113
+tests/unit/test_fleet_capability_api.py
+  s_625ed20cba13d5::t_51a118941940c1 1-190
+tests/unit/test_fleet_guidance_content.py
+  s_625ed20cba13d5::t_3157e7062cb870 1-27
+tests/unit/test_freeze_submission.py
+  s_625ed20cba13d5::t_d0f0a3d12d36d4 1-146
+tests/unit/test_gcp_scenario_runner.py
+  s_625ed20cba13d5::t_42e002a007a8c7 1-140
+tests/unit/test_github_connect.py
+  s_625ed20cba13d5::t_3c6d035bffcf92 1-738
+tests/unit/test_github_conversation.py
+  s_625ed20cba13d5::t_306ffc4ad725fc 1-876
+tests/unit/test_github_conversation_gates.py
+  s_625ed20cba13d5::t_81c89cb799396d 1-576
+tests/unit/test_github_identity.py
+  s_625ed20cba13d5::t_450da78355d039 1-155
+tests/unit/test_github_integration.py
+  s_625ed20cba13d5::t_0e730572e3b5f3 1-606
+tests/unit/test_github_onboarding.py
+  s_625ed20cba13d5::t_49070d47187400 1-703
+tests/unit/test_gitlab_skills.py
+  s_625ed20cba13d5::t_1b29655813f6b6 1-216
+tests/unit/test_google_rest.py
+  s_625ed20cba13d5::t_b4374fb3bac200 1-145
+tests/unit/test_guidance_content.py
+  s_625ed20cba13d5::t_d3509adda98dd4 1-76
+tests/unit/test_guidance_evaluation.py
+  s_625ed20cba13d5::t_c8c614b5c65973 1-97
+tests/unit/test_identifiers.py
+  s_625ed20cba13d5::t_c16ccac81f0a54 1-56
+tests/unit/test_investigation.py
+  s_625ed20cba13d5::t_e1da7913e65947 1-155
+tests/unit/test_investigation_coordinator.py
+  s_625ed20cba13d5::t_8e4ecf9238bef8 1-255
+tests/unit/test_liaison_access.py
+  s_625ed20cba13d5::t_cb2779f5bf4590 1-209
+tests/unit/test_liaison_adk_composer.py
+  s_625ed20cba13d5::t_8f4550e6fab780 1-452
+tests/unit/test_liaison_api.py
+  s_625ed20cba13d5::t_eb1a701a50e962 1-89
+tests/unit/test_liaison_attachments.py
+  s_625ed20cba13d5::t_0db2927c141005 1-21
+tests/unit/test_liaison_claims.py
+  s_625ed20cba13d5::t_9a7cb4c722e1f9 1-474
+tests/unit/test_liaison_compaction_invalidation.py
+  s_625ed20cba13d5::t_355bea9d1cbe4a 1-51
+tests/unit/test_liaison_context_compiler.py
+  s_625ed20cba13d5::t_62a8d73d02e47c 1-481
+tests/unit/test_liaison_context_target_matrix.py
+  s_625ed20cba13d5::t_4d4dab325a79da 1-345
+tests/unit/test_liaison_contract_artifacts.py
+  s_625ed20cba13d5::t_f6ec468fee784d 1-44
+tests/unit/test_liaison_engine.py
+  s_625ed20cba13d5::t_4e14e3222f2820 1-957
+tests/unit/test_liaison_intents.py
+  s_625ed20cba13d5::t_c4f4bfbb3fbc5a 1-118
+tests/unit/test_liaison_manifest_contract.py
+  s_625ed20cba13d5::t_893def6c1c8e8e 1-163
+tests/unit/test_liaison_memory_candidates.py
+  s_625ed20cba13d5::t_aacdb36baa43f7 1-105
+tests/unit/test_liaison_narrowing.py
+  s_625ed20cba13d5::t_574797c76e056e 1-60
+tests/unit/test_liaison_predicates.py
+  s_625ed20cba13d5::t_e86a76b66d5342 1-374
+tests/unit/test_liaison_projection_freshness.py
+  s_625ed20cba13d5::t_97d34c1a9a558a 1-41
+tests/unit/test_liaison_questions.py
+  s_625ed20cba13d5::t_a585b08e26f204 1-321
+tests/unit/test_liaison_redaction.py
+  s_625ed20cba13d5::t_d44008f9ef57d3 1-73
+tests/unit/test_liaison_retention.py
+  s_625ed20cba13d5::t_d3463f852bef89 1-13
+tests/unit/test_liaison_stream_flow_control.py
+  s_625ed20cba13d5::t_2b0b97cabaeb4f 1-38
+tests/unit/test_local_connected_gcp.py
+  s_625ed20cba13d5::t_ca608ba2b15b59 1-335
+tests/unit/test_local_database_bootstrap.py
+  s_625ed20cba13d5::t_5a1271f779adbc 1-31
+tests/unit/test_membership_projection_confinement.py
+  s_625ed20cba13d5::t_39b6537e0b80cd 1-77
+tests/unit/test_memory.py
+  s_625ed20cba13d5::t_ca53ba2b82211b 1-333
+tests/unit/test_memory_bank.py
+  s_625ed20cba13d5::t_96b73fe8741030 1-159
+tests/unit/test_memory_context.py
+  s_625ed20cba13d5::t_1c65ba01d3292b 1-119
+tests/unit/test_memory_promoter.py
+  s_625ed20cba13d5::t_adbd5e2609cedc 1-63
+tests/unit/test_model_armor.py
+  s_625ed20cba13d5::t_01c447b00d85c7 1-86
+tests/unit/test_model_quality_evals.py
+  s_625ed20cba13d5::t_57ca4d89fa1f25 1-78
+tests/unit/test_model_routes.py
+  s_625ed20cba13d5::t_2ed6a35b0d5ec8 1-44
+tests/unit/test_oauth_login.py
+  s_625ed20cba13d5::t_ae29c327c2db4b 1-175
+tests/unit/test_observability.py
+  s_625ed20cba13d5::t_e9c0dec2595f57 1-132
+tests/unit/test_operational_compute.py
+  s_625ed20cba13d5::t_c20c5801bd6b41 1-120
+tests/unit/test_operational_guidance.py
+  s_625ed20cba13d5::t_7deb11f8491ad1 1-300
+tests/unit/test_operational_guidance_annotations.py
+  s_625ed20cba13d5::t_25288cb916f67f 1-202
+tests/unit/test_operator_identity.py
+  s_625ed20cba13d5::t_54566f00616aa1 1-135
+tests/unit/test_operator_step_up.py
+  s_625ed20cba13d5::t_ddf921f63c1155 1-238
+tests/unit/test_outbox_publisher.py
+  s_625ed20cba13d5::t_17596cb7cc3f1e 1-133
+tests/unit/test_outcome_quality.py
+  s_625ed20cba13d5::t_7d37b4c23e97bd 1-66
+tests/unit/test_patch_diff.py
+  s_625ed20cba13d5::t_8f4e0420054ee5 1-65
+tests/unit/test_payments_connector.py
+  s_625ed20cba13d5::t_af615b8c3b3e6e 1-127
+tests/unit/test_payments_metadata.py
+  s_625ed20cba13d5::t_b060b1e049b464 1-72
+tests/unit/test_platform_preflight.py
+  s_625ed20cba13d5::t_ef40549f53e7c9 1-425
+tests/unit/test_platform_probes.py
+  s_625ed20cba13d5::t_4b4ca0ba066dae 1-82
+tests/unit/test_preauthorization.py
+  s_625ed20cba13d5::t_1d894068006947 1-116
+tests/unit/test_private_service_auth.py
+  s_625ed20cba13d5::t_259247f056b9a9 1-33
+tests/unit/test_production_graph.py
+  s_625ed20cba13d5::t_c60a62aa31ea4a 1-406
+tests/unit/test_production_graph_api.py
+  s_625ed20cba13d5::t_0c11d6c42a8ba0 1-273
+tests/unit/test_production_graph_reconciler.py
+  s_625ed20cba13d5::t_ea6c23ae053631 1-212
+tests/unit/test_production_graph_review.py
+  s_625ed20cba13d5::t_c8a0d9da5e3f06 1-120
+tests/unit/test_production_graph_source_boundaries.py
+  s_625ed20cba13d5::t_34db581644b857 1-278
+tests/unit/test_production_graph_sources.py
+  s_625ed20cba13d5::t_88f96bec126933 1-276
+tests/unit/test_production_graph_target_matrix.py
+  s_625ed20cba13d5::t_47c67546236def 1-173
+tests/unit/test_production_graph_worker.py
+  s_625ed20cba13d5::t_fda133a797f02e 1-256
+tests/unit/test_promote_release.py
+  s_625ed20cba13d5::t_3ecef7541315dd 1-75
+tests/unit/test_prompt_optimization.py
+  s_625ed20cba13d5::t_6f31701338d8ff 1-58
+tests/unit/test_relay_admin.py
+  s_625ed20cba13d5::t_355ec5f57166d6 1-53
+tests/unit/test_relay_contracts.py
+  s_625ed20cba13d5::t_413919f332bf10 1-154
+tests/unit/test_relay_job_authoring.py
+  s_625ed20cba13d5::t_44a4dc8e5c71bc 1-234
+tests/unit/test_relay_observability_adapters.py
+  s_625ed20cba13d5::t_69a9fe513b5230 1-253
+tests/unit/test_relay_store.py
+  s_625ed20cba13d5::t_fa67cda2701a23 1-675
+tests/unit/test_release_admin.py
+  s_625ed20cba13d5::t_1bcd7701c7a4fb 1-37
+tests/unit/test_release_authority.py
+  s_625ed20cba13d5::t_81c33d85bba2d6 1-106
+tests/unit/test_release_candidates.py
+  s_625ed20cba13d5::t_97884b762f42da 1-105
+tests/unit/test_release_contracts.py
+  s_625ed20cba13d5::t_719d6874db8fb1 1-248
+tests/unit/test_release_evidence.py
+  s_625ed20cba13d5::t_5eb63c425f242b 1-119
+tests/unit/test_release_projection.py
+  s_625ed20cba13d5::t_4df91ca76e27a9 1-313
+tests/unit/test_release_rollout_store.py
+  s_625ed20cba13d5::t_7a81b5b7692142 1-101
+tests/unit/test_release_verification.py
+  s_625ed20cba13d5::t_eb4027329ec4e7 1-233
+tests/unit/test_repair_commands.py
+  s_625ed20cba13d5::t_7013be1abb1188 1-48
+tests/unit/test_repository_snapshot.py
+  s_625ed20cba13d5::t_e98df3bc1c0bc9 1-58
+tests/unit/test_ruhu_profile.py
+  s_625ed20cba13d5::t_e26fbd373cb571 1-55
+tests/unit/test_saas_scale.py
+  s_625ed20cba13d5::t_a535ff7d383c34 1-753
+tests/unit/test_saas_scale_events.py
+  s_625ed20cba13d5::t_97bef013cb1251 1-170
+tests/unit/test_saas_scale_repository.py
+  s_625ed20cba13d5::t_aad98f1ed6eec1 1-300
+tests/unit/test_saas_scale_runtime.py
+  s_625ed20cba13d5::t_b5450dfdaaa9e4 1-147
+tests/unit/test_safety.py
+  s_625ed20cba13d5::t_71dc44acdcc1f5 1-24
+tests/unit/test_scenario_runner.py
+  s_625ed20cba13d5::t_47520d10068b5e 1-17
+tests/unit/test_scope.py
+  s_625ed20cba13d5::t_ce088dd22fbd4b 1-29
+tests/unit/test_security_ingestion.py
+  s_625ed20cba13d5::t_7baecf884070b4 1-66
+tests/unit/test_seed_demo.py
+  s_625ed20cba13d5::t_bb72e4894b3653 1-72
+tests/unit/test_service_identity.py
+  s_625ed20cba13d5::t_0658675b7dad89 1-181
+tests/unit/test_session_reader_authorization.py
+  s_625ed20cba13d5::t_141c1c840ec141 1-95
+tests/unit/test_skill_import_service.py
+  s_625ed20cba13d5::t_e45eb4c9ad1434 1-171
+tests/unit/test_skill_interchange.py
+  s_625ed20cba13d5::t_3d164222e402a5 1-273
+tests/unit/test_skill_security.py
+  s_625ed20cba13d5::t_baf285cde00cc6 1-170
+tests/unit/test_skill_selection.py
+  s_625ed20cba13d5::t_595cc3fc9af507 1-477
+tests/unit/test_skills_governance.py
+  s_625ed20cba13d5::t_d9f26b70979e76 1-190
+tests/unit/test_skills_refresh_ledger.py
+  s_625ed20cba13d5::t_5cc9d28d99a3d9 1-125
+tests/unit/test_skills_retention.py
+  s_625ed20cba13d5::t_fe41f367ff1c73 1-145
+tests/unit/test_slack_channel.py
+  s_625ed20cba13d5::t_2f82f7cb2204b6 1-132
+tests/unit/test_slack_platform.py
+  s_625ed20cba13d5::t_f2fbf4b8ff38fb 1-93
+tests/unit/test_solvent_relay_local.py
+  s_625ed20cba13d5::t_8f635f013628ef 1-738
+tests/unit/test_target_purge.py
+  s_625ed20cba13d5::t_bea615236f1a59 1-53
+tests/unit/test_target_schema_migrations.py
+  s_625ed20cba13d5::t_2772e6c4daf3a3 1-151
+tests/unit/test_tenant_integration.py
+  s_625ed20cba13d5::t_fc931545376a35 1-535
+tests/unit/test_test_issuer_confinement.py
+  s_625ed20cba13d5::t_d79bcf6ffd67df 1-103
+tests/unit/test_tool_capability_probe.py
+  s_625ed20cba13d5::t_d0408e18e5ce57 1-196
+tests/unit/test_tool_catalog.py
+  s_625ed20cba13d5::t_b9ae541a1055e4 1-522
+tests/unit/test_tool_output_security.py
+  s_625ed20cba13d5::t_fd7f15e291e99d 1-24
+tests/unit/test_tool_probe_route.py
+  s_625ed20cba13d5::t_1a1103bd1cbe16 1-144
+tests/unit/test_trajectory_evaluation.py
+  s_625ed20cba13d5::t_4a119b057eb658 1-46
+tests/unit/test_transitions.py
+  s_625ed20cba13d5::t_1c97fad784bf7a 1-127
+tests/unit/test_verification.py
+  s_625ed20cba13d5::t_3f6f0dcef4d638 1-140
+tests/unit/test_verifier_service.py
+  s_625ed20cba13d5::t_7d06baf0a11ca2 1-59
+tests/unit/test_workflow.py
+  s_625ed20cba13d5::t_9381c748afa465 1-101
+tests/unit/test_workspace_adapter.py
+  s_625ed20cba13d5::t_5958282252b02b 1-63
+tests/unit/test_workspace_attestation.py
+  s_625ed20cba13d5::t_74a53ebe34258e 1-151
+tests/unit/test_workspace_candidate.py
+  s_625ed20cba13d5::t_beba0c8c4ac94f 1-72
+tests/unit/test_workspace_contracts.py
+  s_625ed20cba13d5::t_db0fa45f0aa92f 1-505
+tests/unit/test_workspace_eligibility.py
+  s_625ed20cba13d5::t_4d317bf695a296 1-129
+tests/unit/test_workspace_fixture.py
+  s_625ed20cba13d5::t_331b322d7bf86f 1-62
+tests/unit/test_workspace_input_material.py
+  s_625ed20cba13d5::t_b349262183111c 1-102
+tests/unit/test_workspace_rehydration_coordinator.py
+  s_625ed20cba13d5::t_513bc305dd8ca0 1-132
+tests/unit/test_workspace_sandbox_service.py
+  s_625ed20cba13d5::t_63399a8fe3cb6e 1-210
+tests/unit/test_workspace_validation.py
+  s_625ed20cba13d5::t_ee9746af9f92f0 1-97
+tools/__init__.py
+  s_625ed20cba13d5::t_ffabb320d962d1 1
+tools/actuator_crash_fixture.py
+  s_625ed20cba13d5::t_2cc9e4596ccfab 1-157
+tools/antigravity_platform_probes.py
+  s_625ed20cba13d5::t_292616cfdff0af 1-247
+tools/bootstrap_database.py
+  s_625ed20cba13d5::t_aac5cb0b316a9d 1-1687
+tools/bootstrap_local_connected_admin.py
+  s_625ed20cba13d5::t_f1cf028201888d 1-37
+tools/bootstrap_local_database.py
+  s_625ed20cba13d5::t_b69e07f0bcb369 1-709
+tools/check_agent_manifests.py
+  s_625ed20cba13d5::t_b57c45c8719289 1-283
+tools/check_approval_audience.py
+  s_625ed20cba13d5::t_b43203ef22037d 1-61
+tools/check_architecture.py
+  s_625ed20cba13d5::t_d6b0d6539c75dc 1-207
+tools/check_capability_parity.py
+  s_625ed20cba13d5::t_417dcd50d07636 1-140
+tools/check_challenge_coverage.py
+  s_625ed20cba13d5::t_d7ca03d70457eb 1-83
+tools/check_cloudbuild.py
+  s_625ed20cba13d5::t_ab6f4bfe5bf2a7 1-95
+tools/check_contracts.py
+  s_625ed20cba13d5::t_908579b7d96b71 1-176
+tools/check_docs.py
+  s_625ed20cba13d5::t_1a30fc8e56ead9 1-172
+tools/check_liaison_manifest_contract.py
+  s_625ed20cba13d5::t_4df5c0aebc86ad 1-411
+tools/check_relay_contract.py
+  s_625ed20cba13d5::t_d9cea7d214b2e0 1-201
+tools/check_ruhu_profile.py
+  s_625ed20cba13d5::t_7e9e54e5a6bfb4 1-25
+tools/cleanup_demo.py
+  s_625ed20cba13d5::t_ed1e49026d0ed1 1-215
+tools/configure_agent_iap.py
+  s_625ed20cba13d5::t_868fd3106cf9eb 1-193
+tools/console_demo_seed.py
+  s_625ed20cba13d5::t_7dfac67ef3aa14 1-388
+tools/deploy_agent_platform.py
+  s_625ed20cba13d5::t_c4ed1162f01572 1-406
+tools/deploy_release.py
+  s_625ed20cba13d5::t_cd7b6d60293fc5 1-820
+tools/freeze_submission.py
+  s_625ed20cba13d5::t_ce3422e31dfddf 1-247
+tools/generate_alert_hash_vectors.py
+  s_625ed20cba13d5::t_dfca5d7155705c 1-134
+tools/generate_brand_assets.py
+  s_625ed20cba13d5::t_67f333ff921b62 1-315
+tools/generate_repository_map.py
+  s_625ed20cba13d5::t_04164c3e92bb06 1-99
+tools/load_first_party_skill_packs.py
+  s_625ed20cba13d5::t_730feb82ef8b67 1-1234
+tools/optimize_agent_instructions.py
+  s_625ed20cba13d5::t_7415b54fae391c 1-58
+tools/promote_release.py
+  s_625ed20cba13d5::t_9a3d942cdc6202 1-259
+tools/qualify_antigravity.py
+  s_625ed20cba13d5::t_6be3ea7a923743 1-229
+tools/release_admin.py
+  s_625ed20cba13d5::t_16fbb1f4a01764 1-583
+tools/run_adk_workflow_pilot_eval.py
+  s_625ed20cba13d5::t_72deea332df317 1-95
+tools/run_agent_evals.py
+  s_625ed20cba13d5::t_9701760c01270f 1-216
+tools/run_agent_trajectory_evals.py
+  s_625ed20cba13d5::t_482d0a03302a59 1-77
+tools/run_gcp_scenarios.py
+  s_625ed20cba13d5::t_129000de8b35fb 1-754
+tools/run_model_quality_evals.py
+  s_625ed20cba13d5::t_2fdd53ddd2af16 1-293
+tools/run_platform_preflight.py
+  s_625ed20cba13d5::t_1dd053bb9316f2 1-155
+tools/run_platform_probes.py
+  s_625ed20cba13d5::t_940e2a23246846 1-769
+tools/run_release_scenarios.py
+  s_625ed20cba13d5::t_185e35e34e612c 1-200
+tools/runtime_dispatch_crash_fixture.py
+  s_625ed20cba13d5::t_ed59acf9ceaebd 1-120
+tools/runtime_scenario_jobs.py
+  s_625ed20cba13d5::t_2b7c2e580a8052 1-436
+tools/scenario_jobs.py
+  s_625ed20cba13d5::t_a2d86161a7cbc0 1-376
+tools/scenario_oracles.py
+  s_625ed20cba13d5::t_0c5009b19f2b49 1-614
+tools/scripted_scenario_contracts.py
+  s_625ed20cba13d5::t_f951082b96fe7e 1-44
+tools/scripted_scenario_jobs.py
+  s_625ed20cba13d5::t_d461909be57397 1-530
+tools/security_scenario_jobs.py
+  s_625ed20cba13d5::t_c362f2df5a8ad4 1-309
+tools/seed_demo.py
+  s_625ed20cba13d5::t_61aad67a63487a 1-861
+tools/target_schema_migrations.py
+  s_625ed20cba13d5::t_0a48cc62dfaa3b 1-545
+tools/workspace_fixture.py
+  s_625ed20cba13d5::t_8f08da09cd7c9a 1-133
+uv.lock
+  s_625ed20cba13d5::t_470e7b52180722 1-1771
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "28ffbd09938c9ecc2fd43069ff5b7be4d2ac8b71",
+  "prompts": {},
+  "sessions": {
+    "s_625ed20cba13d5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "08fb3abf-9b51-41b4-b5bb-cdc3d792f92b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
