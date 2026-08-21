@@ -209,8 +209,6 @@ def deploy(
         env_vars: dict[str, str] = {
             "SOLVAN_ENVIRONMENT": plan.environment,
             "GOOGLE_GENAI_USE_VERTEXAI": "true",
-            "GOOGLE_CLOUD_PROJECT": plan.project_id,
-            "GOOGLE_CLOUD_LOCATION": plan.model_location,
             "SOLVAN_MODEL_ENDPOINT": plan.model_endpoint,
             "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
             "OTEL_SEMCONV_STABILITY_OPT_IN": "gen_ai_latest_experimental",

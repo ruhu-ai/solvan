@@ -132,3 +132,9 @@ def test_every_deployed_import_has_a_pinned_or_transitive_provider() -> None:
         "the deployed Agent Runtime closure imports modules with no provider in "
         f"apps/agents/runtime-requirements.txt: {uncovered}"
     )
+
+
+def test_agent_runtime_serialization_dependency_is_explicitly_pinned() -> None:
+    pins = _pinned()
+
+    assert pins["cloudpickle"] == metadata.version("cloudpickle")

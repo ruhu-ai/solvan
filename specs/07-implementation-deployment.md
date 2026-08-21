@@ -139,6 +139,12 @@ solvan/
 
 Dependencies are exact-locked. A release manifest records resolved package,
 model, agent resource, policy, Armor template, and Terraform versions.
+The Agent Runtime requirements explicitly pin its serialization transport
+dependency (`cloudpickle`) rather than relying on SDK requirement inference.
+Runtime deployment never supplies platform-reserved environment variables,
+including `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION`; Agent Runtime
+injects those values. Solvan-owned routing and policy values use `SOLVAN_*`
+names, while the documented Agent Runtime telemetry variables remain explicit.
 
 ### 4.1 Cloud environment model
 

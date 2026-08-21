@@ -180,8 +180,6 @@ def test_read_agent_receives_fixed_identity_and_broker_configuration() -> None:
     assert client.calls[0]["config"]["env_vars"] == {
         "SOLVAN_ENVIRONMENT": "staging",
         "GOOGLE_GENAI_USE_VERTEXAI": "true",
-        "GOOGLE_CLOUD_PROJECT": "solvan-demo",
-        "GOOGLE_CLOUD_LOCATION": "eu",
         "SOLVAN_MODEL_ENDPOINT": "https://aiplatform.eu.rep.googleapis.com",
         "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
         "OTEL_SEMCONV_STABILITY_OPT_IN": "gen_ai_latest_experimental",
@@ -190,6 +188,10 @@ def test_read_agent_receives_fixed_identity_and_broker_configuration() -> None:
         "SOLVAN_EVIDENCE_AUDIENCE": "https://evidence.example",
         "SOLVAN_AGENT_KEY": "infrastructure-agent",
     }
+
+    env = client.calls[0]["config"]["env_vars"]
+    assert "GOOGLE_CLOUD_PROJECT" not in env
+    assert "GOOGLE_CLOUD_LOCATION" not in env
 
 
 def test_execution_agent_receives_only_the_actuator_endpoint() -> None:
