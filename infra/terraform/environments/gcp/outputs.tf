@@ -72,8 +72,8 @@ output "release_images" {
 output "scenario_identities" {
   description = "Non-agent, mutually asymmetric fault-drill identities; null unless the isolated drill is enabled."
   value = {
-    injector = var.fault_drill_enabled ? google_service_account.workload["injector"].email : null
-    oracle   = var.fault_drill_enabled ? google_service_account.workload["oracle"].email : null
+    injector = var.fault_drill_enabled ? try(google_service_account.workload["injector"].email, null) : null
+    oracle   = var.fault_drill_enabled ? try(google_service_account.workload["oracle"].email, null) : null
   }
 }
 
@@ -91,7 +91,7 @@ output "service_uris" {
       antigravity_workspace = google_cloud_run_v2_service.antigravity_workspace[0].uri
     } : {},
     var.github_release_enabled ? {
-      github_provider = google_cloud_run_v2_service.service["github_provider"].uri
+      github_provider = try(google_cloud_run_v2_service.service["github_provider"].uri, null)
     } : {},
   )
   sensitive = true
@@ -104,7 +104,7 @@ output "workspace_sandbox" {
     uri                 = google_cloud_run_v2_service.workspace_sandbox.uri
     region              = var.region
     service_account     = try(google_service_account.workload["workspace_sandbox"].email, null)
-    coordinator_account = google_service_account.workload["coordinator"].email
+    coordinator_account = try(google_service_account.workload["coordinator"].email, null)
     revision            = var.workspace_sandbox_revision
     network_policy      = "nested-sandbox-no-egress"
   }
@@ -115,8 +115,8 @@ output "github_release_provider" {
   description = "Conditional GitHub App release-provider service and policy binding."
   value = {
     enabled         = var.github_release_enabled
-    service_name    = var.github_release_enabled ? google_cloud_run_v2_service.service["github_provider"].name : null
-    uri             = var.github_release_enabled ? google_cloud_run_v2_service.service["github_provider"].uri : null
+    service_name    = var.github_release_enabled ? try(google_cloud_run_v2_service.service["github_provider"].name, null) : null
+    uri             = var.github_release_enabled ? try(google_cloud_run_v2_service.service["github_provider"].uri, null) : null
     service_account = try(google_service_account.workload["github_provider"].email, null)
     repository_id   = var.github_repository_id
     policy          = "coordinator-only; signed-webhook; approval-bound-merge"
@@ -131,7 +131,7 @@ output "antigravity_workspace_provider" {
     service_name                     = var.antigravity_demo_enabled ? google_cloud_run_v2_service.antigravity_workspace[0].name : null
     uri                              = var.antigravity_demo_enabled ? google_cloud_run_v2_service.antigravity_workspace[0].uri : null
     service_account                  = try(google_service_account.workload["antigravity"].email, null)
-    coordinator_service_account      = google_service_account.workload["coordinator"].email
+    coordinator_service_account      = try(google_service_account.workload["coordinator"].email, null)
     provider_revision                = var.antigravity_provider_revision
     implementation_sdk               = "google-antigravity"
     implementation_sdk_version       = "0.1.10"
@@ -147,7 +147,7 @@ output "synthetic_fixture_attester" {
   description = "Optional isolated signer and exact KMS/public-fixture bindings."
   value = var.antigravity_demo_enabled ? {
     uri             = google_cloud_run_v2_service.fixture_attester[0].uri
-    service_account = google_service_account.workload["fixture_attester"].email
+    service_account = try(google_service_account.workload["fixture_attester"].email, null)
     kms_key_version = google_kms_crypto_key_version.synthetic_attester[0].name
     fixture_prefix  = "gs://${google_storage_bucket.runtime.name}/${var.organization_id}/${var.scope_project_id}/${var.environment_id}/fixtures/payments-leak-v1/"
   } : null
@@ -233,15 +233,15 @@ output "registered_endpoints" {
     verifier              = google_agent_registry_service.verifier_endpoint.registry_resource
     payments              = var.fault_drill_enabled ? google_agent_registry_service.payments_endpoint[0].registry_resource : null
     monitoring            = google_agent_registry_service.monitoring_endpoint.registry_resource
-    aiplatform            = google_agent_registry_service.runtime_dependencies["aiplatform"].registry_resource
-    aiplatform_mtls       = google_agent_registry_service.runtime_dependencies["aiplatform_mtls"].registry_resource
-    aiplatform_rep        = google_agent_registry_service.runtime_dependencies["aiplatform_rep"].registry_resource
-    aiplatform_eu_rep     = google_agent_registry_service.runtime_dependencies["aiplatform_eu_rep"].registry_resource
-    resource_manager      = google_agent_registry_service.runtime_dependencies["resource_manager"].registry_resource
-    resource_manager_mtls = google_agent_registry_service.runtime_dependencies["resource_manager_mtls"].registry_resource
-    logging               = google_agent_registry_service.runtime_dependencies["logging"].registry_resource
-    telemetry             = google_agent_registry_service.runtime_dependencies["telemetry"].registry_resource
-    telemetry_mtls        = google_agent_registry_service.runtime_dependencies["telemetry_mtls"].registry_resource
+    aiplatform            = try(google_agent_registry_service.runtime_dependencies["aiplatform"].registry_resource, null)
+    aiplatform_mtls       = try(google_agent_registry_service.runtime_dependencies["aiplatform_mtls"].registry_resource, null)
+    aiplatform_rep        = try(google_agent_registry_service.runtime_dependencies["aiplatform_rep"].registry_resource, null)
+    aiplatform_eu_rep     = try(google_agent_registry_service.runtime_dependencies["aiplatform_eu_rep"].registry_resource, null)
+    resource_manager      = try(google_agent_registry_service.runtime_dependencies["resource_manager"].registry_resource, null)
+    resource_manager_mtls = try(google_agent_registry_service.runtime_dependencies["resource_manager_mtls"].registry_resource, null)
+    logging               = try(google_agent_registry_service.runtime_dependencies["logging"].registry_resource, null)
+    telemetry             = try(google_agent_registry_service.runtime_dependencies["telemetry"].registry_resource, null)
+    telemetry_mtls        = try(google_agent_registry_service.runtime_dependencies["telemetry_mtls"].registry_resource, null)
   }
 }
 
@@ -257,18 +257,18 @@ output "gateway_policy_resources" {
 output "target_product_channel_services" {
   description = "Target-only channel endpoints; presence is not a deployment qualification receipt."
   value = var.target_product_enabled ? {
-    mcp_facade = google_cloud_run_v2_service.service["mcp_facade"].uri
-    slack      = var.slack_liaison_enabled ? google_cloud_run_v2_service.service["slack_liaison"].uri : null
-    discord    = var.discord_liaison_enabled ? google_cloud_run_v2_service.service["discord_liaison"].uri : null
-    email      = var.email_liaison_enabled ? google_cloud_run_v2_service.service["email_liaison"].uri : null
+    mcp_facade = try(google_cloud_run_v2_service.service["mcp_facade"].uri, null)
+    slack      = var.slack_liaison_enabled ? try(google_cloud_run_v2_service.service["slack_liaison"].uri, null) : null
+    discord    = var.discord_liaison_enabled ? try(google_cloud_run_v2_service.service["discord_liaison"].uri, null) : null
+    email      = var.email_liaison_enabled ? try(google_cloud_run_v2_service.service["email_liaison"].uri, null) : null
   } : null
 }
 
 output "email_relay_expected_invokers" {
   description = "Exact Solvan principals the private email relay must allow: API sends enrollment messages; Email Liaison sends governed answers."
   value = var.target_product_enabled && var.email_liaison_enabled ? [
-    google_service_account.workload["api"].email,
-    google_service_account.workload["email_liaison"].email,
+    try(google_service_account.workload["api"].email, null),
+    try(google_service_account.workload["email_liaison"].email, null),
   ] : []
 }
 
@@ -276,7 +276,7 @@ output "liaison_registry_binding" {
   description = "Target-only Agent Registry binding for the optional Liaison surface."
   value = var.target_product_enabled ? {
     registry_resource = google_agent_registry_service.liaison_endpoint[0].registry_resource
-    service_url       = google_cloud_run_v2_service.service["api"].uri
+    service_url       = try(google_cloud_run_v2_service.service["api"].uri, null)
     model             = "gemini-3.6-flash"
     model_location    = "eu"
   } : null
