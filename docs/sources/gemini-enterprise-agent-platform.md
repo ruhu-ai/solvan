@@ -52,6 +52,10 @@ Design consequences:
 Verified facts and decisions:
 
 - Agent Runtime deployment currently supports Python.
+- Object deployment's `extra_packages` accepts local source directories and
+  preserves the supplied path in its uploaded dependency archive. Solvan
+  changes into the repository `src` directory and supplies relative `solvan/`
+  so Runtime extracts an importable top-level package rather than a host path.
 - ADK has full platform integration; use ADK rather than adding Temporal.
 - Long-running query jobs can run for up to seven days. Solvan Reliability Cases
   can exceed that, so each job is one bounded case-step attempt.

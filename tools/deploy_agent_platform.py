@@ -14,6 +14,7 @@ import json
 import re
 import sys
 import tempfile
+from contextlib import chdir
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -233,38 +234,43 @@ def deploy(
             env_vars["SOLVAN_WORKSPACE_TOOL_BROKER_URL"] = cast(str, workspace_tool_broker_url)
             env_vars["SOLVAN_WORKSPACE_TOOL_BROKER_AUDIENCE"] = cast(str, workspace_tool_broker_url)
             env_vars["SOLVAN_AGENT_KEY"] = target.agent_key
-        remote = client.create(
-            agent=wrapped_agent,
-            config={
-                "display_name": target.display_name,
-                "description": (
-                    f"Solvan {target.agent_key} release {plan.release_version}; "
-                    f"ceiling={target.permission_ceiling}"
-                ),
-                "identity_type": IdentityType.AGENT_IDENTITY,
-                "agent_gateway_config": {
-                    "agent_to_anywhere_config": {
-                        "agent_gateway": plan.egress_agent_gateway,
+        # The SDK preserves the supplied path inside dependencies.tar.gz. An
+        # absolute ROOT/src/solvan path therefore extracts under its host path
+        # and is not importable as `solvan` in Runtime. Package from ROOT/src so
+        # the archive has exactly `solvan/` at its top level.
+        with chdir(ROOT / "src"):
+            remote = client.create(
+                agent=wrapped_agent,
+                config={
+                    "display_name": target.display_name,
+                    "description": (
+                        f"Solvan {target.agent_key} release {plan.release_version}; "
+                        f"ceiling={target.permission_ceiling}"
+                    ),
+                    "identity_type": IdentityType.AGENT_IDENTITY,
+                    "agent_gateway_config": {
+                        "agent_to_anywhere_config": {
+                            "agent_gateway": plan.egress_agent_gateway,
+                        },
+                        "client_to_agent_config": {
+                            "agent_gateway": plan.ingress_agent_gateway,
+                        },
                     },
-                    "client_to_agent_config": {
-                        "agent_gateway": plan.ingress_agent_gateway,
+                    "staging_bucket": plan.staging_bucket,
+                    "requirements": str(REQUIREMENTS_PATH),
+                    "extra_packages": ["solvan"],
+                    "env_vars": env_vars,
+                    "agent_framework": "google-adk",
+                    "python_version": "3.12",
+                    "min_instances": 0,
+                    "max_instances": 2,
+                    "labels": {
+                        "app": "solvan",
+                        "agent": target.agent_key,
+                        "release": plan.release_version.replace(".", "-")[:63],
                     },
                 },
-                "staging_bucket": plan.staging_bucket,
-                "requirements": str(REQUIREMENTS_PATH),
-                "extra_packages": [str(ROOT / "src" / "solvan")],
-                "env_vars": env_vars,
-                "agent_framework": "google-adk",
-                "python_version": "3.12",
-                "min_instances": 0,
-                "max_instances": 2,
-                "labels": {
-                    "app": "solvan",
-                    "agent": target.agent_key,
-                    "release": plan.release_version.replace(".", "-")[:63],
-                },
-            },
-        )
+            )
         results.append(_deployment_result(target, remote, plan=plan))
     return results
 

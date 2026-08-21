@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
 import pytest
 
-from tools.deploy_agent_platform import build_plan, deploy
+from tools.deploy_agent_platform import ROOT, build_plan, deploy
 
 
 class FakeAgentEngineClient:
@@ -14,7 +15,7 @@ class FakeAgentEngineClient:
         self.calls: list[dict[str, Any]] = []
 
     def create(self, *, agent: Any, config: dict[str, Any]) -> Any:
-        self.calls.append({"agent": agent, "config": config})
+        self.calls.append({"agent": agent, "config": config, "cwd": Path.cwd()})
         agent_key = str(config["labels"]["agent"])
         engine_id = agent_key.replace("-", "_")
         gateway_config = config["agent_gateway_config"]
@@ -111,6 +112,7 @@ def test_deploy_wraps_adk_agent_and_requires_attested_identity() -> None:
         apply=True,
     )
     client = FakeAgentEngineClient()
+    original_cwd = Path.cwd()
 
     results = deploy(
         plan,
@@ -124,6 +126,9 @@ def test_deploy_wraps_adk_agent_and_requires_attested_identity() -> None:
     assert results[0]["iam_principal"].startswith("principal://agents.global.project-")
     assert client.calls[0]["config"]["identity_type"].value == "AGENT_IDENTITY"
     assert client.calls[0]["config"]["min_instances"] == 0
+    assert client.calls[0]["config"]["extra_packages"] == ["solvan"]
+    assert client.calls[0]["cwd"] == ROOT / "src"
+    assert Path.cwd() == original_cwd
     assert "agent_gateway_config" in client.calls[0]["config"]
     assert client.calls[0]["agent"]._tmpl_attrs["app"].name == "solvan_incident_supervisor"
 
