@@ -56,8 +56,9 @@ competition slice. The section status matrix is:
   pipeline, changed release annotations, and direct job invocation without
   Cloud Deploy resource bindings;
 - Terraform grants `roles/clouddeploy.approver` only to configured individual
-  `user:` principals on the publication target and grants no release identity
-  that role;
+  `user:` principals on the dedicated catalog delivery pipeline, with Google's
+  rollout-target IAM condition restricted to the publication target, and
+  grants no release identity that role;
 - every Cloud Run service and job enables the default Binary Authorization
   policy, which requires the Google `built-by-cloud-build` attestor.
 

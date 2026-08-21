@@ -44,14 +44,20 @@ resource "google_project_iam_member" "catalog_publication_deploy_reader" {
   member  = google_service_account.workload["migration"].member
 }
 
-resource "google_clouddeploy_target_iam_member" "catalog_approver" {
+resource "google_clouddeploy_delivery_pipeline_iam_member" "catalog_approver" {
   for_each = var.approver_principals
 
   project  = var.project_id
   location = var.region
-  name     = google_clouddeploy_target.catalog_publication.name
+  name     = google_clouddeploy_delivery_pipeline.catalog.name
   role     = "roles/clouddeploy.approver"
   member   = each.value
+
+  condition {
+    title       = "Approve catalog publication only"
+    description = "Restricts catalog approval to the publication target in the dedicated catalog pipeline."
+    expression  = "api.getAttribute(\"clouddeploy.googleapis.com/rolloutTarget\", \"\") == \"${google_clouddeploy_target.catalog_publication.name}\""
+  }
 }
 
 resource "google_clouddeploy_delivery_pipeline_iam_member" "catalog_releaser" {
@@ -75,7 +81,7 @@ resource "google_service_account_iam_member" "catalog_releaser_act_as" {
 resource "google_service_account_iam_member" "catalog_cloud_build_token" {
   service_account_id = google_service_account.workload["catalog_deploy"].name
   role               = "roles/iam.serviceAccountTokenCreator"
-  member              = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+  member             = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
 }
 
 resource "google_service_account_iam_member" "pubsub_alert_ingress_push_token" {

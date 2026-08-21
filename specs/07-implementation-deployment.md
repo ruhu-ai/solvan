@@ -336,10 +336,11 @@ ordered custom targets. `catalog-evaluation` runs the deterministic catalog and
 network-policy evaluator under a dedicated service account. Only a successful
 evaluation rollout may be promoted to `catalog-publication`, whose target has
 `requireApproval=true`. Individual human principals receive
-`roles/clouddeploy.approver` only for that target; the build, evaluation,
-release, migration, Agent, and Cloud Deploy execution identities receive no
-approval permission. The publication action runs only after Google records the
-rollout as approved.
+`roles/clouddeploy.approver` on the dedicated catalog delivery pipeline with
+Google's `clouddeploy.googleapis.com/rolloutTarget` IAM condition restricted to
+the publication target; the build, evaluation, release, migration, Agent, and
+Cloud Deploy execution identities receive no approval permission. The
+publication action runs only after Google records the rollout as approved.
 
 The catalog-publication release job receives the exact immutable resource name
 for all six Runtime agents together with their evaluated tool bindings. It

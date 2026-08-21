@@ -18,6 +18,7 @@ known limitations immediately before submission.
 - [Cloud Deploy overview](https://docs.cloud.google.com/deploy/docs/overview)
 - [Cloud Deploy custom targets](https://docs.cloud.google.com/deploy/docs/custom-targets)
 - [Cloud Deploy approvals](https://docs.cloud.google.com/deploy/docs/promote-release)
+- [Cloud Deploy fine-grained IAM](https://docs.cloud.google.com/deploy/docs/securing/iam)
 - [Cloud Deploy service accounts](https://docs.cloud.google.com/deploy/docs/cloud-deploy-service-account)
 - [Binary Authorization attestations](https://docs.cloud.google.com/binary-authorization/docs/attestations)
 - [Binary Authorization for Cloud Run](https://docs.cloud.google.com/binary-authorization/docs/run/enabling-binauthz-cloud-run)
@@ -29,8 +30,11 @@ Verified facts and decisions:
 - Cloud Deploy custom targets support arbitrary outputs while retaining ordered
   promotion, approvals, rollbacks, Google resource state, and Audit Logs.
 - A target with `requireApproval=true` admits approval only from a principal
-  holding `roles/clouddeploy.approver`; Solvan scopes that role to the catalog
-  publication target and uses only individual human principals.
+  holding `roles/clouddeploy.approver`; Google documents granting that role on
+  the delivery pipeline with the
+  `clouddeploy.googleapis.com/rolloutTarget` condition for target-specific
+  approval. Solvan applies that pattern to its dedicated catalog pipeline and
+  publication target, using only individual human principals.
 - Cloud Deploy recommends a dedicated execution service account with
   `roles/clouddeploy.jobRunner` rather than the broad default Compute identity.
 - Binary Authorization for Cloud Run verifies attestations on service and job

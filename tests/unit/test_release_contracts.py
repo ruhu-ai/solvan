@@ -271,7 +271,13 @@ def test_catalog_release_uses_google_native_approval_and_supply_chain_controls()
     assert "require_approval = false" in cloud_deploy
     assert "require_approval = true" in cloud_deploy
     assert 'role     = "roles/clouddeploy.approver"' in iam
-    assert "google_clouddeploy_target.catalog_publication.name" in iam
+    approver = iam.split(
+        'resource "google_clouddeploy_delivery_pipeline_iam_member" "catalog_approver"',
+        maxsplit=1,
+    )[1].split("\n}\n", maxsplit=1)[0]
+    assert "google_clouddeploy_delivery_pipeline.catalog.name" in approver
+    assert 'api.getAttribute(\\"clouddeploy.googleapis.com/rolloutTarget\\"' in approver
+    assert "google_clouddeploy_target.catalog_publication.name" in approver
     assert 'role     = "roles/run.jobsExecutorWithOverrides"' in cloud_run
     assert 'member   = google_service_account.workload["catalog_deploy"].member' in cloud_run
     assert "is_locked        = true" in storage
