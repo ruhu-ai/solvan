@@ -29,6 +29,10 @@ Verified facts and decisions:
 
 - Cloud Deploy custom targets support arbitrary outputs while retaining ordered
   promotion, approvals, rollbacks, Google resource state, and Audit Logs.
+- Cloud Deploy still requires every custom-target release source to contain a
+  Skaffold configuration. When the registered custom target type defines the
+  actions, Google's quickstart uses only `apiVersion: skaffold/v4beta7` and
+  `kind: Config`; Solvan packages that minimal file with its subject descriptor.
 - A target with `requireApproval=true` admits approval only from a principal
   holding `roles/clouddeploy.approver`; Google documents granting that role on
   the delivery pipeline with the

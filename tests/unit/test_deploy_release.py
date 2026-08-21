@@ -345,3 +345,76 @@ def test_runtime_receipt_rejects_model_location_drift() -> None:
             },
             release_version="0.1.0",
         )
+
+
+def test_catalog_release_supplies_minimal_skaffold_for_custom_targets(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = build_plan(
+        project_id="solvan-demo",
+        deployment_id="demo-20260821",
+        release_version="0.1.0",
+        backend_config=tmp_path / "backend",
+        base_tfvars=tmp_path / "tfvars",
+        work_dir=tmp_path / "release",
+        remote="origin",
+        calibration_receipt_uri=None,
+        calibration_receipt_hash=None,
+        apply=False,
+    )
+    publication_target = "solvan-demo-catalog-publication"
+    rollout_calls = 0
+
+    monkeypatch.setattr(deploy_release, "_run_allowing", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        deploy_release,
+        "_wait_catalog_evaluation",
+        lambda **_kwargs: {"name": "evaluation-rollout"},
+    )
+
+    def fake_rollouts(**_kwargs: object) -> list[dict[str, str]]:
+        nonlocal rollout_calls
+        rollout_calls += 1
+        if rollout_calls == 1:
+            return []
+        return [
+            {
+                "targetId": publication_target,
+                "approvalState": "NEEDS_APPROVAL",
+                "name": "projects/solvan-demo/locations/europe-west1/rollouts/publication",
+            }
+        ]
+
+    monkeypatch.setattr(deploy_release, "_catalog_rollouts", fake_rollouts)
+
+    def fake_run(arguments: list[str], **_kwargs: object) -> str:
+        if arguments[1:4] == ["deploy", "releases", "create"]:
+            source_argument = next(item for item in arguments if item.startswith("--source="))
+            source = Path(source_argument.split("=", maxsplit=1)[1])
+            assert (source / "skaffold.yaml").read_text(encoding="utf-8") == (
+                "apiVersion: skaffold/v4beta7\nkind: Config\n"
+            )
+            assert json.loads((source / "release.json").read_text(encoding="utf-8")) == {
+                "catalog_subject_hash": "sha256:" + "a" * 64,
+                "schema_version": 1,
+            }
+        return ""
+
+    monkeypatch.setattr(deploy_release, "_run", fake_run)
+    result = deploy_release.start_catalog_delivery(
+        plan=plan,
+        commit="b" * 40,
+        outputs={
+            "catalog_delivery": {
+                "value": {
+                    "delivery_pipeline": "solvan-demo-catalog",
+                    "evaluation_target": "solvan-demo-catalog-evaluation",
+                    "publication_target": publication_target,
+                    "catalog_subject_hash": "sha256:" + "a" * 64,
+                    "network_policy_hash": "sha256:" + "c" * 64,
+                }
+            }
+        },
+    )
+
+    assert result["publication_approval_state"] == "NEEDS_APPROVAL"

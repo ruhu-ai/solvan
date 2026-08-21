@@ -342,6 +342,12 @@ the publication target; the build, evaluation, release, migration, Agent, and
 Cloud Deploy execution identities receive no approval permission. The
 publication action runs only after Google records the rollout as approved.
 
+Every catalog release source contains the exact subject descriptor and the
+minimal `skaffold/v4beta7` `Config` required by Google Cloud Deploy for custom
+targets whose render and deploy tasks are defined by the registered custom
+target type. The release harness creates both files in the same bounded source
+directory and invokes release creation before that directory is discarded.
+
 The catalog-publication release job receives the exact immutable resource name
 for all six Runtime agents together with their evaluated tool bindings. It
 independently reads the exact Cloud Deploy release and both rollout resources

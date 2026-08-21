@@ -782,6 +782,13 @@ def start_catalog_delivery(
     if existing is None:
         with tempfile.TemporaryDirectory(prefix="solvan-catalog-release-") as directory:
             source = Path(directory)
+            # Cloud Deploy requires a Skaffold configuration for every release,
+            # including custom targets whose tasks live in the CustomTargetType.
+            # Google's custom-target quickstart specifies this minimal file.
+            (source / "skaffold.yaml").write_text(
+                "apiVersion: skaffold/v4beta7\nkind: Config\n",
+                encoding="utf-8",
+            )
             _atomic_json(
                 source / "release.json",
                 {
