@@ -1,0 +1,19 @@
+tools/deploy_release.py
+  s_625ed20cba13d5::t_a10214b08ccae0 680-698
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "8479c6a075f695e293e46f1ecafb443641fc7672",
+  "prompts": {},
+  "sessions": {
+    "s_625ed20cba13d5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "08fb3abf-9b51-41b4-b5bb-cdc3d792f92b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
