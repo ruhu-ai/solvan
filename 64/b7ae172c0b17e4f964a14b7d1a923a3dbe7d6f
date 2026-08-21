@@ -1,0 +1,25 @@
+apps/payments_fixture/main.py
+  s_625ed20cba13d5::t_3168c4a319b264 9,16,110-115
+apps/payments_fixture/service.py
+  s_625ed20cba13d5::t_9c0e123c98af96 12,157,182-201,208
+infra/terraform/environments/gcp/cloud_run.tf
+  s_625ed20cba13d5::t_e2233ad564e2ea 594-598,610-614,1530-1534,1545-1550,1552-1556
+infra/terraform/environments/gcp/versions.tf
+  s_625ed20cba13d5::t_cf62fa6b4eb693 18-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "64b7ae172c0b17e4f964a14b7d1a923a3dbe7d6f",
+  "prompts": {},
+  "sessions": {
+    "s_625ed20cba13d5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "08fb3abf-9b51-41b4-b5bb-cdc3d792f92b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
