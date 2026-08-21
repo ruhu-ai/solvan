@@ -1,0 +1,26 @@
+infra/terraform/environments/gcp/locals.tf
+  s_36f3e3f4652fc0::t_b0384580e556d7 168-210
+specs/07-implementation-deployment.md
+  s_36f3e3f4652fc0::t_b0384580e556d7 337-340
+infra/terraform/environments/gcp/cloud_run.tf
+  s_36f3e3f4652fc0::t_b0384580e556d7 1690,2658,3047
+  s_36f3e3f4652fc0::t_2222a5626fe59c 1689,3048-3050
+tests/unit/test_release_contracts.py
+  s_36f3e3f4652fc0::t_b0384580e556d7 262-283
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "e74b36ce2b421f66b36829217713140e65e9128d",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
