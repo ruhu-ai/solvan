@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Any, Protocol
 
 from psycopg import Connection
+from psycopg.errors import UndefinedTable
 from psycopg_pool import PoolTimeout
 
 
@@ -153,6 +154,7 @@ class PaymentsFixtureService:
         self._pool = self._pool_factory()
         self._leaked: list[Connection[Any]] = []
         self._generation = 1
+        self._schema_ready = False
 
     @property
     def revision(self) -> str:
@@ -177,12 +179,33 @@ class PaymentsFixtureService:
             if row is None:  # pragma: no cover - row was inserted in this transaction
                 raise RuntimeError("pool generation state is missing")
             self._generation = int(row[0])
+        with self._lock:
+            self._schema_ready = True
+
+    def ensure_initialized(self) -> None:
+        """Read the generation now if startup could not.
+
+        The release creates this service before it runs the migration that
+        creates solvan.fixture_runtime_state, so a cold start can legitimately
+        find no table. Refusing to start there would mean the revision never
+        becomes ready and the release never reaches the migration at all, so the
+        read is retried here and the request is refused until it succeeds.
+        """
+
+        with self._lock:
+            if self._schema_ready:
+                return
+        try:
+            self.initialize_schema()
+        except UndefinedTable as error:
+            raise PaymentUnavailable("payments fixture schema is not migrated yet") from error
 
     def create_synthetic_payment(
         self, *, idempotency_key: str, payment_id: str, amount_minor: int
     ) -> PaymentResult:
         if amount_minor < 1:
             raise ValueError("synthetic amount must be positive")
+        self.ensure_initialized()
         try:
             connection = self._pool.getconn(timeout=self._checkout_timeout_seconds)
         except PoolTimeout as error:

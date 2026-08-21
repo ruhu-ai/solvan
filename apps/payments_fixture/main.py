@@ -6,13 +6,14 @@ import logging
 import os
 import uuid
 from collections.abc import AsyncIterator, Callable
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from datetime import UTC, datetime
 from typing import Any, Literal, cast
 
 from fastapi import FastAPI, Header, HTTPException, Request, status
 from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2 import id_token
+from psycopg.errors import UndefinedTable
 from pydantic import BaseModel, ConfigDict, Field
 
 from apps.payments_fixture.service import (
@@ -106,7 +107,12 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         service = service_factory() if service_factory is not None else _production_service()
-        service.initialize_schema()
+        # The migration creating solvan.fixture_runtime_state runs after this
+        # service is deployed. A cold start before it lands must not kill the
+        # container, or the revision never becomes ready and the release cannot
+        # reach the migration phase. The read is retried on first use.
+        with suppress(UndefinedTable):
+            service.initialize_schema()
         app.state.payments = service
         try:
             yield

@@ -591,7 +591,11 @@ resource "google_cloud_run_v2_service" "service" {
         }
       }
       dynamic "env" {
-        for_each = each.key == "api" && var.target_product_enabled ? [1] : []
+        for_each = (
+          each.key == "api" && var.target_product_enabled
+          && var.alert_cursor_signing_secret_name != "UNCONFIGURED"
+          ? [1] : []
+        )
         content {
           name = "SOLVAN_ALERT_CURSOR_SIGNING_KEY"
           value_source {
@@ -603,7 +607,11 @@ resource "google_cloud_run_v2_service" "service" {
         }
       }
       dynamic "env" {
-        for_each = each.key == "api" && var.target_product_enabled ? [1] : []
+        for_each = (
+          each.key == "api" && var.target_product_enabled
+          && var.channel_enrollment_hmac_secret_name != "UNCONFIGURED"
+          ? [1] : []
+        )
         content {
           name = "SOLVAN_CHANNEL_ENROLLMENT_HMAC_KEY"
           value_source {
@@ -1519,7 +1527,11 @@ resource "google_cloud_run_v2_service" "service" {
         }
       }
       dynamic "env" {
-        for_each = each.key == "github_provider" ? [1] : []
+        for_each = (
+          each.key == "github_provider"
+          && var.github_webhook_secret_name != "UNCONFIGURED"
+          ? [1] : []
+        )
         content {
           name = "SOLVAN_GITHUB_WEBHOOK_SECRET"
           value_source {
@@ -1530,8 +1542,18 @@ resource "google_cloud_run_v2_service" "service" {
           }
         }
       }
+      # Only when a token secret actually exists. This variable defaults to the
+      # UNCONFIGURED sentinel, and an unguarded reference asks Cloud Run to
+      # mount a secret literally named UNCONFIGURED, which fails the revision's
+      # secret access check and takes the whole service down. A deployment that
+      # mints installation tokens from the App private key needs no static
+      # token, and the reader treats it as optional.
       dynamic "env" {
-        for_each = each.key == "github_provider" ? [1] : []
+        for_each = (
+          each.key == "github_provider"
+          && var.github_installation_token_secret_name != "UNCONFIGURED"
+          ? [1] : []
+        )
         content {
           name = "SOLVAN_GITHUB_INSTALLATION_TOKEN"
           value_source {
