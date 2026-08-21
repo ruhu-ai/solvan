@@ -165,6 +165,11 @@ Rules:
 - empty allowed-agent, capability, connection, region, classification, or
   schema fields deny use;
 - an `APPROVED` revision requires approval and evaluation references;
+- production approval and evaluation references are exact Google Cloud Deploy
+  release/rollout resource names plus provider UIDs. The evaluation rollout
+  must have succeeded on the same frozen release before a distinct human may
+  approve the publication target; an opaque, caller-authored URI or a mutable
+  object name is not governance evidence;
 - `use_cases`, `anti_use_cases`, output semantics, retrieval controls, and
   failure classes are bounded, versioned data used by validators and
   evaluations; they are never concatenated into a privileged instruction

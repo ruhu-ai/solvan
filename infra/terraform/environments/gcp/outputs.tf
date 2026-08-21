@@ -51,6 +51,20 @@ output "release_jobs" {
   }
 }
 
+output "catalog_delivery" {
+  description = "Google Cloud Deploy governance boundary for catalog evaluation and publication."
+  value = {
+    delivery_pipeline     = google_clouddeploy_delivery_pipeline.catalog.name
+    evaluation_target     = google_clouddeploy_target.catalog_evaluation.name
+    publication_target    = google_clouddeploy_target.catalog_publication.name
+    catalog_subject_hash  = local.catalog_release_subject_hash
+    network_policy_hash   = var.catalog_network_policy_hash
+    evidence_bucket       = google_storage_bucket.catalog_release_evidence.name
+    retention_seconds     = var.catalog_release_evidence_retention_seconds
+    retention_policy_lock = true
+  }
+}
+
 output "scheduler_jobs" {
   description = "Automated work remains paused until a passing preflight is explicitly promoted."
   value = {

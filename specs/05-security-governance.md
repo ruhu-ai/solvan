@@ -794,6 +794,7 @@ trace ID, and timestamp.
 | unintended stage authority or ambiguous audit trail | exact stage-specific role, fresh step-up authentication, immutable principal attribution, and no inferred role overlap | `CCR-012` |
 | duplicate PR, merge, rollout, promotion, or rollback | durable prepared/issued/reconciling operation fence, provider idempotency key, lease, and reconcile-only crash recovery | `CCR-006`, `CCR-007` |
 | forged or substituted release artifact | registered builder identity/build definition, source tree, artifact subject, SBOM, provenance predicate, signer key-version verification | `CCR-008` |
+| forged catalog evaluation or self-approved publication | Cloud Deploy ordered evaluation/publication targets, successful evaluation rollout, target-scoped individual approver IAM, exact release/rollout UID re-read, Audit Log evidence | `PR-031`, `PR-040` |
 | producer or deployer promotes its own release | distinct verifier identity/process/artifact root, decision-bound profile, sole signed promotion receipt | `CCR-009` |
 | rollback to the wrong release or state | frozen predeploy candidate/assignment, fresh target observation, exact rollback decision and separate effect fence | `CCR-010` |
 | channel-authorized code change | status/deep-link-only card, opaque locator, no decision part kind or external callback authority | `CCR-011` |
@@ -825,3 +826,7 @@ trace ID, and timestamp.
     boolean never qualifies.
 14. A target governed code-change release satisfies every `CCR-*` adversarial
     acceptance case in specification 08 before it is production eligible.
+15. Catalog publication is impossible through direct Cloud Run Job execution,
+    an unapproved rollout, a failed or foreign evaluation rollout, a reused
+    resource name with another UID, or a build/evaluator/deployer identity that
+    attempts to approve its own publication.

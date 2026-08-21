@@ -732,25 +732,14 @@ variable "catalog_network_policy_hash" {
   }
 }
 
-variable "catalog_approval_ref" {
-  description = "Immutable approval receipt covering the exact Tool and profile catalog release."
-  type        = string
-  default     = "UNCONFIGURED"
+variable "catalog_release_evidence_retention_seconds" {
+  description = "Locked retention period for Google Cloud Deploy catalog evidence (seven years by default)."
+  type        = number
+  default     = 220752000
 
   validation {
-    condition     = var.catalog_approval_ref == "UNCONFIGURED" || length(trimspace(var.catalog_approval_ref)) >= 8
-    error_message = "catalog_approval_ref must be UNCONFIGURED or an immutable receipt reference."
-  }
-}
-
-variable "catalog_evaluation_ref" {
-  description = "Immutable evaluation receipt covering the exact Tool and profile catalog release."
-  type        = string
-  default     = "UNCONFIGURED"
-
-  validation {
-    condition     = var.catalog_evaluation_ref == "UNCONFIGURED" || length(trimspace(var.catalog_evaluation_ref)) >= 8
-    error_message = "catalog_evaluation_ref must be UNCONFIGURED or an immutable receipt reference."
+    condition     = var.catalog_release_evidence_retention_seconds >= 7776000
+    error_message = "catalog release evidence must be retained for at least 90 days."
   }
 }
 

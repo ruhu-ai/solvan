@@ -22,6 +22,35 @@ resource "google_storage_bucket" "evidence" {
   depends_on = [google_project_service.required["storage.googleapis.com"]]
 }
 
+# Cloud Deploy release artifacts are governance records. Bucket Lock makes the
+# retention policy irreversible; this bucket is intentionally separate from
+# ordinary operational evidence, which has a short lifecycle.
+resource "google_storage_bucket" "catalog_release_evidence" {
+  project                     = var.project_id
+  name                        = "${var.project_id}-${var.environment}-catalog-release-evidence"
+  location                    = var.region
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
+  force_destroy               = false
+
+  versioning {
+    enabled = true
+  }
+
+  retention_policy {
+    retention_period = var.catalog_release_evidence_retention_seconds
+    is_locked        = true
+  }
+
+  depends_on = [google_project_service.required["storage.googleapis.com"]]
+}
+
+resource "google_storage_bucket_iam_member" "catalog_deploy_evidence_user" {
+  bucket = google_storage_bucket.catalog_release_evidence.name
+  role   = "roles/storage.objectUser"
+  member = google_service_account.workload["catalog_deploy"].member
+}
+
 # Qualification receipts are immutable deployment evidence, not ordinary Alert
 # payloads. Only the independent verifier can create objects here.
 resource "google_storage_bucket" "direct_gcp_pilot_receipts" {

@@ -239,7 +239,11 @@ resource "google_cloud_run_v2_service" "console" {
   name                = "${local.prefix}-console"
   location            = var.region
   deletion_protection = var.deletion_protection
-  ingress             = "INGRESS_TRAFFIC_ALL"
+
+  binary_authorization {
+    use_default = true
+  }
+  ingress = "INGRESS_TRAFFIC_ALL"
 
   template {
     service_account = google_service_account.workload["console"].email
@@ -316,7 +320,11 @@ resource "google_cloud_run_v2_service" "service" {
   name                = "${local.prefix}-${replace(each.key, "_", "-")}"
   location            = var.region
   deletion_protection = var.deletion_protection
-  ingress             = "INGRESS_TRAFFIC_ALL"
+
+  binary_authorization {
+    use_default = true
+  }
+  ingress = "INGRESS_TRAFFIC_ALL"
 
   template {
     service_account = google_service_account.workload[each.value.service_account].email
@@ -1934,7 +1942,11 @@ resource "google_cloud_run_v2_service" "antigravity_workspace" {
   name                = "${local.prefix}-antigravity"
   location            = var.region
   deletion_protection = var.deletion_protection
-  ingress             = "INGRESS_TRAFFIC_ALL"
+
+  binary_authorization {
+    use_default = true
+  }
+  ingress = "INGRESS_TRAFFIC_ALL"
 
   template {
     service_account = google_service_account.workload["antigravity"].email
@@ -2027,7 +2039,11 @@ resource "google_cloud_run_v2_service" "workspace_sandbox" {
   location            = var.region
   launch_stage        = "BETA"
   deletion_protection = var.deletion_protection
-  ingress             = "INGRESS_TRAFFIC_ALL"
+
+  binary_authorization {
+    use_default = true
+  }
+  ingress = "INGRESS_TRAFFIC_ALL"
 
   template {
     service_account = google_service_account.workload["workspace_sandbox"].email
@@ -2147,7 +2163,11 @@ resource "google_cloud_run_v2_service" "fixture_attester" {
   name                = "${local.prefix}-fixture-attester"
   location            = var.region
   deletion_protection = var.deletion_protection
-  ingress             = "INGRESS_TRAFFIC_ALL"
+
+  binary_authorization {
+    use_default = true
+  }
+  ingress = "INGRESS_TRAFFIC_ALL"
 
   template {
     service_account = google_service_account.workload["fixture_attester"].email
@@ -2573,6 +2593,10 @@ resource "google_cloud_run_v2_job" "database_migration" {
   name                = "${local.prefix}-database-migration"
   deletion_protection = var.deletion_protection
 
+  binary_authorization {
+    use_default = true
+  }
+
   template {
     parallelism = 1
     task_count  = 1
@@ -2640,6 +2664,10 @@ resource "google_cloud_run_v2_job" "catalog_publication" {
   name                = "${local.prefix}-catalog-publication"
   deletion_protection = var.deletion_protection
 
+  binary_authorization {
+    use_default = true
+  }
+
   template {
     parallelism = 1
     task_count  = 1
@@ -2655,16 +2683,18 @@ resource "google_cloud_run_v2_job" "catalog_publication" {
 
         dynamic "env" {
           for_each = merge(local.release_job_environment, {
-            SOLVAN_AGENT_TOOL_BINDINGS_JSON      = jsonencode(local.governed_agent_tool_bindings)
-            SOLVAN_INCIDENT_SUPERVISOR_RESOURCE  = var.agent_runtime_resources.incident_supervisor
-            SOLVAN_EVIDENCE_AGENT_RESOURCE       = var.agent_runtime_resources.evidence_agent
-            SOLVAN_INFRASTRUCTURE_AGENT_RESOURCE = var.agent_runtime_resources.infrastructure_agent
-            SOLVAN_EXECUTION_AGENT_RESOURCE      = var.agent_runtime_resources.execution_agent
-            SOLVAN_VERIFICATION_AGENT_RESOURCE   = var.agent_runtime_resources.verification_agent
-            SOLVAN_WORKSPACE_AGENT_RESOURCE      = var.agent_runtime_resources.workspace_agent
-            SOLVAN_CATALOG_NETWORK_POLICY_HASH   = var.catalog_network_policy_hash
-            SOLVAN_CATALOG_APPROVAL_REF          = var.catalog_approval_ref
-            SOLVAN_CATALOG_EVALUATION_REF        = var.catalog_evaluation_ref
+            SOLVAN_AGENT_TOOL_BINDINGS_JSON        = jsonencode(local.governed_agent_tool_bindings)
+            SOLVAN_INCIDENT_SUPERVISOR_RESOURCE    = var.agent_runtime_resources.incident_supervisor
+            SOLVAN_EVIDENCE_AGENT_RESOURCE         = var.agent_runtime_resources.evidence_agent
+            SOLVAN_INFRASTRUCTURE_AGENT_RESOURCE   = var.agent_runtime_resources.infrastructure_agent
+            SOLVAN_EXECUTION_AGENT_RESOURCE        = var.agent_runtime_resources.execution_agent
+            SOLVAN_VERIFICATION_AGENT_RESOURCE     = var.agent_runtime_resources.verification_agent
+            SOLVAN_WORKSPACE_AGENT_RESOURCE        = var.agent_runtime_resources.workspace_agent
+            SOLVAN_CATALOG_NETWORK_POLICY_HASH     = var.catalog_network_policy_hash
+            SOLVAN_CATALOG_SUBJECT_HASH            = local.catalog_release_subject_hash
+            SOLVAN_CLOUD_DEPLOY_PIPELINE_ID        = local.catalog_delivery_pipeline_id
+            SOLVAN_CLOUD_DEPLOY_EVALUATION_TARGET  = local.catalog_evaluation_target_id
+            SOLVAN_CLOUD_DEPLOY_PUBLICATION_TARGET = local.catalog_publication_target_id
           })
           content {
             name  = env.key
@@ -2706,6 +2736,10 @@ resource "google_cloud_run_v2_job" "calibration_seed" {
   location            = var.region
   name                = "${local.prefix}-calibration-seed"
   deletion_protection = var.deletion_protection
+
+  binary_authorization {
+    use_default = true
+  }
 
   template {
     parallelism = 1
@@ -2783,6 +2817,10 @@ resource "google_cloud_run_v2_job" "channel_provider_health" {
   location            = var.region
   name                = "${local.prefix}-${each.key}-qualification-ingest"
   deletion_protection = var.deletion_protection
+
+  binary_authorization {
+    use_default = true
+  }
 
   template {
     parallelism = 1
@@ -2862,6 +2900,10 @@ resource "google_cloud_run_v2_job" "database_probe" {
   name                = "${local.prefix}-database-probe"
   deletion_protection = var.deletion_protection
 
+  binary_authorization {
+    use_default = true
+  }
+
   template {
     parallelism = 1
     task_count  = 1
@@ -2923,6 +2965,10 @@ resource "google_cloud_run_v2_job" "memory_probe" {
   name                = "${local.prefix}-memory-probe"
   deletion_protection = var.deletion_protection
 
+  binary_authorization {
+    use_default = true
+  }
+
   template {
     parallelism = 1
     task_count  = 1
@@ -2971,6 +3017,10 @@ resource "google_cloud_run_v2_job" "model_armor_probe" {
   name                = "${local.prefix}-model-armor-probe"
   deletion_protection = var.deletion_protection
 
+  binary_authorization {
+    use_default = true
+  }
+
   template {
     parallelism = 1
     task_count  = 1
@@ -3017,6 +3067,10 @@ resource "google_cloud_run_v2_job" "scenario_injector" {
   location            = var.region
   name                = "${local.prefix}-scenario-injector"
   deletion_protection = var.deletion_protection
+
+  binary_authorization {
+    use_default = true
+  }
 
   template {
     parallelism = 1
@@ -3105,6 +3159,10 @@ resource "google_cloud_run_v2_job" "scenario_oracle" {
   name                = "${local.prefix}-scenario-oracle"
   deletion_protection = var.deletion_protection
 
+  binary_authorization {
+    use_default = true
+  }
+
   template {
     parallelism = 1
     task_count  = 1
@@ -3177,6 +3235,14 @@ resource "google_cloud_run_v2_job_iam_member" "approver_database_migration" {
   name     = google_cloud_run_v2_job.database_migration.name
   role     = "roles/run.invoker"
   member   = each.value
+}
+
+resource "google_cloud_run_v2_job_iam_member" "catalog_deploy_publication" {
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_job.catalog_publication.name
+  role     = "roles/run.jobsExecutorWithOverrides"
+  member   = google_service_account.workload["catalog_deploy"].member
 }
 
 resource "google_cloud_run_v2_job_iam_member" "approver_calibration_seed" {

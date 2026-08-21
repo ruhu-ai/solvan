@@ -19,6 +19,65 @@ resource "google_service_account" "workload" {
   depends_on = [google_project_service.required["iam.googleapis.com"]]
 }
 
+resource "google_project_iam_member" "catalog_deploy_job_runner" {
+  project = var.project_id
+  role    = "roles/clouddeploy.jobRunner"
+  member  = google_service_account.workload["catalog_deploy"].member
+}
+
+resource "google_project_iam_custom_role" "catalog_deploy_reader" {
+  project     = var.project_id
+  role_id     = "solvanCatalogDeployReader"
+  title       = "Solvan catalog Cloud Deploy reader"
+  description = "Reads only release and rollout state before catalog publication."
+  stage       = "GA"
+  permissions = [
+    "clouddeploy.releases.get",
+    "clouddeploy.rollouts.get",
+    "clouddeploy.rollouts.list",
+  ]
+}
+
+resource "google_project_iam_member" "catalog_publication_deploy_reader" {
+  project = var.project_id
+  role    = google_project_iam_custom_role.catalog_deploy_reader.name
+  member  = google_service_account.workload["migration"].member
+}
+
+resource "google_clouddeploy_target_iam_member" "catalog_approver" {
+  for_each = var.approver_principals
+
+  project  = var.project_id
+  location = var.region
+  name     = google_clouddeploy_target.catalog_publication.name
+  role     = "roles/clouddeploy.approver"
+  member   = each.value
+}
+
+resource "google_clouddeploy_delivery_pipeline_iam_member" "catalog_releaser" {
+  for_each = var.approver_principals
+
+  project  = var.project_id
+  location = var.region
+  name     = google_clouddeploy_delivery_pipeline.catalog.name
+  role     = "roles/clouddeploy.releaser"
+  member   = each.value
+}
+
+resource "google_service_account_iam_member" "catalog_releaser_act_as" {
+  for_each = var.approver_principals
+
+  service_account_id = google_service_account.workload["catalog_deploy"].name
+  role               = "roles/iam.serviceAccountUser"
+  member             = each.value
+}
+
+resource "google_service_account_iam_member" "catalog_cloud_build_token" {
+  service_account_id = google_service_account.workload["catalog_deploy"].name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member              = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+}
+
 resource "google_service_account_iam_member" "pubsub_alert_ingress_push_token" {
   count = var.direct_gcp_alert_triage_pilot_enabled ? 1 : 0
 

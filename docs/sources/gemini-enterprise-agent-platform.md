@@ -13,6 +13,32 @@ This register records volatile platform facts that materially constrain Solvan.
 Deployment preflight must recheck launch stage, region, API version, quotas, and
 known limitations immediately before submission.
 
+## Google-native release governance
+
+- [Cloud Deploy overview](https://docs.cloud.google.com/deploy/docs/overview)
+- [Cloud Deploy custom targets](https://docs.cloud.google.com/deploy/docs/custom-targets)
+- [Cloud Deploy approvals](https://docs.cloud.google.com/deploy/docs/promote-release)
+- [Cloud Deploy service accounts](https://docs.cloud.google.com/deploy/docs/cloud-deploy-service-account)
+- [Binary Authorization attestations](https://docs.cloud.google.com/binary-authorization/docs/attestations)
+- [Binary Authorization for Cloud Run](https://docs.cloud.google.com/binary-authorization/docs/run/enabling-binauthz-cloud-run)
+- [Cloud Build provenance](https://docs.cloud.google.com/build/docs/securing-builds/generate-validate-build-provenance)
+- [Cloud Storage Bucket Lock](https://docs.cloud.google.com/storage/docs/bucket-lock)
+
+Verified facts and decisions:
+
+- Cloud Deploy custom targets support arbitrary outputs while retaining ordered
+  promotion, approvals, rollbacks, Google resource state, and Audit Logs.
+- A target with `requireApproval=true` admits approval only from a principal
+  holding `roles/clouddeploy.approver`; Solvan scopes that role to the catalog
+  publication target and uses only individual human principals.
+- Cloud Deploy recommends a dedicated execution service account with
+  `roles/clouddeploy.jobRunner` rather than the broad default Compute identity.
+- Binary Authorization for Cloud Run verifies attestations on service and job
+  images. The Google `built-by-cloud-build` attestor proves the image came from
+  Cloud Build; it does not approve catalog data or replace Cloud Deploy.
+- Bucket Lock makes a retention policy irreversible. Solvan enables it only on
+  the dedicated release-evidence bucket and never on mutable application data.
+
 Multi-tenant cell placement, current Agent Platform quota observations, Cloud
 Run concurrency/maximum-instance behavior, and Cloud SQL connection/recovery
 guidance are maintained in the separate

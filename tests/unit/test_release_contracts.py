@@ -259,6 +259,28 @@ def test_catalog_publication_binds_every_immutable_agent_resource() -> None:
         assert f"var.agent_runtime_resources.{resource}" in block
 
 
+def test_catalog_release_uses_google_native_approval_and_supply_chain_controls() -> None:
+    cloud_deploy = _text("infra/terraform/environments/gcp/cloud_deploy.tf")
+    iam = _text("infra/terraform/environments/gcp/iam.tf")
+    storage = _text("infra/terraform/environments/gcp/storage.tf")
+    binary = _text("infra/terraform/environments/gcp/binary_authorization.tf")
+    cloud_run = _text("infra/terraform/environments/gcp/cloud_run.tf")
+    cloud_build = _text("cloudbuild.yaml")
+
+    assert cloud_deploy.count("stages {") == 2
+    assert "require_approval = false" in cloud_deploy
+    assert "require_approval = true" in cloud_deploy
+    assert 'role     = "roles/clouddeploy.approver"' in iam
+    assert "google_clouddeploy_target.catalog_publication.name" in iam
+    assert 'role     = "roles/run.jobsExecutorWithOverrides"' in cloud_run
+    assert 'member   = google_service_account.workload["catalog_deploy"].member' in cloud_run
+    assert "is_locked        = true" in storage
+    assert '"projects/${var.project_id}/attestors/built-by-cloud-build"' in binary
+    assert "requestedVerifyOption: VERIFIED" in cloud_build
+    assert "verify_build_supply_chain(" in _text("tools/deploy_release.py")
+    assert cloud_run.count("binary_authorization {") == 14
+
+
 def test_governed_tool_bindings_derive_only_identity_from_runtime_receipts() -> None:
     locals_text = _text("infra/terraform/environments/gcp/locals.tf")
     cloud_run = _text("infra/terraform/environments/gcp/cloud_run.tf")

@@ -6,14 +6,16 @@ import argparse
 import hashlib
 import json
 import os
+import time
 from pathlib import Path
 from typing import Any, cast
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 from apps.coordinator.contracts import (
     governed_agent_bindings_from_environment,
     governed_agent_resources_from_environment,
 )
+from solvan.application.catalog_release_governance import evaluate_catalog_release
 from solvan.application.channel_provider_qualification import (
     parse_channel_provider_qualification,
 )
@@ -29,6 +31,7 @@ from solvan.domain import MemoryScope, Scope
 from solvan.persistence.github_store import GitHubStore
 from solvan.persistence.liaison_channels import LiaisonChannelStore
 from solvan.persistence.tool_catalog_store import PostgresToolCatalogStore
+from solvan.platform.cloud_deploy_catalog import verify_catalog_publication_gate
 from solvan.platform.database import connect_database
 from solvan.platform.evidence_objects import GcsEvidenceWriter
 from solvan.platform.google_rest import authorized_session
@@ -50,6 +53,7 @@ from tools.workspace_fixture import repository_policy, upload_repository_snapsho
 
 ROOT = Path(__file__).resolve().parents[1]
 AGENT_MANIFEST = ROOT / "specs" / "artifacts" / "agent-manifests.yaml"
+CATALOG_NETWORK_POLICY = ROOT / "specs" / "artifacts" / "catalog-network-policy.v1.json"
 
 
 def _required(name: str) -> str:
@@ -106,9 +110,37 @@ def publish_catalog() -> None:
         raise RuntimeError("catalog publication requires all canonical Agent bindings")
     manifest_hash = f"sha256:{hashlib.sha256(AGENT_MANIFEST.read_bytes()).hexdigest()}"
     network_policy_hash = _required("SOLVAN_CATALOG_NETWORK_POLICY_HASH")
-    approval_ref = _required("SOLVAN_CATALOG_APPROVAL_REF")
-    evaluation_ref = _required("SOLVAN_CATALOG_EVALUATION_REF")
     scope = _scope()
+    evaluation = evaluate_catalog_release(
+        policy_path=CATALOG_NETWORK_POLICY,
+        expected_network_policy_hash=network_policy_hash,
+        scope=scope,
+        release_commit=_required("SOLVAN_RELEASE_COMMIT"),
+        deployment_id=_required("SOLVAN_DEPLOYMENT_ID"),
+        manifest_hash=manifest_hash,
+        bindings=bindings,
+    )
+    subject_hash = _required("SOLVAN_CATALOG_SUBJECT_HASH")
+    if evaluation["subject_hash"] != subject_hash:
+        raise RuntimeError("catalog subject does not match the Terraform-bound release subject")
+    gate = verify_catalog_publication_gate(
+        session=authorized_session(),
+        project_id=_required("SOLVAN_GCP_PROJECT"),
+        location=_required("SOLVAN_GCP_REGION"),
+        pipeline_id=_required("SOLVAN_CLOUD_DEPLOY_PIPELINE_ID"),
+        release_id=_required("SOLVAN_CLOUD_DEPLOY_RELEASE_ID"),
+        publication_rollout_id=_required("SOLVAN_CLOUD_DEPLOY_ROLLOUT_ID"),
+        evaluation_target_id=_required("SOLVAN_CLOUD_DEPLOY_EVALUATION_TARGET"),
+        publication_target_id=_required("SOLVAN_CLOUD_DEPLOY_PUBLICATION_TARGET"),
+        expected_annotations={
+            "solvan-catalog-subject": subject_hash,
+            "solvan-deployment-id": _required("SOLVAN_DEPLOYMENT_ID"),
+            "solvan-network-policy": network_policy_hash,
+            "solvan-release-commit": _required("SOLVAN_RELEASE_COMMIT"),
+        },
+    )
+    approval_ref = gate.approval_ref
+    evaluation_ref = gate.evaluation_ref
     with connect_database() as connection, connection.transaction():
         store = PostgresToolCatalogStore(connection)
         for principal in catalog_principals(manifest_hash=manifest_hash):
@@ -162,6 +194,176 @@ def publish_catalog() -> None:
         )
     print(f"GOVERNED_CATALOG_PUBLISHED:{len(tools)}_TOOLS:{len(bindings) + 1}_PROFILES")
     print(f"BUILTIN_GUIDANCE_CONVERGED:{len(builtin_guidance)}_NEW_REVISIONS")
+
+
+def _cloud_deploy_output() -> tuple[GcsEvidenceWriter, str, str]:
+    output = _required("CLOUD_DEPLOY_OUTPUT_GCS_PATH").rstrip("/")
+    parsed = urlparse(output)
+    if parsed.scheme != "gs" or not parsed.netloc or not parsed.path.strip("/"):
+        raise RuntimeError("Cloud Deploy output path is not a bounded GCS directory")
+    return (
+        GcsEvidenceWriter(bucket=parsed.netloc, session=authorized_session()),
+        parsed.path.strip("/"),
+        output,
+    )
+
+
+def _cloud_deploy_identifier(name: str) -> str:
+    value = _required(name).rstrip("/").rsplit("/", 1)[-1]
+    if not value:
+        raise RuntimeError(f"Cloud Deploy setting {name} has no resource ID")
+    return value
+
+
+def _wait_operation(*, operation_name: str) -> str:
+    session = authorized_session()
+    url = f"https://run.googleapis.com/v2/{operation_name}"
+    for _attempt in range(180):
+        response = session.get(url, timeout=30)
+        response.raise_for_status()
+        value = response.json()
+        if not isinstance(value, dict):
+            raise RuntimeError("Cloud Run operation response is malformed")
+        if value.get("done") is True:
+            if value.get("error") is not None:
+                raise RuntimeError("Cloud Run catalog publication execution failed")
+            execution = value.get("response")
+            execution_name = execution.get("name") if isinstance(execution, dict) else None
+            if not isinstance(execution_name, str) or not execution_name:
+                raise RuntimeError("Cloud Run operation returned no execution resource")
+            break
+        time.sleep(5)
+    else:
+        raise RuntimeError("Cloud Run catalog publication operation timed out")
+    execution_url = f"https://run.googleapis.com/v2/{execution_name}"
+    for _attempt in range(180):
+        response = session.get(execution_url, timeout=30)
+        response.raise_for_status()
+        execution = response.json()
+        if not isinstance(execution, dict):
+            raise RuntimeError("Cloud Run catalog execution response is malformed")
+        if execution.get("completionTime"):
+            succeeded = int(execution.get("succeededCount", 0))
+            failed = int(execution.get("failedCount", 0))
+            cancelled = int(execution.get("cancelledCount", 0))
+            if succeeded != 1 or failed != 0 or cancelled != 0:
+                raise RuntimeError(
+                    "Cloud Run catalog publication task did not succeed exactly once"
+                )
+            return execution_name
+        time.sleep(5)
+    raise RuntimeError("Cloud Run catalog publication execution timed out")
+
+
+def cloud_deploy_catalog() -> None:
+    """Implement the Google Cloud Deploy custom render/deploy contract."""
+
+    if os.environ.get("CLOUD_DEPLOY_FEATURES", ""):
+        raise RuntimeError("catalog governance targets do not support canary features")
+    request_type = _required("CLOUD_DEPLOY_REQUEST_TYPE")
+    stage = _required("SOLVAN_CATALOG_STAGE")
+    writer, prefix, output_uri = _cloud_deploy_output()
+    metadata = {
+        "catalogStage": stage,
+        "catalogSubjectHash": _required("SOLVAN_CATALOG_SUBJECT_HASH"),
+        "networkPolicyHash": _required("SOLVAN_CATALOG_NETWORK_POLICY_HASH"),
+    }
+    if request_type == "RENDER":
+        manifest = {
+            "schema_version": 1,
+            "kind": "SOLVAN_CATALOG_CLOUD_DEPLOY_MANIFEST",
+            "stage": stage,
+            "catalog_subject_hash": metadata["catalogSubjectHash"],
+            "network_policy_hash": metadata["networkPolicyHash"],
+        }
+        writer.put_json(object_name=f"{prefix}/manifest.json", value=manifest)
+        writer.put_json(
+            object_name=f"{prefix}/results.json",
+            value={
+                "resultStatus": "SUCCEEDED",
+                "manifestFile": f"{output_uri}/manifest.json",
+                "metadata": metadata,
+            },
+        )
+        return
+    if request_type != "DEPLOY":
+        raise RuntimeError("unsupported Cloud Deploy custom-target request type")
+
+    if stage == "EVALUATION":
+        if _cloud_deploy_identifier("CLOUD_DEPLOY_TARGET") != _required(
+            "SOLVAN_CLOUD_DEPLOY_EVALUATION_TARGET"
+        ):
+            raise RuntimeError("catalog evaluation custom task is running for another target")
+        bindings = governed_agent_bindings_from_environment(
+            agent_resources=governed_agent_resources_from_environment()
+        )
+        manifest_hash = f"sha256:{hashlib.sha256(AGENT_MANIFEST.read_bytes()).hexdigest()}"
+        evaluation = evaluate_catalog_release(
+            policy_path=CATALOG_NETWORK_POLICY,
+            expected_network_policy_hash=_required("SOLVAN_CATALOG_NETWORK_POLICY_HASH"),
+            scope=_scope(),
+            release_commit=_required("SOLVAN_RELEASE_COMMIT"),
+            deployment_id=_required("SOLVAN_DEPLOYMENT_ID"),
+            manifest_hash=manifest_hash,
+            bindings=bindings,
+        )
+        if evaluation["subject_hash"] != _required("SOLVAN_CATALOG_SUBJECT_HASH"):
+            raise RuntimeError("catalog evaluation subject does not match Terraform")
+        evidence = writer.put_json(
+            object_name=f"{prefix}/catalog-evaluation.json", value=evaluation
+        )
+        artifacts = [evidence.uri]
+    elif stage == "PUBLICATION":
+        expected_target = _required("SOLVAN_CLOUD_DEPLOY_PUBLICATION_TARGET")
+        if _cloud_deploy_identifier("CLOUD_DEPLOY_TARGET") != expected_target:
+            raise RuntimeError("catalog publication custom task is running for another target")
+        session = authorized_session()
+        response = session.post(
+            "https://run.googleapis.com/v2/projects/"
+            f"{quote(_required('SOLVAN_GCP_PROJECT'), safe='')}/locations/"
+            f"{quote(_required('SOLVAN_GCP_REGION'), safe='')}/jobs/"
+            f"{quote(_required('SOLVAN_CLOUD_RUN_CATALOG_JOB'), safe='')}:run",
+            json={
+                "overrides": {
+                    "containerOverrides": [
+                        {
+                            "env": [
+                                {
+                                    "name": "SOLVAN_CLOUD_DEPLOY_RELEASE_ID",
+                                    "value": _cloud_deploy_identifier("CLOUD_DEPLOY_RELEASE"),
+                                },
+                                {
+                                    "name": "SOLVAN_CLOUD_DEPLOY_ROLLOUT_ID",
+                                    "value": _cloud_deploy_identifier("CLOUD_DEPLOY_ROLLOUT"),
+                                },
+                            ]
+                        }
+                    ]
+                }
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+        operation = response.json()
+        if not isinstance(operation, dict) or not isinstance(operation.get("name"), str):
+            raise RuntimeError("Cloud Run returned no publication operation")
+        _wait_operation(operation_name=operation["name"])
+        publication = writer.put_json(
+            object_name=f"{prefix}/catalog-publication.json",
+            value={
+                "schema_version": 1,
+                "kind": "SOLVAN_CATALOG_PUBLICATION_EXECUTION",
+                "result": "SUCCEEDED",
+                "catalog_subject_hash": metadata["catalogSubjectHash"],
+            },
+        )
+        artifacts = [publication.uri]
+    else:
+        raise RuntimeError("unknown catalog Cloud Deploy stage")
+    writer.put_json(
+        object_name=f"{prefix}/results.json",
+        value={"resultStatus": "SUCCEEDED", "artifactFiles": artifacts, "metadata": metadata},
+    )
 
 
 def register_github() -> None:
@@ -509,6 +711,7 @@ def main() -> int:
             "probe-memory",
             "probe-model-armor",
             "record-channel-provider-health",
+            "cloud-deploy-catalog",
             "scenario-inject-s1",
             "scenario-cleanup",
             "scenario-inject-s2",
@@ -530,6 +733,8 @@ def main() -> int:
         print("MIGRATION_APPLIED_UNVERIFIED")
     elif args.operation == "publish-catalog":
         publish_catalog()
+    elif args.operation == "cloud-deploy-catalog":
+        cloud_deploy_catalog()
     elif args.operation == "register-github":
         register_github()
     elif args.operation == "seed":

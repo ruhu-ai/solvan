@@ -191,5 +191,3 @@ agent_tool_bindings = {
 # Catalog publication is deliberately unavailable until exact review receipts
 # and a digest-pinned network policy replace these values.
 catalog_network_policy_hash = "UNCONFIGURED"
-catalog_approval_ref        = "UNCONFIGURED"
-catalog_evaluation_ref      = "UNCONFIGURED"

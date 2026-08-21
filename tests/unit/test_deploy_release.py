@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -123,7 +125,7 @@ def test_release_apply_rejects_dev_backend_and_tfvars(tmp_path: Path) -> None:
         )
 
 
-def test_release_apply_refuses_unconfigured_catalog_receipts_before_cloud_work(
+def test_release_apply_refuses_unconfigured_catalog_policy_before_cloud_work(
     tmp_path: Path,
 ) -> None:
     backend = tmp_path / "staging.backend.hcl"
@@ -135,8 +137,7 @@ def test_release_apply_refuses_unconfigured_catalog_receipts_before_cloud_work(
                 'project_id = "solvan-demo"',
                 'environment = "staging"',
                 'catalog_network_policy_hash = "UNCONFIGURED"',
-                'catalog_approval_ref = "UNCONFIGURED"',
-                'catalog_evaluation_ref = "UNCONFIGURED"',
+                'approver_principals = ["user:approver@example.com"]',
             )
         ),
         encoding="utf-8",
@@ -150,7 +151,7 @@ def test_release_apply_refuses_unconfigured_catalog_receipts_before_cloud_work(
         )
 
 
-def test_release_apply_accepts_exact_catalog_receipts(tmp_path: Path) -> None:
+def test_release_apply_accepts_checked_in_policy_and_human_approver(tmp_path: Path) -> None:
     backend = tmp_path / "staging.backend.hcl"
     backend.write_text('prefix = "solvan/staging"\n', encoding="utf-8")
     variables = tmp_path / "staging.tfvars"
@@ -159,9 +160,14 @@ def test_release_apply_accepts_exact_catalog_receipts(tmp_path: Path) -> None:
             (
                 'project_id = "solvan-demo"',
                 'environment = "staging"',
-                f'catalog_network_policy_hash = "sha256:{"a" * 64}"',
-                'catalog_approval_ref = "gs://receipts/catalog-approval.json"',
-                'catalog_evaluation_ref = "gs://receipts/catalog-evaluation.json"',
+                'catalog_network_policy_hash = "sha256:'
+                + hashlib.sha256(
+                    (
+                        deploy_release.ROOT / "specs/artifacts/catalog-network-policy.v1.json"
+                    ).read_bytes()
+                ).hexdigest()
+                + '"',
+                'approver_principals = ["user:approver@example.com"]',
             )
         ),
         encoding="utf-8",
@@ -187,6 +193,52 @@ def test_artifact_response_resolves_only_expected_digest() -> None:
         parse_fully_qualified_digest(
             {"image_summary": {"fully_qualified_digest": f"elsewhere/api@{digest}"}},
             expected_repository=repository,
+        )
+
+
+def test_build_supply_chain_requires_verified_provenance_and_project_attestor(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    image = "europe-west1-docker.pkg.dev/solvan-demo/solvan/api@sha256:" + "a" * 64
+    calls: list[list[str]] = []
+
+    def fake_run(arguments: list[str]) -> str:
+        calls.append(arguments)
+        if arguments[1:3] == ["builds", "describe"]:
+            return json.dumps(
+                {
+                    "status": "SUCCESS",
+                    "options": {"requestedVerifyOption": "VERIFIED"},
+                    "results": {
+                        "images": [
+                            {
+                                "name": image.split("@", 1)[0] + ":build-1",
+                                "digest": image.split("@", 1)[1],
+                            }
+                        ]
+                    },
+                }
+            )
+        return "{}"
+
+    monkeypatch.setattr(deploy_release, "_run", fake_run)
+    deploy_release.verify_build_supply_chain(
+        project_id="solvan-demo", build_id="build-1", images={"api": image}
+    )
+    assert calls[-1][1:5] == ["container", "binauthz", "attestors", "describe"]
+
+
+def test_build_supply_chain_refuses_unverified_build(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        deploy_release,
+        "_run",
+        lambda _arguments: '{"status":"SUCCESS","options":{},"results":{"images":[]}}',
+    )
+    with pytest.raises(CommandFailure, match="verified-provenance"):
+        deploy_release.verify_build_supply_chain(
+            project_id="solvan-demo", build_id="build-1", images={}
         )
 
 

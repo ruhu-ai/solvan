@@ -208,6 +208,22 @@ locals {
       )
     })
   }
+  catalog_agent_manifest_hash = "sha256:${filesha256("${path.module}/../../../../specs/artifacts/agent-manifests.yaml")}"
+  catalog_release_subject = {
+    schema_version = 1
+    kind           = "SOLVAN_GOVERNED_CATALOG_RELEASE_SUBJECT"
+    scope = {
+      organization_id = var.organization_id
+      project_id      = var.scope_project_id
+      environment_id  = var.environment_id
+    }
+    release_commit      = var.release_commit
+    deployment_id       = var.deployment_id
+    agent_manifest_hash = local.catalog_agent_manifest_hash
+    network_policy_hash = var.catalog_network_policy_hash
+    bindings            = local.governed_agent_tool_bindings
+  }
+  catalog_release_subject_hash = "sha256:${sha256(jsonencode(local.catalog_release_subject))}"
   labels = {
     application = "solvan"
     environment = var.environment
@@ -221,14 +237,17 @@ locals {
     "apphub.googleapis.com",
     "apptopology.googleapis.com",
     "artifactregistry.googleapis.com",
+    "binaryauthorization.googleapis.com",
     "billingbudgets.googleapis.com",
     "cloudapiregistry.googleapis.com",
     "cloudbuild.googleapis.com",
+    "clouddeploy.googleapis.com",
     "cloudkms.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "cloudscheduler.googleapis.com",
     "cloudtrace.googleapis.com",
     "compute.googleapis.com",
+    "containeranalysis.googleapis.com",
     "discoveryengine.googleapis.com",
     "dns.googleapis.com",
     "iam.googleapis.com",
@@ -383,6 +402,10 @@ locals {
     migration = {
       display_name = "Solvan Release Migration"
       description  = "Runs one-shot schema migration and approved calibration seed jobs."
+    }
+    catalog_deploy = {
+      display_name = "Solvan Catalog Cloud Deploy"
+      description  = "Evaluates the exact governed catalog release and invokes publication only after Cloud Deploy records human approval."
     }
     probe = {
       display_name = "Solvan Release Probe"

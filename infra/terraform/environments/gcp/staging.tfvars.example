@@ -199,5 +199,3 @@ agent_tool_bindings = {
 
 # Replace all three with exact, immutable receipts before the release apply.
 catalog_network_policy_hash = "UNCONFIGURED"
-catalog_approval_ref        = "UNCONFIGURED"
-catalog_evaluation_ref      = "UNCONFIGURED"

@@ -16,6 +16,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
@@ -71,8 +72,11 @@ AGENT_KEYS = {
 }
 BOOTSTRAP_TARGETS = (
     'google_project_service.required["artifactregistry.googleapis.com"]',
+    'google_project_service.required["binaryauthorization.googleapis.com"]',
     'google_project_service.required["cloudbuild.googleapis.com"]',
+    'google_project_service.required["clouddeploy.googleapis.com"]',
     'google_project_service.required["cloudresourcemanager.googleapis.com"]',
+    'google_project_service.required["containeranalysis.googleapis.com"]',
     'google_project_service.required["iam.googleapis.com"]',
     'google_project_service.required["serviceusage.googleapis.com"]',
     'google_service_account.workload["build"]',
@@ -85,6 +89,7 @@ BUILD_IAM_TARGETS = (
     "google_storage_bucket.build_source",
     "google_storage_bucket_iam_member.build_source_reader",
 )
+BINARY_AUTH_TARGETS = ("google_binary_authorization_policy.release",)
 
 
 @dataclass(frozen=True, slots=True)
@@ -126,15 +131,24 @@ def validate_staging_configuration(
         raise ValueError("release tfvars project_id must exactly equal --project")
     required_catalog_inputs = {
         "catalog_network_policy_hash": re.compile(r"^sha256:[0-9a-f]{64}$"),
-        "catalog_approval_ref": re.compile(r"^\S.{6,}\S$"),
-        "catalog_evaluation_ref": re.compile(r"^\S.{6,}\S$"),
     }
     for name, pattern in required_catalog_inputs.items():
         match = re.search(rf'^\s*{name}\s*=\s*"([^"\n]+)"\s*$', variables, re.MULTILINE)
         if match is None or pattern.fullmatch(match.group(1)) is None:
             raise ValueError(
-                f"release tfvars {name} must contain an exact immutable catalog receipt"
+                f"release tfvars {name} must contain the exact checked-in policy digest"
             )
+    expected_policy_hash = (
+        "sha256:"
+        + hashlib.sha256(
+            (ROOT / "specs" / "artifacts" / "catalog-network-policy.v1.json").read_bytes()
+        ).hexdigest()
+    )
+    if expected_policy_hash not in variables:
+        raise ValueError("release tfvars catalog_network_policy_hash does not match the repository")
+    approvers = re.search(r"approver_principals\s*=\s*\[(.*?)\]", variables, re.DOTALL)
+    if approvers is None or re.search(r'"user:[^"\s]+"', approvers.group(1)) is None:
+        raise ValueError("release tfvars require at least one individual catalog approver")
 
 
 def build_plan(
@@ -197,13 +211,16 @@ def build_plan(
             "create_cloud_build_service_identity_and_exact_iam",
             "build_release_images",
             "resolve_all_images_to_immutable_digests",
+            "verify_cloud_build_provenance_and_attestor",
+            "enforce_cloud_build_attestations_with_binary_authorization",
             "pause_automated_work_before_any_image_rolls",
             "apply_platform_with_schedulers_paused",
             "deploy_six_agent_runtime_resources",
             "apply_agent_identity_gateway_policies",
             "bind_runtime_resources_revisions_and_principals",
             "execute_private_database_migration",
-            "publish_governed_tool_catalog",
+            "evaluate_catalog_with_cloud_deploy",
+            "request_human_catalog_publication_approval",
             "execute_approved_calibration_seed_if_configured",
             "emit_deployed_unverified_receipt",
         ),
@@ -470,6 +487,61 @@ def resolve_images(*, project_id: str, build_id: str) -> dict[str, str]:
     return images
 
 
+def verify_build_supply_chain(*, project_id: str, build_id: str, images: dict[str, str]) -> None:
+    """Refuse unless Google emitted verified provenance and its project attestor."""
+
+    raw = _run(
+        [
+            "gcloud",
+            "builds",
+            "describe",
+            build_id,
+            f"--project={project_id}",
+            "--region=europe-west1",
+            "--format=json",
+        ]
+    )
+    value = json.loads(raw)
+    options = value.get("options") if isinstance(value, dict) else None
+    results = value.get("results") if isinstance(value, dict) else None
+    built = results.get("images") if isinstance(results, dict) else None
+    if (
+        not isinstance(value, dict)
+        or value.get("status") != "SUCCESS"
+        or not isinstance(options, dict)
+        or options.get("requestedVerifyOption") != "VERIFIED"
+        or not isinstance(built, list)
+    ):
+        raise CommandFailure("Cloud Build did not return a successful verified-provenance build")
+    observed: set[str] = set()
+    for item in built:
+        if (
+            not isinstance(item, dict)
+            or not isinstance(item.get("name"), str)
+            or not isinstance(item.get("digest"), str)
+        ):
+            continue
+        parent, separator, leaf = item["name"].rpartition("/")
+        if not separator:
+            continue
+        repository = f"{parent}/{leaf.split(':', 1)[0]}"
+        observed.add(f"{repository}@{item['digest']}")
+    if not set(images.values()).issubset(observed):
+        raise CommandFailure("Cloud Build provenance does not cover every release image digest")
+    _run(
+        [
+            "gcloud",
+            "container",
+            "binauthz",
+            "attestors",
+            "describe",
+            "built-by-cloud-build",
+            f"--project={project_id}",
+            "--format=json",
+        ]
+    )
+
+
 def _terraform_output(path: Path) -> dict[str, Any]:
     raw = _run(["terraform", f"-chdir={TF_ROOT}", "output", "-json"])
     value = json.loads(raw)
@@ -618,6 +690,192 @@ def initial_release_variables(plan: ReleasePlan, *, commit: str) -> dict[str, An
     }
 
 
+def _catalog_rollouts(
+    *, project_id: str, region: str, pipeline: str, release: str
+) -> list[dict[str, Any]]:
+    raw = _run(
+        [
+            "gcloud",
+            "deploy",
+            "rollouts",
+            "list",
+            f"--project={project_id}",
+            f"--region={region}",
+            f"--delivery-pipeline={pipeline}",
+            f"--release={release}",
+            "--format=json",
+        ]
+    )
+    value = json.loads(raw)
+    if not isinstance(value, list) or any(not isinstance(item, dict) for item in value):
+        raise CommandFailure("Cloud Deploy rollout listing is malformed")
+    return value
+
+
+def _wait_catalog_evaluation(
+    *, project_id: str, region: str, pipeline: str, release: str, target: str
+) -> dict[str, Any]:
+    for _attempt in range(120):
+        matches = [
+            item
+            for item in _catalog_rollouts(
+                project_id=project_id, region=region, pipeline=pipeline, release=release
+            )
+            if item.get("targetId") == target
+        ]
+        if len(matches) != 1:
+            raise CommandFailure("Cloud Deploy did not create exactly one evaluation rollout")
+        state = matches[0].get("state")
+        if state == "SUCCEEDED":
+            return matches[0]
+        if state in {
+            "FAILED",
+            "HALTED",
+            "CANCELLED",
+            "APPROVAL_REJECTED",
+            "ROLLOUT_STATE_UNSPECIFIED",
+        }:
+            raise CommandFailure(f"Cloud Deploy catalog evaluation ended in {state}")
+        time.sleep(5)
+    raise CommandFailure("Cloud Deploy catalog evaluation timed out")
+
+
+def start_catalog_delivery(
+    *, plan: ReleasePlan, commit: str, outputs: dict[str, Any]
+) -> dict[str, Any]:
+    delivery = _output_value(outputs, "catalog_delivery")
+    if not isinstance(delivery, dict):
+        raise CommandFailure("Terraform catalog delivery output is malformed")
+    required = (
+        "delivery_pipeline",
+        "evaluation_target",
+        "publication_target",
+        "catalog_subject_hash",
+        "network_policy_hash",
+    )
+    if any(not isinstance(delivery.get(key), str) for key in required):
+        raise CommandFailure("Terraform catalog delivery output is incomplete")
+    pipeline = delivery["delivery_pipeline"]
+    evaluation_target = delivery["evaluation_target"]
+    publication_target = delivery["publication_target"]
+    release = f"catalog-{commit[:12]}-{hashlib.sha256(plan.deployment_id.encode()).hexdigest()[:8]}"
+    annotations = {
+        "solvan-catalog-subject": delivery["catalog_subject_hash"],
+        "solvan-deployment-id": plan.deployment_id,
+        "solvan-network-policy": delivery["network_policy_hash"],
+        "solvan-release-commit": commit,
+    }
+    existing = _run_allowing(
+        [
+            "gcloud",
+            "deploy",
+            "releases",
+            "describe",
+            release,
+            f"--project={plan.project_id}",
+            f"--region={plan.region}",
+            f"--delivery-pipeline={pipeline}",
+            "--format=json",
+        ],
+        absent_markers=("not found", "does not exist"),
+    )
+    if existing is None:
+        with tempfile.TemporaryDirectory(prefix="solvan-catalog-release-") as directory:
+            source = Path(directory)
+            _atomic_json(
+                source / "release.json",
+                {
+                    "schema_version": 1,
+                    "catalog_subject_hash": delivery["catalog_subject_hash"],
+                },
+            )
+            _run(
+                [
+                    "gcloud",
+                    "deploy",
+                    "releases",
+                    "create",
+                    release,
+                    f"--project={plan.project_id}",
+                    f"--region={plan.region}",
+                    f"--delivery-pipeline={pipeline}",
+                    f"--source={source}",
+                    "--annotations="
+                    + ",".join(f"{key}={value}" for key, value in sorted(annotations.items())),
+                    "--quiet",
+                ],
+                timeout=1200,
+            )
+    else:
+        value = json.loads(existing)
+        if not isinstance(value, dict) or value.get("annotations") != annotations:
+            raise CommandFailure("existing Cloud Deploy release has different annotations")
+
+    evaluation = _wait_catalog_evaluation(
+        project_id=plan.project_id,
+        region=plan.region,
+        pipeline=pipeline,
+        release=release,
+        target=evaluation_target,
+    )
+    publications = [
+        item
+        for item in _catalog_rollouts(
+            project_id=plan.project_id,
+            region=plan.region,
+            pipeline=pipeline,
+            release=release,
+        )
+        if item.get("targetId") == publication_target
+    ]
+    if not publications:
+        _run(
+            [
+                "gcloud",
+                "deploy",
+                "releases",
+                "promote",
+                f"--release={release}",
+                f"--project={plan.project_id}",
+                f"--region={plan.region}",
+                f"--delivery-pipeline={pipeline}",
+                f"--to-target={publication_target}",
+                "--quiet",
+            ]
+        )
+        publications = [
+            item
+            for item in _catalog_rollouts(
+                project_id=plan.project_id,
+                region=plan.region,
+                pipeline=pipeline,
+                release=release,
+            )
+            if item.get("targetId") == publication_target
+        ]
+    if len(publications) != 1:
+        raise CommandFailure("Cloud Deploy did not create exactly one publication rollout")
+    publication = publications[0]
+    if publication.get("approvalState") not in {"NEEDS_APPROVAL", "APPROVED"}:
+        raise CommandFailure("Cloud Deploy publication rollout is not awaiting valid approval")
+    rollout_name = publication.get("name")
+    if not isinstance(rollout_name, str):
+        raise CommandFailure("Cloud Deploy publication rollout has no name")
+    return {
+        "delivery_pipeline": pipeline,
+        "release": release,
+        "evaluation_rollout": evaluation.get("name"),
+        "publication_rollout": rollout_name,
+        "publication_approval_state": publication.get("approvalState"),
+        "catalog_subject_hash": delivery["catalog_subject_hash"],
+        "approve_command": (
+            f"gcloud deploy rollouts approve {rollout_name.rsplit('/', 1)[-1]} "
+            f"--project={plan.project_id} --region={plan.region} "
+            f"--delivery-pipeline={pipeline} --release={release}"
+        ),
+    }
+
+
 def apply_release(plan: ReleasePlan, *, acknowledgement: str | None) -> dict[str, Any]:
     if acknowledgement != plan.project_id:
         raise ValueError("--ack-dedicated-project must exactly equal --project")
@@ -689,6 +947,23 @@ def apply_release(plan: ReleasePlan, *, acknowledgement: str | None) -> dict[str
         _atomic_json(generated, release_vars)
         receipt["image_digests"] = release_vars["images"]
         receipt["phases_completed"].append("resolve_all_images_to_immutable_digests")
+
+        verify_build_supply_chain(
+            project_id=plan.project_id,
+            build_id=build_id,
+            images=release_vars["images"],
+        )
+        receipt["phases_completed"].append("verify_cloud_build_provenance_and_attestor")
+
+        _terraform(
+            "apply",
+            base_tfvars=Path(plan.base_tfvars),
+            generated_tfvars=generated,
+            extra=("-auto-approve", *(f"-target={item}" for item in BINARY_AUTH_TARGETS)),
+        )
+        receipt["phases_completed"].append(
+            "enforce_cloud_build_attestations_with_binary_authorization"
+        )
 
         receipt["paused_scheduler_jobs"] = list(
             quiesce_schedulers(project_id=plan.project_id, region=plan.region)
@@ -768,43 +1043,16 @@ def apply_release(plan: ReleasePlan, *, acknowledgement: str | None) -> dict[str
             timeout=1200,
         )
         receipt["phases_completed"].append("execute_private_database_migration")
-        _run(
-            [
-                "gcloud",
-                "run",
-                "jobs",
-                "execute",
-                jobs["catalog"],
-                f"--project={plan.project_id}",
-                "--region=europe-west1",
-                "--wait",
-                "--quiet",
-            ],
-            timeout=1200,
-        )
-        receipt["phases_completed"].append("publish_governed_tool_catalog")
-        if isinstance(jobs.get("seed"), str):
-            _run(
-                [
-                    "gcloud",
-                    "run",
-                    "jobs",
-                    "execute",
-                    jobs["seed"],
-                    f"--project={plan.project_id}",
-                    "--region=europe-west1",
-                    "--wait",
-                    "--quiet",
-                ],
-                timeout=1200,
-            )
-            receipt["phases_completed"].append("execute_approved_calibration_seed_if_configured")
+        catalog_delivery = start_catalog_delivery(plan=plan, commit=commit, outputs=final_outputs)
+        receipt["catalog_delivery"] = catalog_delivery
+        receipt["phases_completed"].append("evaluate_catalog_with_cloud_deploy")
+        receipt["phases_completed"].append("request_human_catalog_publication_approval")
         receipt.update(
             {
-                "status": "DEPLOYED_UNVERIFIED_SCHEDULERS_PAUSED",
+                "status": "AWAITING_HUMAN_CATALOG_PUBLICATION_APPROVAL",
                 "terraform_output": str(work_dir / "terraform-output.json"),
                 "runtime_receipt": str(runtime_path),
-                "next_required_gate": "run platform probes and preflight before unpausing",
+                "next_required_gate": catalog_delivery["approve_command"],
             }
         )
     except Exception as exception:
@@ -822,6 +1070,111 @@ def apply_release(plan: ReleasePlan, *, acknowledgement: str | None) -> dict[str
     return receipt
 
 
+def resume_after_catalog_approval(
+    plan: ReleasePlan, *, acknowledgement: str | None
+) -> dict[str, Any]:
+    """Finish the same deployment only after Cloud Deploy records approval."""
+
+    if acknowledgement != plan.project_id:
+        raise ValueError("--ack-dedicated-project must exactly equal --project")
+    receipt_path = Path(plan.work_dir) / "deployment-receipt.json"
+    if not receipt_path.is_file():
+        raise CommandFailure("the deployment receipt to resume does not exist")
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    if not isinstance(receipt, dict) or receipt.get("status") != (
+        "AWAITING_HUMAN_CATALOG_PUBLICATION_APPROVAL"
+    ):
+        raise CommandFailure("deployment receipt is not awaiting catalog approval")
+    source_commit, _remote_url = verify_release_source(remote=plan.remote)
+    if source_commit != receipt.get("release_commit"):
+        raise CommandFailure("current commit differs from the deployment awaiting approval")
+    delivery = receipt.get("catalog_delivery")
+    if not isinstance(delivery, dict):
+        raise CommandFailure("deployment receipt has no Cloud Deploy catalog binding")
+    pipeline = delivery.get("delivery_pipeline")
+    release = delivery.get("release")
+    publication_name = delivery.get("publication_rollout")
+    if (
+        not isinstance(pipeline, str)
+        or not isinstance(release, str)
+        or not isinstance(publication_name, str)
+    ):
+        raise CommandFailure("deployment receipt Cloud Deploy binding is malformed")
+    publication_id = publication_name.rsplit("/", 1)[-1]
+    publication: dict[str, Any] | None = None
+    for _attempt in range(240):
+        matches = [
+            item
+            for item in _catalog_rollouts(
+                project_id=plan.project_id,
+                region=plan.region,
+                pipeline=pipeline,
+                release=release,
+            )
+            if isinstance(item.get("name"), str)
+            and item["name"].rsplit("/", 1)[-1] == publication_id
+        ]
+        if len(matches) != 1:
+            raise CommandFailure("approved publication rollout is no longer unique")
+        publication = matches[0]
+        if publication.get("approvalState") != "APPROVED":
+            raise CommandFailure("catalog publication has not been approved by Cloud Deploy")
+        if publication.get("state") == "SUCCEEDED":
+            break
+        if publication.get("state") in {
+            "FAILED",
+            "HALTED",
+            "CANCELLED",
+            "APPROVAL_REJECTED",
+        }:
+            raise CommandFailure(
+                f"approved catalog publication ended in {publication.get('state')}"
+            )
+        time.sleep(5)
+    else:
+        raise CommandFailure("approved catalog publication timed out")
+    outputs_path = Path(plan.work_dir) / "terraform-output.json"
+    outputs = json.loads(outputs_path.read_text(encoding="utf-8"))
+    jobs = _output_value(outputs, "release_jobs")
+    if not isinstance(jobs, dict):
+        raise CommandFailure("Terraform release job output is malformed")
+    receipt.setdefault("phases_completed", []).append("publish_governed_tool_catalog")
+    if isinstance(jobs.get("seed"), str):
+        _run(
+            [
+                "gcloud",
+                "run",
+                "jobs",
+                "execute",
+                jobs["seed"],
+                f"--project={plan.project_id}",
+                f"--region={plan.region}",
+                "--wait",
+                "--quiet",
+            ],
+            timeout=1200,
+        )
+        receipt.setdefault("phases_completed", []).append(
+            "execute_approved_calibration_seed_if_configured"
+        )
+    receipt.update(
+        {
+            "status": "DEPLOYED_UNVERIFIED_SCHEDULERS_PAUSED",
+            "next_required_gate": "run platform probes and preflight before unpausing",
+            "completed_at": datetime.now(UTC).isoformat(),
+        }
+    )
+    receipt.pop("receipt_sha256", None)
+    receipt["receipt_sha256"] = (
+        "sha256:"
+        + hashlib.sha256(
+            json.dumps(receipt, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+    )
+    _atomic_json(receipt_path, receipt)
+    return receipt
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", required=True)
@@ -835,6 +1188,7 @@ def main() -> int:
     parser.add_argument("--calibration-receipt-hash")
     parser.add_argument("--ack-dedicated-project")
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--resume-after-catalog-approval", action="store_true")
     args = parser.parse_args()
     work_dir = args.work_dir or ROOT / ".solvan" / "releases" / args.deployment_id
     try:
@@ -848,12 +1202,16 @@ def main() -> int:
             remote=args.remote,
             calibration_receipt_uri=args.calibration_receipt_uri,
             calibration_receipt_hash=args.calibration_receipt_hash,
-            apply=args.apply,
+            apply=args.apply or args.resume_after_catalog_approval,
         )
-        if not args.apply:
+        if not args.apply and not args.resume_after_catalog_approval:
             print(json.dumps(asdict(plan), indent=2, sort_keys=True))
             return 0
-        receipt = apply_release(plan, acknowledgement=args.ack_dedicated_project)
+        receipt = (
+            resume_after_catalog_approval(plan, acknowledgement=args.ack_dedicated_project)
+            if args.resume_after_catalog_approval
+            else apply_release(plan, acknowledgement=args.ack_dedicated_project)
+        )
         print(json.dumps(receipt, indent=2, sort_keys=True))
         return 0
     except (CommandFailure, OSError, TypeError, ValueError) as exception:

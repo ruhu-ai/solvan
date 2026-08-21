@@ -43,6 +43,24 @@ competition slice. The section status matrix is:
 
 ## 3. Deterministic unit suites
 
+### Catalog release governance
+
+- the exact catalog subject changes when a Tool, profile, Agent manifest,
+  release commit, deployment ID, classification ceiling, or network-policy
+  digest changes;
+- evaluation refuses an incomplete/extra network-policy rule, a mutation Tool
+  in a model-facing profile, or a non-exact profile reference;
+- publication refuses a missing, failed, foreign-target, foreign-release, or
+  UID-mismatched evaluation rollout;
+- publication refuses a pending/rejected approval, an unexpected target or
+  pipeline, changed release annotations, and direct job invocation without
+  Cloud Deploy resource bindings;
+- Terraform grants `roles/clouddeploy.approver` only to configured individual
+  `user:` principals on the publication target and grants no release identity
+  that role;
+- every Cloud Run service and job enables the default Binary Authorization
+  policy, which requires the Google `built-by-cloud-build` attestor.
+
 ### State machines
 
 - every legal/illegal Incident and Reliability Case transition;

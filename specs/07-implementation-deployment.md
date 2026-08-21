@@ -331,17 +331,42 @@ the release uses:
 4. preserve old resource for in-flight runs;
 5. deprecate/remove it only after no active references remain.
 
+The catalog release uses one regional Google Cloud Deploy release and two
+ordered custom targets. `catalog-evaluation` runs the deterministic catalog and
+network-policy evaluator under a dedicated service account. Only a successful
+evaluation rollout may be promoted to `catalog-publication`, whose target has
+`requireApproval=true`. Individual human principals receive
+`roles/clouddeploy.approver` only for that target; the build, evaluation,
+release, migration, Agent, and Cloud Deploy execution identities receive no
+approval permission. The publication action runs only after Google records the
+rollout as approved.
+
 The catalog-publication release job receives the exact immutable resource name
 for all six Runtime agents together with their evaluated tool bindings. It
-refuses publication when any resource is missing; a binding is never published
-against a name inferred from a display name, revision, or prior release. During
-the final binding apply, Terraform derives each binding's `identity_ref` from
-the same Runtime receipt's system-attested principal; a pre-deployment
-placeholder or caller-supplied identity cannot survive into publication.
-Before any cloud mutation or image build, the release command also requires the
-catalog's approved network-policy digest and immutable approval and evaluation
-receipt references. `UNCONFIGURED` is valid for planning and local examples,
-but it is never accepted by an applied staging release.
+independently reads the exact Cloud Deploy release and both rollout resources
+before opening a database transaction. It requires the evaluation rollout to
+be `SUCCEEDED`, the publication rollout to be `APPROVED`, matching release and
+target UIDs, and exact annotations for commit, deployment, catalog-subject, and
+network-policy digests. It stores UID-bound Cloud Deploy resource references as
+the catalog approval and evaluation references. A caller-supplied URI or string
+cannot satisfy this boundary. During the final binding apply, Terraform derives
+each binding's `identity_ref` from the same Runtime receipt's system-attested
+principal; a pre-deployment placeholder or caller-supplied identity cannot
+survive into publication.
+
+Cloud Build provenance and the Google `built-by-cloud-build` Binary
+Authorization attestor gate every Cloud Run service and job image independently
+of catalog approval. Binary Authorization proves image admission; Cloud Deploy
+proves catalog evaluation and human promotion. Neither substitutes for the
+other. UID-bound rollout snapshots and the relevant Audit Log entries are
+exported to retention-locked regional Cloud Storage as release evidence.
+Because `built-by-cloud-build` is a Preview integration, the release harness
+independently requires a successful `requestedVerifyOption=VERIFIED` build,
+exact provenance coverage for every selected digest, and presence of the
+project attestor before it applies the policy or rolls a workload. If the
+Preview attestor is absent or unavailable, the tested degradation is to stop
+before mutation; exact digest selection and provenance validation remain
+independent controls, and no permissive Binary Authorization fallback exists.
 
 The Antigravity SDK provider is not a Runtime or Managed Agents deployment.
 Cloud Build resolves the locked Linux wheel by hash, runs import and SDK-agent
