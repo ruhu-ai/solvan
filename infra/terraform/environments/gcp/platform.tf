@@ -199,7 +199,16 @@ resource "google_network_security_authz_policy" "iap" {
 
   deletion_policy = "PREVENT"
 
-  depends_on = [google_project_service.required["networksecurity.googleapis.com"]]
+  # Both policies target the same Agent Gateways, and a gateway serializes
+  # tenant-configuration updates: created in parallel, one fails with an ongoing
+  # operation on the gateway and the other can leave a half-written tenant
+  # config that then reports itself as already existing. Terraform has no reason
+  # to order two resources that never reference each other, so the order is
+  # stated here.
+  depends_on = [
+    google_project_service.required["networksecurity.googleapis.com"],
+    google_network_security_authz_policy.model_armor,
+  ]
 }
 
 resource "google_agent_registry_service" "actuator_endpoint" {

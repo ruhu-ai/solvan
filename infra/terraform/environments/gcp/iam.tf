@@ -154,22 +154,24 @@ resource "google_project_iam_member" "github_secret_accessor" {
   condition {
     title       = "OnlyConfiguredGitHubSecrets"
     description = "The GitHub provider may read only the App identity and webhook secrets named by this release."
-    expression = format(
-      join(" || ", [
-        "resource.name == 'projects/%s/secrets/%s'",
-        "resource.name == 'projects/%s/secrets/%s'",
-        "resource.name == 'projects/%s/secrets/%s'",
-        "resource.name == 'projects/%s/secrets/%s'",
-      ]),
-      var.project_id,
-      var.github_webhook_secret_name,
-      var.project_id,
-      var.github_installation_token_secret_name,
-      var.project_id,
-      var.github_app_id_secret_name,
-      var.project_id,
-      var.github_app_private_key_secret_name,
-    )
+    # startsWith, and the project number, because neither is cosmetic. A secret
+    # is read at its version, so resource.name is
+    # projects/<number>/secrets/<name>/versions/latest and an equality test
+    # against the secret can never match; IAM also renders the project as its
+    # number, not its ID. Written the other way this condition matches nothing
+    # and the binding silently grants nothing at all.
+    expression = join(" || ", [
+      for name in compact([
+        var.github_webhook_secret_name,
+        var.github_installation_token_secret_name,
+        var.github_app_id_secret_name,
+        var.github_app_private_key_secret_name,
+        ]) : format(
+        "resource.name.startsWith('projects/%s/secrets/%s/')",
+        data.google_project.current.number,
+        name,
+      ) if name != "UNCONFIGURED"
+    ])
   }
 }
 
@@ -205,13 +207,13 @@ resource "google_project_iam_member" "github_identity_secret_accessor" {
   condition {
     title       = "OnlyGitHubIdentitySecrets"
     description = "The identity broker may read only its OAuth client and callback-cookie secrets."
-    expression = format(
-      "resource.name == 'projects/%s/secrets/%s' || resource.name == 'projects/%s/secrets/%s'",
-      var.project_id,
-      var.github_oauth_client_secret_name,
-      var.project_id,
-      var.github_identity_cookie_secret_name,
-    )
+    expression = join(" || ", [
+      for name in [var.github_oauth_client_secret_name, var.github_identity_cookie_secret_name] : format(
+        "resource.name.startsWith('projects/%s/secrets/%s/')",
+        data.google_project.current.number,
+        name,
+      ) if name != "UNCONFIGURED"
+    ])
   }
 }
 
@@ -266,13 +268,13 @@ resource "google_project_iam_member" "slack_secret_accessor" {
   condition {
     title       = "OnlyConfiguredSlackSecrets"
     description = "Slack adapter reads only its signing secret and bot token."
-    expression = format(
-      "resource.name == 'projects/%s/secrets/%s' || resource.name == 'projects/%s/secrets/%s'",
-      var.project_id,
-      var.slack_signing_secret_name,
-      var.project_id,
-      var.slack_bot_token_secret_name,
-    )
+    expression = join(" || ", [
+      for name in [var.slack_signing_secret_name, var.slack_bot_token_secret_name] : format(
+        "resource.name.startsWith('projects/%s/secrets/%s/')",
+        data.google_project.current.number,
+        name,
+      ) if name != "UNCONFIGURED"
+    ])
   }
 }
 
@@ -292,13 +294,13 @@ resource "google_project_iam_member" "discord_secret_accessor" {
   condition {
     title       = "OnlyConfiguredDiscordSecrets"
     description = "Discord adapter reads only its public verification key and bot token."
-    expression = format(
-      "resource.name == 'projects/%s/secrets/%s' || resource.name == 'projects/%s/secrets/%s'",
-      var.project_id,
-      var.discord_public_key_secret_name,
-      var.project_id,
-      var.discord_bot_token_secret_name,
-    )
+    expression = join(" || ", [
+      for name in [var.discord_public_key_secret_name, var.discord_bot_token_secret_name] : format(
+        "resource.name.startsWith('projects/%s/secrets/%s/')",
+        data.google_project.current.number,
+        name,
+      ) if name != "UNCONFIGURED"
+    ])
   }
 }
 
