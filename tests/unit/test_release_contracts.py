@@ -241,6 +241,24 @@ def test_release_jobs_with_execution_overrides_have_the_exact_override_role() ->
         assert 'role     = "roles/run.jobsExecutorWithOverrides"' in block
 
 
+def test_catalog_publication_binds_every_immutable_agent_resource() -> None:
+    cloud_run = _text("infra/terraform/environments/gcp/cloud_run.tf")
+    start = cloud_run.index('resource "google_cloud_run_v2_job" "catalog_publication"')
+    end = cloud_run.index('resource "google_cloud_run_v2_job" "calibration_seed"', start)
+    block = cloud_run[start:end]
+    expected = {
+        "SOLVAN_INCIDENT_SUPERVISOR_RESOURCE": "incident_supervisor",
+        "SOLVAN_EVIDENCE_AGENT_RESOURCE": "evidence_agent",
+        "SOLVAN_INFRASTRUCTURE_AGENT_RESOURCE": "infrastructure_agent",
+        "SOLVAN_EXECUTION_AGENT_RESOURCE": "execution_agent",
+        "SOLVAN_VERIFICATION_AGENT_RESOURCE": "verification_agent",
+        "SOLVAN_WORKSPACE_AGENT_RESOURCE": "workspace_agent",
+    }
+    for setting, resource in expected.items():
+        assert f"{setting}" in block
+        assert f"var.agent_runtime_resources.{resource}" in block
+
+
 def test_the_only_production_mutation_seat_is_registered_and_model_free() -> None:
     """The fleet's security claim is only checkable if the actuator is catalogued."""
 

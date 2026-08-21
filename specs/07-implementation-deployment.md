@@ -331,6 +331,11 @@ the release uses:
 4. preserve old resource for in-flight runs;
 5. deprecate/remove it only after no active references remain.
 
+The catalog-publication release job receives the exact immutable resource name
+for all six Runtime agents together with their evaluated tool bindings. It
+refuses publication when any resource is missing; a binding is never published
+against a name inferred from a display name, revision, or prior release.
+
 The Antigravity SDK provider is not a Runtime or Managed Agents deployment.
 Cloud Build resolves the locked Linux wheel by hash, runs import and SDK-agent
 construction tests, emits an SBOM/provenance attestation, and builds one

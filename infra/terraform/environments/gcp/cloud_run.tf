@@ -2670,9 +2670,15 @@ resource "google_cloud_run_v2_job" "catalog_publication" {
               "verification-agent"   = var.agent_tool_bindings.verification_agent
               "workspace-agent"      = var.agent_tool_bindings.workspace_agent
             })
-            SOLVAN_CATALOG_NETWORK_POLICY_HASH = var.catalog_network_policy_hash
-            SOLVAN_CATALOG_APPROVAL_REF        = var.catalog_approval_ref
-            SOLVAN_CATALOG_EVALUATION_REF      = var.catalog_evaluation_ref
+            SOLVAN_INCIDENT_SUPERVISOR_RESOURCE  = var.agent_runtime_resources.incident_supervisor
+            SOLVAN_EVIDENCE_AGENT_RESOURCE       = var.agent_runtime_resources.evidence_agent
+            SOLVAN_INFRASTRUCTURE_AGENT_RESOURCE = var.agent_runtime_resources.infrastructure_agent
+            SOLVAN_EXECUTION_AGENT_RESOURCE      = var.agent_runtime_resources.execution_agent
+            SOLVAN_VERIFICATION_AGENT_RESOURCE   = var.agent_runtime_resources.verification_agent
+            SOLVAN_WORKSPACE_AGENT_RESOURCE      = var.agent_runtime_resources.workspace_agent
+            SOLVAN_CATALOG_NETWORK_POLICY_HASH   = var.catalog_network_policy_hash
+            SOLVAN_CATALOG_APPROVAL_REF          = var.catalog_approval_ref
+            SOLVAN_CATALOG_EVALUATION_REF        = var.catalog_evaluation_ref
           })
           content {
             name  = env.key
