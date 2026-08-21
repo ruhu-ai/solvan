@@ -344,6 +344,13 @@ Per-endpoint IAP grants bind to the exact provider-returned Agent Registry
 resource IDs recorded in Terraform output. A requested service name is not a
 Registry resource identity and must never be used to synthesize an IAM target.
 
+Database bootstrap runs under the dedicated migration path and never disables
+or bypasses forced row-level security. After the deployment scope rows exist,
+it inserts an exact binding for the attested database `current_user` inside the
+same transaction, refuses a conflicting pre-existing binding, and removes a
+new migration-only binding before commit. This permits governed target-schema
+seed rows without leaving the administrator as a durable tenant workload.
+
 Ingress to Runtime agents uses authenticated service-to-agent access and its own
 policy tests; it is not assumed to inherit egress IAM semantics.
 

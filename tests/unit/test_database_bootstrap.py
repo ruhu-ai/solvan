@@ -1,3 +1,6 @@
+import pytest
+
+from solvan.domain import Scope
 from tools.bootstrap_database import (
     CORE_TABLES,
     DELIVERY_TABLES,
@@ -5,6 +8,7 @@ from tools.bootstrap_database import (
     ONBOARDING_TABLES,
     OPERABILITY_TABLES,
     RELAY_TABLES,
+    bind_bootstrap_role,
     database_role,
     delivery_grant_plan,
     expected_alert_tables,
@@ -17,6 +21,66 @@ from tools.bootstrap_database import (
     transactional_operability_schema_sql,
     transactional_schema_sql,
 )
+
+
+class _Result:
+    def __init__(self, row: tuple[str, ...] | None) -> None:
+        self._row = row
+
+    def fetchone(self) -> tuple[str, ...] | None:
+        return self._row
+
+
+class _BootstrapConnection:
+    def __init__(self, *, existing: tuple[str, ...] | None = None) -> None:
+        self.existing = existing
+        self.calls: list[tuple[object, object]] = []
+
+    def execute(self, query: object, params: object = None) -> _Result:
+        self.calls.append((query, params))
+        value = str(query)
+        if value == "SELECT current_user":
+            return _Result(("postgres",))
+        if value.startswith("SELECT organization_id"):
+            return _Result(self.existing)
+        return _Result(None)
+
+
+def test_bootstrap_role_gets_an_exact_temporary_scope_binding() -> None:
+    connection = _BootstrapConnection()
+    scope = Scope(
+        "org_11111111111111111111111111",
+        "prj_11111111111111111111111111",
+        "env_11111111111111111111111111",
+    )
+
+    assert bind_bootstrap_role(connection, scope=scope) == "postgres"  # type: ignore[arg-type]
+    assert connection.calls[-1][1] == (
+        "postgres",
+        scope.organization_id,
+        scope.project_id,
+        scope.environment_id,
+    )
+
+
+def test_bootstrap_role_preserves_exact_binding_and_refuses_conflict() -> None:
+    scope = Scope(
+        "org_11111111111111111111111111",
+        "prj_11111111111111111111111111",
+        "env_11111111111111111111111111",
+    )
+    exact = (scope.organization_id, scope.project_id, scope.environment_id)
+    assert (
+        bind_bootstrap_role(  # type: ignore[arg-type]
+            _BootstrapConnection(existing=exact), scope=scope
+        )
+        is None
+    )
+
+    with pytest.raises(RuntimeError, match="conflicting scope binding"):
+        bind_bootstrap_role(  # type: ignore[arg-type]
+            _BootstrapConnection(existing=(exact[0], exact[1], "env_other")), scope=scope
+        )
 
 
 def test_database_grants_are_explicit_and_payments_cannot_read_control_plane() -> None:

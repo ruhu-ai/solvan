@@ -1173,6 +1173,39 @@ def database_role(*, workload: str, deployment_project_id: str) -> str:
     return f"solvan-{workload.replace('_', '-')}@{deployment_project_id}.iam"
 
 
+def bind_bootstrap_role(connection: Connection[Any], *, scope: Scope) -> str | None:
+    """Give the migration owner its exact scope only for this transaction.
+
+    Target schemas enable FORCE RLS before their bootstrap rows are inserted.
+    Cloud SQL's postgres administrator does not bypass that policy, so the
+    migration needs the same immutable scope predicate as every workload. The
+    caller removes a newly created binding before commit; a pre-existing exact
+    binding is preserved, while a conflicting binding refuses.
+    """
+
+    current = connection.execute("SELECT current_user").fetchone()
+    if current is None or not isinstance(current[0], str) or not current[0]:
+        raise RuntimeError("database migration role is unavailable")
+    role = current[0]
+    existing = connection.execute(
+        """SELECT organization_id,project_id,environment_id
+             FROM solvan.database_scope_bindings WHERE database_role=%s""",
+        (role,),
+    ).fetchone()
+    exact_scope = (scope.organization_id, scope.project_id, scope.environment_id)
+    if existing is not None:
+        if existing != exact_scope:
+            raise RuntimeError("database migration role has a conflicting scope binding")
+        return None
+    connection.execute(
+        """INSERT INTO solvan.database_scope_bindings
+             (database_role,organization_id,project_id,environment_id)
+           VALUES (%s,%s,%s,%s)""",
+        (role, *exact_scope),
+    )
+    return role
+
+
 def transactional_schema_sql() -> str:
     """Return the authoritative DDL without its standalone transaction wrapper."""
 
@@ -1369,6 +1402,8 @@ def apply(
     ).fetchone()
     if resolved_scope != (deployment_project_id, region):
         raise RuntimeError("existing tenant scope conflicts with deployment project or region")
+
+    temporary_bootstrap_role = bind_bootstrap_role(connection, scope=scope)
 
     oauth_values = (
         github_oauth_client_id,
@@ -1647,6 +1682,16 @@ def apply(
             sql.SQL(
                 "GRANT SELECT ON TABLE solvan_scale.cells, solvan_scale.tenant_placements TO {}"
             ).format(sql.Identifier(role))
+        )
+
+    persistent_roles = {
+        database_role(workload=item.workload, deployment_project_id=deployment_project_id)
+        for item in grant_plan()
+    }
+    if temporary_bootstrap_role is not None and temporary_bootstrap_role not in persistent_roles:
+        connection.execute(
+            "DELETE FROM solvan.database_scope_bindings WHERE database_role=%s",
+            (temporary_bootstrap_role,),
         )
 
 
