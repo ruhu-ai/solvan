@@ -1,0 +1,21 @@
+infra/terraform/environments/gcp/artifacts.tf
+  s_625ed20cba13d5::t_e7c7066d533ec1 20-53
+tools/deploy_release.py
+  s_625ed20cba13d5::t_6768ad8cc1c324 85-86,393-398,408,667
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7765cb9df7228a158028c817a69672aa721f1729",
+  "prompts": {},
+  "sessions": {
+    "s_625ed20cba13d5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "08fb3abf-9b51-41b4-b5bb-cdc3d792f92b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
