@@ -340,6 +340,10 @@ All Runtime agent egress is default-deny. A path is valid only if:
 5. content inspection returns an allowed result where applicable;
 6. Solvan tool schema and application policy permit the call.
 
+Per-endpoint IAP grants bind to the exact provider-returned Agent Registry
+resource IDs recorded in Terraform output. A requested service name is not a
+Registry resource identity and must never be used to synthesize an IAM target.
+
 Ingress to Runtime agents uses authenticated service-to-agent access and its own
 policy tests; it is not assumed to inherit egress IAM semantics.
 

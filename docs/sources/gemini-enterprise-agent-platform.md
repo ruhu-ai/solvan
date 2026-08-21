@@ -218,9 +218,13 @@ Verified facts and decisions:
   Resource Manager to translate project numbers. The release therefore
   registers and grants IAP egress on the exact documented
   `europe-west1-aiplatform`, `europe-west1-aiplatform.mtls`,
-  `aiplatform.europe-west1.rep`, Resource Manager, Resource Manager mTLS,
-  Logging, Telemetry, and Telemetry mTLS hosts. Preflight checks every binding;
-  no wildcard hostname or registry-wide fleet principal is used.
+  `aiplatform.europe-west1.rep`, `aiplatform.eu.rep`, Resource Manager,
+  Resource Manager mTLS, Logging, Telemetry, and Telemetry mTLS hosts. The IAP
+  policy writer consumes each provider-returned `registry_resource` from the
+  exact Terraform output because Agent Registry assigns the durable endpoint
+  ID; it never reconstructs that ID from the requested service name. Preflight
+  checks every binding; no wildcard hostname or registry-wide fleet principal
+  is used.
 
 ## Model Armor and semantic governance
 

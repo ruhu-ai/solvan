@@ -18,6 +18,7 @@ _PRINCIPAL = re.compile(r"^principal://agents\.global\.[^/]+/resources/aiplatfor
 
 @dataclass(frozen=True, slots=True)
 class EndpointPolicy:
+    endpoint_key: str
     endpoint_id: str
     members: tuple[str, ...]
 
@@ -35,7 +36,19 @@ class EndpointPolicy:
         }
 
 
-def build_policies(receipt: dict[str, Any], *, environment: str) -> tuple[EndpointPolicy, ...]:
+def _endpoint_id(registered_endpoints: dict[str, Any], key: str) -> str:
+    resource = registered_endpoints.get(key)
+    if not isinstance(resource, str):
+        raise ValueError(f"Terraform output is missing registered endpoint: {key}")
+    match = re.fullmatch(r"projects/[0-9]+/locations/[a-z0-9-]+/endpoints/([a-z0-9-]+)", resource)
+    if match is None:
+        raise ValueError(f"Terraform returned a malformed registered endpoint: {key}")
+    return match.group(1)
+
+
+def build_policies(
+    receipt: dict[str, Any], *, registered_endpoints: dict[str, Any]
+) -> tuple[EndpointPolicy, ...]:
     resources = receipt.get("resources")
     if receipt.get("status") != "DEPLOYED_UNVERIFIED" or not isinstance(resources, list):
         raise ValueError("a successful Agent Runtime deployment receipt is required")
@@ -64,19 +77,22 @@ def build_policies(receipt: dict[str, Any], *, environment: str) -> tuple[Endpoi
     read_agents = {"evidence-agent", "infrastructure-agent"}
     policies = [
         EndpointPolicy(
-            endpoint_id=f"solvan-{environment}-evidence-broker",
+            endpoint_key="evidence",
+            endpoint_id=_endpoint_id(registered_endpoints, "evidence"),
             members=tuple(sorted(principals[key] for key in read_agents)),
         )
     ]
     policies.append(
         EndpointPolicy(
-            endpoint_id=f"solvan-{environment}-actuator",
+            endpoint_key="actuator",
+            endpoint_id=_endpoint_id(registered_endpoints, "actuator"),
             members=(principals["execution-agent"],),
         )
     )
     policies.append(
         EndpointPolicy(
-            endpoint_id=f"solvan-{environment}-verifier",
+            endpoint_key="verifier",
+            endpoint_id=_endpoint_id(registered_endpoints, "verifier"),
             members=(principals["verification-agent"],),
         )
     )
@@ -87,15 +103,18 @@ def build_policies(receipt: dict[str, Any], *, environment: str) -> tuple[Endpoi
         "aiplatform",
         "aiplatform-mtls",
         "aiplatform-rep",
+        "aiplatform-eu-rep",
         "resource-manager",
         "resource-manager-mtls",
         "logging",
         "telemetry",
         "telemetry-mtls",
     ):
+        endpoint_key = dependency.replace("-", "_")
         policies.append(
             EndpointPolicy(
-                endpoint_id=f"solvan-{environment}-{dependency}",
+                endpoint_key=endpoint_key,
+                endpoint_id=_endpoint_id(registered_endpoints, endpoint_key),
                 members=all_runtime_members,
             )
         )
@@ -145,6 +164,7 @@ def apply_policies(
             raise RuntimeError(f"IAP policy reconciliation failed for {policy.endpoint_id}")
         results.append(
             {
+                "endpoint_key": policy.endpoint_key,
                 "endpoint_id": policy.endpoint_id,
                 "members": list(policy.members),
                 "status": "APPLIED_UNVERIFIED",
@@ -156,6 +176,7 @@ def apply_policies(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--deployment-receipt", required=True, type=Path)
+    parser.add_argument("--terraform-output", required=True, type=Path)
     parser.add_argument("--project", required=True)
     parser.add_argument("--region", default="europe-west1")
     parser.add_argument("--environment", choices=("dev", "staging"), default="staging")
@@ -165,7 +186,14 @@ def main() -> int:
     deployment = json.loads(args.deployment_receipt.read_text(encoding="utf-8"))
     if not isinstance(deployment, dict):
         raise ValueError("deployment receipt must be a JSON object")
-    policies = build_policies(deployment, environment=args.environment)
+    terraform_output = json.loads(args.terraform_output.read_text(encoding="utf-8"))
+    endpoint_output = terraform_output.get("registered_endpoints")
+    registered_endpoints = (
+        endpoint_output.get("value") if isinstance(endpoint_output, dict) else None
+    )
+    if not isinstance(registered_endpoints, dict):
+        raise ValueError("Terraform output contains no registered endpoints")
+    policies = build_policies(deployment, registered_endpoints=registered_endpoints)
     plan = {
         "schema_version": 1,
         "kind": "SOLVAN_AGENT_IAP_ENDPOINT_POLICIES",
@@ -173,7 +201,12 @@ def main() -> int:
         "region": args.region,
         "mutation_mode": "APPLY" if args.apply else "PLAN_ONLY",
         "policies": [
-            {"endpoint_id": policy.endpoint_id, "policy": policy.value()} for policy in policies
+            {
+                "endpoint_key": policy.endpoint_key,
+                "endpoint_id": policy.endpoint_id,
+                "policy": policy.value(),
+            }
+            for policy in policies
         ],
     }
     if not args.apply:

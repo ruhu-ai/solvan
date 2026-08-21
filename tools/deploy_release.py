@@ -572,6 +572,7 @@ def _configure_iap(*, plan: ReleasePlan, runtime_receipt: Path, receipt_path: Pa
             sys.executable,
             str(ROOT / "tools" / "configure_agent_iap.py"),
             f"--deployment-receipt={runtime_receipt}",
+            f"--terraform-output={receipt_path.parent / 'terraform-output-initial.json'}",
             f"--project={plan.project_id}",
             "--region=europe-west1",
             f"--environment={plan.environment}",
