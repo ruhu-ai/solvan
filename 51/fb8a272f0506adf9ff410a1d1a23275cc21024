@@ -1,0 +1,21 @@
+tests/unit/test_database_bootstrap.py
+  s_36f3e3f4652fc0::t_4b67d8a7c7249d 174,237
+specs/22-solvant-relay.md
+  s_36f3e3f4652fc0::t_4b67d8a7c7249d 22-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "51fb8a272f0506adf9ff410a1d1a23275cc21024",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
