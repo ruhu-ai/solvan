@@ -553,6 +553,7 @@ def _deploy_agents(
             f"--evidence-broker-url={services['evidence']}",
             f"--actuator-url={services['actuator']}",
             f"--verifier-url={services['verifier']}",
+            f"--workspace-tool-broker-url={services['coordinator']}",
             f"--environment={plan.environment}",
             f"--receipt={receipt_path}",
             "--apply",

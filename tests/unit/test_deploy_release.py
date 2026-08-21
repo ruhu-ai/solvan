@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+import tools.deploy_release as deploy_release
 from tools.deploy_release import (
     AGENT_KEYS,
     IMAGE_NAMES,
@@ -173,6 +174,57 @@ def test_runtime_receipt_binds_exact_six_agents() -> None:
     assert bindings["execution_agent_principal"].startswith("principal://")
     assert bindings["incident_supervisor_agent_principal"].startswith("principal://")
     assert bindings["workspace_agent_principal"].startswith("principal://")
+
+
+def test_runtime_deploy_binds_workspace_agent_to_coordinator_broker(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = build_plan(
+        project_id="solvan-demo",
+        deployment_id="demo-20260821",
+        release_version="0.1.0",
+        backend_config=tmp_path / "backend",
+        base_tfvars=tmp_path / "tfvars",
+        work_dir=tmp_path / "release",
+        remote="origin",
+        calibration_receipt_uri=None,
+        calibration_receipt_hash=None,
+        apply=False,
+    )
+    receipt_path = tmp_path / "agent-runtime-deployment.json"
+    commands: list[list[str]] = []
+
+    def fake_run(command: list[str], *, timeout: int = 600) -> str:
+        del timeout
+        commands.append(command)
+        receipt_path.write_text('{"status":"DEPLOYED_UNVERIFIED"}', encoding="utf-8")
+        return ""
+
+    monkeypatch.setattr(deploy_release, "_run", fake_run)
+    result = deploy_release._deploy_agents(
+        plan=plan,
+        outputs={
+            "agent_gateway_resources": {
+                "value": {
+                    "egress": "projects/solvan-demo/locations/europe-west1/gateways/egress",
+                    "ingress": "projects/solvan-demo/locations/europe-west1/gateways/ingress",
+                }
+            },
+            "runtime_bucket": {"value": "solvan-runtime"},
+            "service_uris": {
+                "value": {
+                    "actuator": "https://actuator.example",
+                    "coordinator": "https://coordinator.example",
+                    "evidence": "https://evidence.example",
+                    "verifier": "https://verifier.example",
+                }
+            },
+        },
+        receipt_path=receipt_path,
+    )
+
+    assert result["status"] == "DEPLOYED_UNVERIFIED"
+    assert "--workspace-tool-broker-url=https://coordinator.example" in commands[0]
 
 
 def test_runtime_receipt_rejects_model_location_drift() -> None:

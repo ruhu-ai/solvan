@@ -290,6 +290,11 @@ Each Runtime agent package exports one root agent/custom agent and a health/
 manifest endpoint. Agent prompts are versioned resources, not inline strings
 scattered through nodes. Tools use Pydantic/JSON Schema inputs and typed outputs.
 
+The release deployer binds the Workspace Agent's only private tool-broker URL
+and audience to the exact Terraform output for the coordinator service. A
+missing, non-HTTPS, or independently supplied broker URL refuses deployment;
+the Runtime package never infers this authority from a model argument.
+
 Agent callbacks enforce:
 
 - scope and deadline before agent/model/tool;
