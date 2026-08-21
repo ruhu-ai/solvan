@@ -71,6 +71,17 @@ def _scope() -> Scope:
     )
 
 
+def _catalog_stage() -> str:
+    """Derive the closed stage from Google's target identity, never caller input."""
+
+    target = _cloud_deploy_identifier("CLOUD_DEPLOY_TARGET")
+    if target == _required("SOLVAN_CLOUD_DEPLOY_EVALUATION_TARGET"):
+        return "EVALUATION"
+    if target == _required("SOLVAN_CLOUD_DEPLOY_PUBLICATION_TARGET"):
+        return "PUBLICATION"
+    raise RuntimeError("catalog custom task is running for an unknown target")
+
+
 def migrate() -> None:
     github_enabled = os.environ.get("SOLVAN_GITHUB_RELEASE_ENABLED") == "true"
     with connect_database() as connection, connection.transaction():
@@ -261,7 +272,7 @@ def cloud_deploy_catalog() -> None:
     if os.environ.get("CLOUD_DEPLOY_FEATURES", ""):
         raise RuntimeError("catalog governance targets do not support canary features")
     request_type = _required("CLOUD_DEPLOY_REQUEST_TYPE")
-    stage = _required("SOLVAN_CATALOG_STAGE")
+    stage = _catalog_stage()
     writer, prefix, output_uri = _cloud_deploy_output()
     metadata = {
         "catalogStage": stage,

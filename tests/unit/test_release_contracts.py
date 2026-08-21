@@ -268,6 +268,12 @@ def test_catalog_release_uses_google_native_approval_and_supply_chain_controls()
     cloud_build = _text("cloudbuild.yaml")
 
     assert cloud_deploy.count("stages {") == 2
+    assert cloud_deploy.count('resource "google_clouddeploy_custom_target_type"') == 1
+    assert (
+        cloud_deploy.count("custom_target_type = google_clouddeploy_custom_target_type.catalog.id")
+        == 2
+    )
+    assert "SOLVAN_CATALOG_STAGE" not in cloud_deploy
     assert "require_approval = false" in cloud_deploy
     assert "require_approval = true" in cloud_deploy
     assert 'role     = "roles/clouddeploy.approver"' in iam

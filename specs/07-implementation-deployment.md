@@ -332,10 +332,12 @@ the release uses:
 5. deprecate/remove it only after no active references remain.
 
 The catalog release uses one regional Google Cloud Deploy release and two
-ordered custom targets. `catalog-evaluation` runs the deterministic catalog and
-network-policy evaluator under a dedicated service account. Only a successful
-evaluation rollout may be promoted to `catalog-publication`, whose target has
-`requireApproval=true`. Individual human principals receive
+ordered targets of the same custom target type, as Google requires for one
+delivery pipeline. The custom task derives its closed stage from Google's exact
+`CLOUD_DEPLOY_TARGET`, never a caller-supplied stage value. `catalog-evaluation`
+runs the deterministic catalog and network-policy evaluator under a dedicated
+service account. Only a successful evaluation rollout may be promoted to
+`catalog-publication`, whose target has `requireApproval=true`. Individual human principals receive
 `roles/clouddeploy.approver` on the dedicated catalog delivery pipeline with
 Google's `clouddeploy.googleapis.com/rolloutTarget` IAM condition restricted to
 the publication target; the build, evaluation, release, migration, Agent, and

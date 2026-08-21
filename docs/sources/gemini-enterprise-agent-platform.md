@@ -29,6 +29,10 @@ Verified facts and decisions:
 
 - Cloud Deploy custom targets support arbitrary outputs while retaining ordered
   promotion, approvals, rollbacks, Google resource state, and Audit Logs.
+- Google requires all targets in one delivery pipeline to use the same target
+  type. Solvan therefore uses one custom target type for both catalog stages
+  and derives evaluation versus publication from Google's exact
+  `CLOUD_DEPLOY_TARGET` environment value.
 - Cloud Deploy still requires every custom-target release source to contain a
   Skaffold configuration. When the registered custom target type defines the
   actions, Google's quickstart uses only `apiVersion: skaffold/v4beta7` and

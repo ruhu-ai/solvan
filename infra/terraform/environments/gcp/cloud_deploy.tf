@@ -1,5 +1,6 @@
 locals {
   catalog_delivery_pipeline_id  = "${local.prefix}-catalog"
+  catalog_custom_target_type_id = "${local.prefix}-catalog-governance"
   catalog_evaluation_target_id  = "${local.prefix}-catalog-evaluation"
   catalog_publication_target_id = "${local.prefix}-catalog-publication"
   catalog_deploy_environment = {
@@ -27,51 +28,25 @@ locals {
   }
 }
 
-resource "google_clouddeploy_custom_target_type" "catalog_evaluation" {
+resource "google_clouddeploy_custom_target_type" "catalog" {
   project     = var.project_id
   location    = var.region
-  name        = "${local.prefix}-catalog-evaluation"
-  description = "Deterministically evaluates the exact Solvan governed catalog subject."
+  name        = local.catalog_custom_target_type_id
+  description = "Evaluates and, only after approval, publishes the governed catalog subject."
 
   tasks {
     render {
       container {
         image = var.images.release_admin
         args  = ["cloud-deploy-catalog"]
-        env   = merge(local.catalog_deploy_environment, { SOLVAN_CATALOG_STAGE = "EVALUATION" })
+        env   = local.catalog_deploy_environment
       }
     }
     deploy {
       container {
         image = var.images.release_admin
         args  = ["cloud-deploy-catalog"]
-        env   = merge(local.catalog_deploy_environment, { SOLVAN_CATALOG_STAGE = "EVALUATION" })
-      }
-    }
-  }
-
-  depends_on = [google_project_service.required["clouddeploy.googleapis.com"]]
-}
-
-resource "google_clouddeploy_custom_target_type" "catalog_publication" {
-  project     = var.project_id
-  location    = var.region
-  name        = "${local.prefix}-catalog-publication"
-  description = "Invokes catalog publication only inside an approved Cloud Deploy rollout."
-
-  tasks {
-    render {
-      container {
-        image = var.images.release_admin
-        args  = ["cloud-deploy-catalog"]
-        env   = merge(local.catalog_deploy_environment, { SOLVAN_CATALOG_STAGE = "PUBLICATION" })
-      }
-    }
-    deploy {
-      container {
-        image = var.images.release_admin
-        args  = ["cloud-deploy-catalog"]
-        env   = merge(local.catalog_deploy_environment, { SOLVAN_CATALOG_STAGE = "PUBLICATION" })
+        env   = local.catalog_deploy_environment
       }
     }
   }
@@ -87,7 +62,7 @@ resource "google_clouddeploy_target" "catalog_evaluation" {
   require_approval = false
 
   custom_target {
-    custom_target_type = google_clouddeploy_custom_target_type.catalog_evaluation.id
+    custom_target_type = google_clouddeploy_custom_target_type.catalog.id
   }
 
   execution_configs {
@@ -108,7 +83,7 @@ resource "google_clouddeploy_target" "catalog_publication" {
   require_approval = true
 
   custom_target {
-    custom_target_type = google_clouddeploy_custom_target_type.catalog_publication.id
+    custom_target_type = google_clouddeploy_custom_target_type.catalog.id
   }
 
   execution_configs {
