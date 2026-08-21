@@ -119,7 +119,9 @@ resource "google_network_services_authz_extension" "model_armor" {
 
   deletion_policy = "PREVENT"
 
-  depends_on = [google_project_service.required["serviceextensions.googleapis.com"]]
+  # The authorization extension is served by Network Services; there is no
+  # separate "serviceextensions" API in Google's catalog to depend on.
+  depends_on = [google_project_service.required["networkservices.googleapis.com"]]
 }
 
 resource "google_network_security_authz_policy" "model_armor" {
@@ -167,7 +169,9 @@ resource "google_network_services_authz_extension" "iap" {
 
   deletion_policy = "PREVENT"
 
-  depends_on = [google_project_service.required["serviceextensions.googleapis.com"]]
+  # The authorization extension is served by Network Services; there is no
+  # separate "serviceextensions" API in Google's catalog to depend on.
+  depends_on = [google_project_service.required["networkservices.googleapis.com"]]
 }
 
 resource "google_network_security_authz_policy" "iap" {

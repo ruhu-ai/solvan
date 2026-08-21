@@ -200,7 +200,6 @@ locals {
     "pubsub.googleapis.com",
     "run.googleapis.com",
     "secretmanager.googleapis.com",
-    (var.gateway_extensions_enabled ? "serviceextensions.googleapis.com" : ""),
     "servicenetworking.googleapis.com",
     "serviceusage.googleapis.com",
     "sqladmin.googleapis.com",
