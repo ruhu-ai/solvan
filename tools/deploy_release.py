@@ -677,6 +677,25 @@ def apply_release(plan: ReleasePlan, *, acknowledgement: str | None) -> dict[str
         )
         receipt["phases_completed"].append("pause_automated_work_before_any_image_rolls")
 
+        # The platform apply binds the Vertex AI Reasoning Engine service agent
+        # to Model Armor and the runtime bucket. Google creates that agent
+        # lazily, and IAM rejects a binding naming a principal that does not
+        # exist yet, so the apply fails on an identity the deployment never asks
+        # for. Provisioning the aiplatform identity materializes it, the same
+        # way the build identity is provisioned above.
+        _run(
+            [
+                "gcloud",
+                "beta",
+                "services",
+                "identity",
+                "create",
+                "--service=aiplatform.googleapis.com",
+                f"--project={plan.project_id}",
+                "--quiet",
+            ]
+        )
+
         _terraform(
             "apply",
             base_tfvars=Path(plan.base_tfvars),
