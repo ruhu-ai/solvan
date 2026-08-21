@@ -124,6 +124,17 @@ def validate_staging_configuration(
     project_match = re.search(r'^\s*project_id\s*=\s*"([^"\n]+)"\s*$', variables, re.MULTILINE)
     if project_match is None or project_match.group(1) != project_id:
         raise ValueError("release tfvars project_id must exactly equal --project")
+    required_catalog_inputs = {
+        "catalog_network_policy_hash": re.compile(r"^sha256:[0-9a-f]{64}$"),
+        "catalog_approval_ref": re.compile(r"^\S.{6,}\S$"),
+        "catalog_evaluation_ref": re.compile(r"^\S.{6,}\S$"),
+    }
+    for name, pattern in required_catalog_inputs.items():
+        match = re.search(rf'^\s*{name}\s*=\s*"([^"\n]+)"\s*$', variables, re.MULTILINE)
+        if match is None or pattern.fullmatch(match.group(1)) is None:
+            raise ValueError(
+                f"release tfvars {name} must contain an exact immutable catalog receipt"
+            )
 
 
 def build_plan(

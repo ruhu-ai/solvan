@@ -338,6 +338,10 @@ against a name inferred from a display name, revision, or prior release. During
 the final binding apply, Terraform derives each binding's `identity_ref` from
 the same Runtime receipt's system-attested principal; a pre-deployment
 placeholder or caller-supplied identity cannot survive into publication.
+Before any cloud mutation or image build, the release command also requires the
+catalog's approved network-policy digest and immutable approval and evaluation
+receipt references. `UNCONFIGURED` is valid for planning and local examples,
+but it is never accepted by an applied staging release.
 
 The Antigravity SDK provider is not a Runtime or Managed Agents deployment.
 Cloud Build resolves the locked Linux wheel by hash, runs import and SDK-agent

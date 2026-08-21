@@ -14,6 +14,7 @@ from tools.deploy_release import (
     parse_fully_qualified_digest,
     runtime_bindings,
     scheduler_pause_targets,
+    validate_staging_configuration,
 )
 
 
@@ -120,6 +121,57 @@ def test_release_apply_rejects_dev_backend_and_tfvars(tmp_path: Path) -> None:
             calibration_receipt_hash=None,
             apply=True,
         )
+
+
+def test_release_apply_refuses_unconfigured_catalog_receipts_before_cloud_work(
+    tmp_path: Path,
+) -> None:
+    backend = tmp_path / "staging.backend.hcl"
+    backend.write_text('prefix = "solvan/staging"\n', encoding="utf-8")
+    variables = tmp_path / "staging.tfvars"
+    variables.write_text(
+        "\n".join(
+            (
+                'project_id = "solvan-demo"',
+                'environment = "staging"',
+                'catalog_network_policy_hash = "UNCONFIGURED"',
+                'catalog_approval_ref = "UNCONFIGURED"',
+                'catalog_evaluation_ref = "UNCONFIGURED"',
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="catalog_network_policy_hash"):
+        validate_staging_configuration(
+            backend_config=backend,
+            base_tfvars=variables,
+            project_id="solvan-demo",
+        )
+
+
+def test_release_apply_accepts_exact_catalog_receipts(tmp_path: Path) -> None:
+    backend = tmp_path / "staging.backend.hcl"
+    backend.write_text('prefix = "solvan/staging"\n', encoding="utf-8")
+    variables = tmp_path / "staging.tfvars"
+    variables.write_text(
+        "\n".join(
+            (
+                'project_id = "solvan-demo"',
+                'environment = "staging"',
+                f'catalog_network_policy_hash = "sha256:{"a" * 64}"',
+                'catalog_approval_ref = "gs://receipts/catalog-approval.json"',
+                'catalog_evaluation_ref = "gs://receipts/catalog-evaluation.json"',
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    validate_staging_configuration(
+        backend_config=backend,
+        base_tfvars=variables,
+        project_id="solvan-demo",
+    )
 
 
 def test_artifact_response_resolves_only_expected_digest() -> None:
