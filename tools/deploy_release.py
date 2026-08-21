@@ -82,6 +82,8 @@ BUILD_IAM_TARGETS = (
     "google_artifact_registry_repository_iam_member.build_writer",
     "google_project_iam_member.build_logs",
     "google_service_account_iam_member.cloud_build_service_agent_token",
+    "google_storage_bucket.build_source",
+    "google_storage_bucket_iam_member.build_source_reader",
 )
 
 
@@ -388,7 +390,12 @@ def _terraform(
     )
 
 
-def _build(project_id: str) -> str:
+def _build(project_id: str, *, environment: str) -> str:
+    # Stage the source in the bucket Terraform granted solvan-build read on.
+    # Cloud Build's default bucket is created on first submit and carries no
+    # such grant, so the build would upload successfully and then fail to read
+    # its own source back.
+    staging = f"gs://{project_id}-{environment}-solvan-build-source/source"
     raw = _run(
         [
             "gcloud",
@@ -398,6 +405,7 @@ def _build(project_id: str) -> str:
             "--config=cloudbuild.yaml",
             f"--project={project_id}",
             "--region=europe-west1",
+            f"--gcs-source-staging-dir={staging}",
             "--substitutions=_REGION=europe-west1,_REPOSITORY=solvan",
             "--format=json",
             "--quiet",
@@ -656,7 +664,7 @@ def apply_release(plan: ReleasePlan, *, acknowledgement: str | None) -> dict[str
         )
         receipt["phases_completed"].append("create_cloud_build_service_identity_and_exact_iam")
 
-        build_id = _build(plan.project_id)
+        build_id = _build(plan.project_id, environment=plan.environment)
         receipt["build_id"] = build_id
         receipt["phases_completed"].append("build_release_images")
         release_vars["images"] = resolve_images(project_id=plan.project_id, build_id=build_id)
