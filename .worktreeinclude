@@ -1,0 +1,3 @@
+# Deliberately empty of secrets. Add only ignored, non-secret developer files
+# that every Codex-managed worktree needs.
+

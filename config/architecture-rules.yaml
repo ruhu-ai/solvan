@@ -1,0 +1,71 @@
+schema_version: 1
+layers:
+  domain:
+    path: src/solvan/domain
+    may_import: [domain]
+  application:
+    path: src/solvan/application
+    may_import: [application, domain]
+  persistence:
+    path: src/solvan/persistence
+    may_import: [persistence, application, domain]
+  tools:
+    path: src/solvan/tools
+    may_import: [tools, application, domain]
+  connectors:
+    path: src/solvan/connectors
+    may_import: [connectors, application, domain]
+  platform:
+    path: src/solvan/platform
+    may_import: [platform, application, domain]
+  agents:
+    path: src/solvan/agents
+    may_import: [agents, tools, application, domain]
+  api:
+    path: src/solvan/api
+    may_import: [api, application, domain]
+forbidden_imports:
+  src/solvan/domain: [fastapi, google, sqlalchemy, temporalio]
+  src/solvan/application: [fastapi, google.cloud, sqlalchemy, temporalio]
+  src/solvan/agents: [google.cloud.sql, sqlalchemy]
+  # Rule 6: verification adjudicates; it must not import what it judges. The
+  # previous key named a directory that does not exist (the module is
+  # verification_tools.py) and a module that does not exist, so it matched no
+  # files and checked nothing.
+  src/solvan/agents/verification_tools.py: [solvan.application.repairs, solvan.connectors.mutation]
+  # Rule 7: memory promotion consumes confirmed domain events, never raw prompt
+  # or conversation text.
+  src/solvan/application/memory.py: [solvan.application.liaison, solvan.platform.model_routes]
+  # Rule 8: the Relay is a read-only boundary. It may share audited libraries
+  # but must never reach the actuator or a mutation connector. Both halves of
+  # the Relay are named: the control plane that authors jobs, and the
+  # customer-resident executable that runs them. Keying only the control plane
+  # left the executable — the half that actually ships to a customer — free to
+  # import `apps.actuator` without tripping any rule.
+  apps/relay_control: [solvan.connectors.mutation, apps.actuator]
+  apps/solvant_relay: [solvan.connectors.mutation, apps.actuator, apps.relay_control]
+  # ...and the actuator must not reach back into either Relay boundary.
+  apps/actuator: [apps.relay_control, apps.solvant_relay]
+  # Rule 9: no deployed service answers from the scripted console fixture. The
+  # Liaison maintenance worker served it whenever the authority mode was not
+  # GOOGLE_CLOUD_IAM, so on every non-production deployment the assistant
+  # answered from three hand-written Tools while the console beside it rendered
+  # the governed catalog, and an environment variable decided which of the two a
+  # reader was given. There is one projection; the fixture is test material.
+  apps: [apps.api.console_fixture]
+mutation_connector_allowed_roots:
+  - apps/actuator
+# The ceiling exists so a file stays reviewable, not to hit a round number.
+# At 600 the standing exception list had grown to twelve, and five of those were
+# files within 17% of the cap: splitting them would have moved code across a
+# boundary without making anything clearer, and each carried a permission slip
+# that made the list look worse than the codebase was. 700 is still a file one
+# reviewer can hold, and it leaves exceptions for the seven that are genuinely
+# oversized (763 to 2313 lines) rather than diluting the signal with near-misses.
+file_size_limits:
+  python: 700
+  typescript: 500
+  tsx: 500
+  css: 500
+exceptions_file: config/architecture-exceptions.yaml
+

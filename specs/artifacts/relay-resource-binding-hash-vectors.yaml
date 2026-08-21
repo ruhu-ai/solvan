@@ -1,0 +1,49 @@
+schema_version: 1
+status: target
+encoding: UTF8_LENGTH_PREFIXED
+prefix: relay-resource-binding-v1
+separator: "|"
+null_encoding: "-1:"
+fields:
+  - schema_version
+  - organization_id
+  - project_id
+  - environment_id
+  - cell_id
+  - placement_epoch
+  - snapshot_id
+  - snapshot_material_hash
+  - node_id
+  - node_key
+  - node_kind
+  - resource_ref
+  - external_project_id
+  - effective_classification
+  - region
+  - instrumentation_state
+  - observation_id
+  - source_key
+  - source_revision
+vectors:
+  - name: payments-service
+    values:
+      schema_version: 1
+      organization_id: org_00000000000000000000000000
+      project_id: prj_00000000000000000000000000
+      environment_id: env_00000000000000000000000000
+      cell_id: cell_graph
+      placement_epoch: 1
+      snapshot_id: pgs_00000000000000000000000001
+      snapshot_material_hash: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      node_id: pgn_00000000000000000000000001
+      node_key: payments
+      node_kind: SERVICE
+      resource_ref: run://payments
+      external_project_id: customer-payments-prod
+      effective_classification: INTERNAL
+      region: europe-west1
+      instrumentation_state: INSTRUMENTED
+      observation_id: obs_app
+      source_key: app_hub
+      source_revision: 1
+    expected_hash: sha256:4fb9b048c579197a2cf5ef151c1f1c7f7c08cd386b038a10478a6ecd428d037d

@@ -1,0 +1,89 @@
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "solvan"
+version = "0.1.0"
+description = "Governed autonomous production reliability control plane"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi==0.139.2",
+  "google-auth==2.56.3",
+  "httpx==0.28.1",
+  "psycopg[binary]==3.2.9",
+  "psycopg-pool==3.2.6",
+  "pydantic==2.12.5",
+  "python-multipart==0.0.22",
+  "pyyaml==6.0.2",
+  "requests==2.34.2",
+  "uvicorn==0.46.0",
+  "google-adk==2.5.0",
+  "google-cloud-aiplatform[agent-engines]==1.163.0",
+  "opentelemetry-api==1.42.1",
+  "opentelemetry-sdk==1.42.1",
+  "opentelemetry-exporter-gcp-logging==1.14.0a0",
+  "opentelemetry-exporter-gcp-trace==1.14.0",
+  "rfc8785==0.1.4",
+  "jsonschema==4.26.0",
+  "cryptography==50.0.0",
+]
+
+[project.optional-dependencies]
+antigravity = [
+  "google-antigravity==0.1.12",
+]
+gemini-eval = ["google-genai==2.17.0"]
+
+[dependency-groups]
+dev = [
+  "mypy==1.17.1",
+  "pytest==8.4.1",
+  "pytest-cov==6.2.1",
+  "ruff==0.12.7",
+  "types-pyyaml==6.0.12.20250516",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/solvan", "apps"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+testpaths = ["tests"]
+markers = [
+  "browser: browser-driven end-to-end test",
+  "required: blocks the current repository phase",
+]
+
+[tool.coverage.run]
+branch = true
+# `apps` carries the API, coordinator, actuator and liaison services. Measuring
+# only `solvan` left roughly 42% of the runtime unmeasured, so the reported
+# figure was a property of the omissions rather than of the tests.
+source = ["solvan", "apps"]
+omit = ["src/solvan/persistence/*"] # exercised against disposable PostgreSQL
+
+[tool.coverage.report]
+# A ratchet, not a target: this is the true measured figure across both trees.
+# Raise it as coverage improves; never lower it to make a change pass.
+fail_under = 64
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = [".opensrc"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "apps", "tools"]
+exclude = ["^tests/"]

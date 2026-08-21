@@ -1,0 +1,186 @@
+schema_version: 1
+status: target
+catalog_key: gcp-observe.v1
+catalog_revision: 1
+canonicalization: RFC8785_JSON
+digest_algorithm: SHA-256
+maximum_job_duration_seconds: 60
+maximum_evidence_bytes: 1048576
+default_retry_policy:
+  maximum_attempts: 2
+  retryable_error_classes: [UPSTREAM_UNAVAILABLE, UPSTREAM_RATE_LIMITED]
+  ambiguous_delivery: RECORD_AND_RECONCILE
+  exactly_once_upstream_claim: false
+rules:
+  - every operation key and adapter revision is resolved from this catalog before job creation
+  - parameter objects reject unknown fields
+  - resource identifiers are selected from the approved Production Graph binding, never free text
+  - a job contains no URL, credential, header, provider query language, or SDK method name
+  - result rows are projected into typed evidence before local redaction and egress
+adapters:
+  cloud-monitoring.v1:
+    provider: GOOGLE_CLOUD
+    connection_provider: CLOUD_MONITORING
+    capability_key: METRIC_READ
+    credential_class: READ_ONLY
+    operations:
+      monitoring.time-series.read.v1:
+        purpose: bounded metric evidence
+        parameters:
+          metric_key: {type: enum, values: [http_5xx_ratio, request_count, p95_latency_ms, db_connection_utilization]}
+          resource_binding_id: {type: production_graph_binding}
+          resource_project_id: {type: graph-bound-external-project}
+          resource_kind: {type: enum, values: [CLOUD_RUN_SERVICE, CLOUD_SQL_INSTANCE]}
+          resource_name: {type: graph-bound-resource-name}
+          window_start: {type: timestamp}
+          window_end: {type: timestamp, maximum_window_seconds: 3600}
+          alignment_seconds: {type: enum, values: [30, 60, 300]}
+          maximum_points: {type: integer, minimum: 1, maximum: 1000}
+        output: relay.metric-series.v1
+        maximum_pages: 10
+        maximum_calls: 10
+        upstream_idempotency: NOT_SUPPORTED
+  managed-prometheus.v1:
+    provider: GOOGLE_CLOUD
+    connection_provider: MANAGED_PROMETHEUS
+    capability_key: PROMQL_READ
+    credential_class: READ_ONLY
+    operations:
+      prometheus.registered-range.read.v1:
+        purpose: bounded registered Prometheus metric evidence
+        parameters:
+          query_template_key: {type: registered-query-template}
+          resource_binding_id: {type: production_graph_binding}
+          resource_project_id: {type: graph-bound-external-project}
+          service_key: {type: graph-bound-service-key}
+          window_start: {type: timestamp}
+          window_end: {type: timestamp, maximum_window_seconds: 900}
+          step_seconds: {type: enum, values: [30, 60, 300]}
+          maximum_series: {type: integer, minimum: 1, maximum: 100}
+          maximum_points: {type: integer, minimum: 1, maximum: 1000}
+        output: relay.metric-series.v1
+        maximum_pages: 1
+        maximum_calls: 1
+        upstream_idempotency: NOT_SUPPORTED
+  cloud-logging.v1:
+    provider: GOOGLE_CLOUD
+    connection_provider: CLOUD_LOGGING
+    capability_key: LOG_SEARCH
+    credential_class: READ_ONLY
+    operations:
+      logging.entries.read.v1:
+        purpose: bounded application-log evidence
+        parameters:
+          filter_key: {type: enum, values: [service_errors, revision_errors, database_connection_errors]}
+          resource_binding_id: {type: production_graph_binding}
+          window_start: {type: timestamp}
+          window_end: {type: timestamp, maximum_window_seconds: 1800}
+          severity_floor: {type: enum, values: [WARNING, ERROR, CRITICAL]}
+          maximum_entries: {type: integer, minimum: 1, maximum: 500}
+        output: relay.log-events.v1
+        maximum_pages: 10
+        maximum_calls: 10
+        upstream_idempotency: NOT_SUPPORTED
+      logging.audit-events.read.v1:
+        connection_provider: CLOUD_AUDIT
+        capability_key: AUDIT_LOG_READ
+        purpose: bounded mutation-audit evidence
+        parameters:
+          method_key: {type: enum, values: [cloud_run_change, cloud_sql_change, iam_change, any_registered_change]}
+          resource_binding_id: {type: production_graph_binding}
+          window_start: {type: timestamp}
+          window_end: {type: timestamp, maximum_window_seconds: 86400}
+          maximum_entries: {type: integer, minimum: 1, maximum: 500}
+        output: relay.audit-events.v1
+        maximum_pages: 10
+        maximum_calls: 10
+        upstream_idempotency: NOT_SUPPORTED
+  cloud-trace.v1:
+    provider: GOOGLE_CLOUD
+    connection_provider: CLOUD_TRACE
+    capability_key: TRACE_READ
+    credential_class: READ_ONLY
+    operations:
+      trace.spans.read.v1:
+        purpose: bounded distributed-trace evidence
+        parameters:
+          trace_selector_key: {type: enum, values: [errors, slow_requests, incident_window_sample]}
+          resource_binding_id: {type: production_graph_binding}
+          window_start: {type: timestamp}
+          window_end: {type: timestamp, maximum_window_seconds: 1800}
+          maximum_traces: {type: integer, minimum: 1, maximum: 100}
+          maximum_spans_per_trace: {type: integer, minimum: 1, maximum: 200}
+        output: relay.trace-spans.v1
+        maximum_pages: 10
+        maximum_calls: 10
+        upstream_idempotency: NOT_SUPPORTED
+  kubernetes-metadata.v1:
+    provider: KUBERNETES
+    connection_provider: KUBERNETES
+    capability_key: KUBERNETES_METADATA_READ
+    credential_class: READ_ONLY
+    operations:
+      kubernetes.metadata.list.v1:
+        purpose: namespace-bounded workload metadata tied to the incident service
+        parameters:
+          resource_binding_id: {type: production_graph_binding}
+          namespace: {type: policy-allowed-namespace}
+          resource_kind: {type: enum, values: [Deployment, StatefulSet, DaemonSet, Pod, Service]}
+          label_selector_key: {type: graph-bound-service-selector}
+          maximum_items: {type: integer, minimum: 1, maximum: 200}
+        output: relay.kubernetes-metadata.v1
+        maximum_pages: 4
+        maximum_calls: 4
+        upstream_idempotency: NOT_SUPPORTED
+  error-reporting.v1:
+    provider: GOOGLE_CLOUD
+    connection_provider: ERROR_REPORTING
+    capability_key: ERROR_GROUP_READ
+    credential_class: READ_ONLY
+    operations:
+      errors.groups.read.v1:
+        purpose: bounded grouped-error evidence
+        parameters:
+          resource_binding_id: {type: production_graph_binding}
+          window_start: {type: timestamp}
+          window_end: {type: timestamp, maximum_window_seconds: 86400}
+          maximum_groups: {type: integer, minimum: 1, maximum: 100}
+        output: relay.error-groups.v1
+        maximum_pages: 5
+        maximum_calls: 5
+        upstream_idempotency: NOT_SUPPORTED
+  cloud-resource-metadata.v1:
+    provider: GOOGLE_CLOUD
+    credential_class: READ_ONLY
+    operations:
+      cloud_run.service_revision.read.v1:
+        connection_provider: CLOUD_RUN
+        capability_key: RESOURCE_METADATA_READ
+        purpose: exact Cloud Run service and revision metadata
+        parameters:
+          resource_binding_id: {type: production_graph_binding, allowed_kinds: [CLOUD_RUN_SERVICE]}
+        output: relay.cloud-run-revision.v1
+        maximum_pages: 1
+        maximum_calls: 1
+        upstream_idempotency: NOT_SUPPORTED
+      cloud_sql.instance_metadata.read.v1:
+        connection_provider: CLOUD_SQL
+        capability_key: RESOURCE_METADATA_READ
+        purpose: exact Cloud SQL instance metadata without database contents
+        parameters:
+          resource_binding_id: {type: production_graph_binding, allowed_kinds: [CLOUD_SQL_INSTANCE]}
+        output: relay.cloud-sql-metadata.v1
+        maximum_pages: 1
+        maximum_calls: 1
+        upstream_idempotency: NOT_SUPPORTED
+excluded_operations:
+  - arbitrary_http
+  - arbitrary_sql
+  - arbitrary_promql
+  - arbitrary_logging_filter
+  - shell
+  - arbitrary_kubernetes_api
+  - filesystem_read
+  - secret_read
+  - mutation
+  - continuous_watch

@@ -1,0 +1,548 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+uv run python tools/check_contracts.py
+uv run python tools/check_relay_contract.py
+
+CONTRACT_CONTAINER="solvan-contracts-$$"
+cleanup_contract_container() {
+  docker stop "$CONTRACT_CONTAINER" >/dev/null 2>&1 || true
+}
+trap cleanup_contract_container EXIT
+
+docker run --rm -d \
+  --name "$CONTRACT_CONTAINER" \
+  -p 127.0.0.1::5432 \
+  -e POSTGRES_PASSWORD=solvan-contract-check \
+  postgres:16-alpine >/dev/null
+
+# Cold containerd snapshots can take more than ten seconds on a loaded
+# workstation. Keep the wait bounded, but do not misreport initialization
+# latency as a schema failure.
+# The official image briefly starts a bootstrap server before shutting it down
+# and launching the final server. A single successful pg_isready in that
+# interval is a false positive, so require three consecutive healthy probes.
+ready_count=0
+for _attempt in {1..150}; do
+  if docker exec "$CONTRACT_CONTAINER" pg_isready -U postgres >/dev/null 2>&1; then
+    ((ready_count += 1))
+    if [[ "$ready_count" -ge 3 ]]; then
+      break
+    fi
+  else
+    ready_count=0
+  fi
+  sleep 0.2
+done
+
+if [[ "$ready_count" -lt 3 ]] \
+  || ! docker exec "$CONTRACT_CONTAINER" pg_isready -U postgres >/dev/null 2>&1; then
+  echo "PostgreSQL 16 contract container did not become ready." >&2
+  exit 1
+fi
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/schema.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/schema-contract-tests.sql
+echo "PostgreSQL constraint-oracle checks passed"
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v3.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v4.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v5.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v6.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v7.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v8.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v9.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v10.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v11.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v12.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v13.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v14.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v15.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v16.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v17.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v18.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema.target.v19.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/code-change-release-schema-contract-tests.sql
+echo "Code-change/release target schema-oracle checks passed"
+
+# Target specification 14 binds manifests to the target placement projection,
+# so the cross-cutting scale contract loads first. These schemas remain outside
+# the authoritative release DDL and its independent 61-table count below.
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/saas-scale-schema.target.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/liaison-schema.target.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/liaison-schema.target.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/liaison-schema-contract-tests.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/liaison-schema.target.v3.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/liaison-schema-contract-tests.v3.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operability-schema.target.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operability-schema.target.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operability-schema.target.v3.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operability-schema.target.v4.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operability-schema.target.v5.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operability-schema.target.v6.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operability-schema.target.v7.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operability-schema-contract-tests.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operator-identity-schema.target.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operator-identity-schema.target.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operator-identity-schema.target.v3.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operator-identity-schema.target.v4.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/operator-identity-schema-contract-tests.sql
+echo "Operator identity target schema-oracle checks passed"
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/saas-scale-schema-contract-tests.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/production-graph-schema.target.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/production-graph-schema-contract-tests.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/outcome-quality-schema.target.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/outcome-quality-schema-contract-tests.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/connection-scope-schema.target.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/connection-scope-schema-contract-tests.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/connection-scope-schema.target.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/connection-scope-schema-contract-tests.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/connection-scope-schema.target.v3.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/connection-scope-schema-contract-tests.v3.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/connection-scope-schema.target.v4.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/connection-scope-schema-contract-tests.v4.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/alert-triage-schema.target.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/alert-triage-schema-contract-tests.sql
+
+# Application persistence now targets the complete forward Alert schema. Load
+# every migration before exercising shared stores that carry Alert anchors.
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/alert-triage-schema.target.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/alert-triage-schema.target.v3.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/alert-triage-schema.target.v4.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/alert-triage-schema.target.v5.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/alert-triage-schema.target.v6.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/alert-triage-schema.target.v7.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/alert-triage-schema-contract-tests.v5.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/github-conversation-schema.target.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/github-conversation-schema-contract-tests.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/github-conversation-schema.target.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/github-conversation-schema-contract-tests.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/github-conversation-schema.target.v3.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/github-conversation-schema-contract-tests.v3.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/relay-schema.target.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/relay-schema.target.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/relay-schema.target.v3.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/relay-schema.target.v4.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/relay-schema.target.v5.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/relay-schema.target.v6.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/relay-schema.target.v7.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/relay-schema.target.v8.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/relay-schema-contract-tests.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/relay-schema-contract-tests.sql
+
+CONTRACT_PORT="$(docker port "$CONTRACT_CONTAINER" 5432/tcp | sed 's/.*://')"
+
+# Run one integration suite against the contract database and refuse a result
+# that proves nothing. Every integration file is skipif-gated on
+# SOLVAN_TEST_DATABASE_URL, so a renamed variable, an unreachable container or a
+# collection error yields "N skipped" and exit 0 — a green gate that executed no
+# contract at all. Skips and empty runs are therefore failures here.
+#
+# `set -e` aborts on a failing assignment, so capturing the exit status on the
+# next line never ran: a failing suite exited the script before its output was
+# printed, and the gate reported nothing but a bare exit code. Capture the
+# status on the assignment itself so the failure is readable.
+run_contract_suite() {
+  local output output_file status=0
+  local -a pytest_args=(-q)
+  if [[ "${SOLVAN_CONTRACT_VERBOSE:-0}" == "1" ]]; then
+    pytest_args=(-vv)
+  fi
+  if [[ "${SOLVAN_COLLECT_COVERAGE:-0}" == "1" ]]; then
+    # `scripts/check` erases once before entering this gate. Every shard then
+    # appends to the same branch-compatible data file so the final report
+    # measures all Python tests the canonical check actually executed.
+    pytest_args+=(--cov=solvan --cov=apps --cov-append --cov-report= --cov-fail-under=0)
+  fi
+  output_file="$(mktemp -t solvan-contract-output.XXXXXX)"
+  set +e
+  SOLVAN_TEST_DATABASE_URL="postgresql://postgres:solvan-contract-check@127.0.0.1:${CONTRACT_PORT}/postgres" \
+    uv run pytest "${pytest_args[@]}" "$@" 2>&1 | tee "$output_file"
+  status="${PIPESTATUS[0]}"
+  set -e
+  output="$(<"$output_file")"
+  rm -f "$output_file"
+  if [[ "$status" -ne 0 ]]; then
+    exit "$status"
+  fi
+  if grep -qE '[0-9]+ skipped' <<<"$output"; then
+    echo "Integration tests were skipped; the contract gate proved nothing." >&2
+    exit 1
+  fi
+  if ! grep -qE '[0-9]+ passed' <<<"$output"; then
+    echo "No integration test executed; the contract gate proved nothing." >&2
+    exit 1
+  fi
+}
+
+run_contract_suite tests/integration/test_persistence.py
+echo "PostgreSQL application contract checks passed"
+
+TABLE_COUNT="$(docker exec "$CONTRACT_CONTAINER" psql -U postgres -d postgres -Atc \
+  "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'solvan';")"
+
+if [[ "$TABLE_COUNT" != "61" ]]; then
+  echo "Expected 61 Solvan tables after clean DDL load; found $TABLE_COUNT." >&2
+  exit 1
+fi
+
+echo "PostgreSQL 16 clean-schema check passed ($TABLE_COUNT tables)"
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/liaison-schema-contract-tests.sql
+
+LIAISON_TABLES="$(docker exec "$CONTRACT_CONTAINER" psql -U postgres -d postgres -Atc \
+  "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'solvan_liaison';")"
+
+run_contract_suite tests/integration/test_liaison_persistence.py \
+    tests/integration/test_liaison_conversation_api.py
+
+echo "Target conversational schema checked ($LIAISON_TABLES tables; not release DDL)"
+
+OPERABILITY_TABLES="$(docker exec "$CONTRACT_CONTAINER" psql -U postgres -d postgres -Atc \
+  "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'solvan_operability';")"
+EXPECTED_OPERABILITY_TABLES="$(uv run python -c \
+  'from tools.bootstrap_database import expected_operability_tables; print(expected_operability_tables())')"
+
+if [[ "$OPERABILITY_TABLES" != "$EXPECTED_OPERABILITY_TABLES" ]]; then
+  echo "Expected $EXPECTED_OPERABILITY_TABLES governed-operability target tables; found $OPERABILITY_TABLES." >&2
+  exit 1
+fi
+
+run_contract_suite tests/integration/test_tool_catalog_persistence.py \
+    tests/integration/test_operator_identity_persistence.py \
+    tests/integration/test_operator_administration_api.py \
+    tests/integration/test_action_challenge_persistence.py \
+    tests/integration/test_console_capability_projection.py \
+    tests/integration/test_alert_triage_persistence.py \
+    tests/integration/test_alert_reader_session_api.py \
+    tests/integration/test_code_repair_predicates.py \
+    tests/integration/test_guidance_projection.py \
+    tests/integration/test_saas_scale_capacity.py \
+    tests/integration/test_builtin_guidance_lifecycle.py \
+    tests/integration/test_skills_interchange_persistence.py \
+    tests/integration/test_skill_selection_persistence.py \
+    tests/integration/test_skill_retention_persistence.py
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/alert-triage-schema-contract-tests.v2.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/alert-triage-schema-contract-tests.v3.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/alert-triage-schema-contract-tests.v4.sql
+
+echo "Target governed-operability schema checked ($OPERABILITY_TABLES tables; not release DDL)"
+
+ALERT_TABLES="$(docker exec "$CONTRACT_CONTAINER" psql -U postgres -d postgres -Atc \
+  "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'solvan_alerts';")"
+EXPECTED_ALERT_TABLES="$(uv run python -c \
+  'from tools.bootstrap_database import expected_alert_tables; print(expected_alert_tables())')"
+
+if [[ "$ALERT_TABLES" != "$EXPECTED_ALERT_TABLES" ]]; then
+  echo "Expected $EXPECTED_ALERT_TABLES Alert Triage target tables; found $ALERT_TABLES." >&2
+  exit 1
+fi
+
+echo "Target Alert Triage schema checked ($ALERT_TABLES tables; not release DDL)"
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/skills-interchange-schema-contract-tests.sql
+
+echo "Target Agent Skills interchange constraints checked (not release DDL)"
+
+SCALE_TABLES="$(docker exec "$CONTRACT_CONTAINER" psql -U postgres -d postgres -Atc \
+  "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'solvan_scale';")"
+
+if [[ "$SCALE_TABLES" != "28" ]]; then
+  echo "Expected 28 SaaS-scale target tables; found $SCALE_TABLES." >&2
+  exit 1
+fi
+
+echo "Target SaaS-scale schema checked ($SCALE_TABLES tables; not release DDL)"
+
+GRAPH_TABLES="$(docker exec "$CONTRACT_CONTAINER" psql -U postgres -d postgres -Atc \
+  "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'solvan_graph';")"
+
+if [[ "$GRAPH_TABLES" != "16" ]]; then
+  echo "Expected 16 production-environment-model target tables; found $GRAPH_TABLES." >&2
+  exit 1
+fi
+
+echo "Target production-environment-model schema checked ($GRAPH_TABLES tables; not release DDL)"
+
+QUALITY_TABLES="$(docker exec "$CONTRACT_CONTAINER" psql -U postgres -d postgres -Atc \
+  "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'solvan_quality';")"
+
+if [[ "$QUALITY_TABLES" != "17" ]]; then
+  echo "Expected 17 outcome-quality target tables; found $QUALITY_TABLES." >&2
+  exit 1
+fi
+
+echo "Target outcome-quality schema checked ($QUALITY_TABLES tables; not release DDL)"
+
+ONBOARDING_TABLES="$(docker exec "$CONTRACT_CONTAINER" psql -U postgres -d postgres -Atc \
+  "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'solvan_onboarding';")"
+
+if [[ "$ONBOARDING_TABLES" != "5" ]]; then
+  echo "Expected 5 connection-scope target tables; found $ONBOARDING_TABLES." >&2
+  exit 1
+fi
+
+echo "Target connection-scope schema checked ($ONBOARDING_TABLES tables; not release DDL)"
+
+RELAY_TABLES="$(docker exec "$CONTRACT_CONTAINER" psql -U postgres -d postgres -Atc \
+  "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'solvan_relay';")"
+EXPECTED_RELAY_TABLES="$(uv run python -c \
+  'from tools.bootstrap_database import RELAY_TABLES; print(len(RELAY_TABLES))')"
+
+if [[ "$RELAY_TABLES" != "$EXPECTED_RELAY_TABLES" ]]; then
+  echo "Expected $EXPECTED_RELAY_TABLES Solvant Relay target tables; found $RELAY_TABLES." >&2
+  exit 1
+fi
+
+echo "Target Solvant Relay schema checked ($RELAY_TABLES tables; not release DDL)"

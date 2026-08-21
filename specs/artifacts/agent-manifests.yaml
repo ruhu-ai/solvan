@@ -1,0 +1,280 @@
+schema_version: 1
+manifest_version: 2026-08-08.1
+status: implementation_complete_pending_cloud_evidence
+platform:
+  framework: google-adk
+  framework_version: 2.5.0
+  workspace_contract: WorkspaceAgent
+  workspace_compatibility_contracts: []
+  runtime_sdk: google-cloud-aiplatform
+  runtime_sdk_version: 1.163.0
+  location: europe-west1
+  registry_binding: REQUIRED_BEFORE_DEPLOYMENT
+  gateway_binding: REQUIRED_BEFORE_DEPLOYMENT
+  identity_type: AGENT_IDENTITY
+  model_resource: gemini-3.6-flash
+  model_location: eu
+  model_endpoint: https://aiplatform.eu.rep.googleapis.com
+agents:
+  - agent_key: incident-supervisor
+    display_name: Incident Supervisor Agent
+    registry_kind: AGENT
+    execution_role: SUPERVISOR
+    implementation_status: IMPLEMENTED
+    app_module: apps.agents.incident_supervisor.agent
+    immutable_resource_env: SOLVAN_INCIDENT_SUPERVISOR_RESOURCE
+    owner_department: sre-platform
+    discoverable_by: [sre, platform, ai-platform]
+    capabilities: [investigation.plan.propose]
+    tools: []
+    permission_ceiling: NO_PRODUCTION_ACCESS
+    approval_status: PENDING_DEPLOYMENT_EVIDENCE
+    lifecycle: DRAFT
+  - agent_key: evidence-agent
+    display_name: Evidence Agent
+    registry_kind: AGENT
+    execution_role: SPECIALIST
+    implementation_status: IMPLEMENTED
+    app_module: apps.agents.evidence_agent.agent
+    immutable_resource_env: SOLVAN_EVIDENCE_AGENT_RESOURCE
+    owner_department: sre-platform
+    discoverable_by: [sre, security, compliance, ai-platform]
+    capabilities: [logs.read, metrics.read, traces.read, audit.read, errors.read]
+    tools:
+      - cloud_logging_query
+      - cloud_monitoring_query
+      - cloud_trace_read
+      - kubernetes_metadata_read
+      - cloud_audit_log_query
+      - error_reporting_query
+      - managed_prometheus_query
+      - metric_baseline_compare
+      - metric_change_point_detect
+      - metric_correlate
+      - log_pattern_summary
+      - log_sample_bounded
+    permission_ceiling: READ_PRODUCTION_TELEMETRY
+    approval_status: PENDING_DEPLOYMENT_EVIDENCE
+    lifecycle: DRAFT
+  - agent_key: infrastructure-agent
+    display_name: Infrastructure Agent
+    registry_kind: AGENT
+    execution_role: SPECIALIST
+    implementation_status: IMPLEMENTED
+    app_module: apps.agents.infrastructure_agent.agent
+    immutable_resource_env: SOLVAN_INFRASTRUCTURE_AGENT_RESOURCE
+    owner_department: sre-platform
+    discoverable_by: [sre, platform, database-engineering]
+    capabilities: [deployment.read, sql.metadata.read, production-graph.read]
+    tools:
+      - cloud_run_read
+      - cloud_sql_metadata_read
+      - production_graph_read
+      - cloud_asset_inventory_search
+      - cloud_run_revision_compare
+      - github_commit_range_read
+      - github_pr_diff_read
+      - github_workflow_run_read
+      - github_search_read
+      - github_issue_read
+      - github_commit_history_read
+      - github_repository_tree_read
+      - github_workflow_runs_read
+      - github_deployments_read
+      - github_discussions_read
+      - github_merge_queue_read
+      - cloud_build_history_read
+    permission_ceiling: READ_PRODUCTION_METADATA
+    approval_status: PENDING_DEPLOYMENT_EVIDENCE
+    lifecycle: DRAFT
+  - agent_key: execution-agent
+    display_name: Execution Agent
+    registry_kind: AGENT
+    execution_role: SPECIALIST
+    implementation_status: IMPLEMENTED
+    app_module: apps.agents.execution_agent.agent
+    immutable_resource_env: SOLVAN_EXECUTION_AGENT_RESOURCE
+    owner_department: sre-platform
+    discoverable_by: [sre, platform]
+    capabilities: [authorized-action.execute]
+    tools: [execute_authorized_action]
+    permission_ceiling: INVOKE_PRIVATE_ACTUATOR_ONLY
+    approval_status: PENDING_DEPLOYMENT_EVIDENCE
+    lifecycle: DRAFT
+  - agent_key: verification-agent
+    display_name: Verification Agent
+    registry_kind: AGENT
+    execution_role: SPECIALIST
+    implementation_status: IMPLEMENTED
+    app_module: apps.agents.verification_agent.agent
+    immutable_resource_env: SOLVAN_VERIFICATION_AGENT_RESOURCE
+    owner_department: release-engineering
+    discoverable_by: [sre, release-engineering, compliance]
+    capabilities: [verification.observe]
+    tools: [run_bound_verification]
+    permission_ceiling: READ_TELEMETRY_AND_SYNTHETICS
+    approval_status: PENDING_DEPLOYMENT_EVIDENCE
+    lifecycle: DRAFT
+  - agent_key: workspace-agent
+    display_name: Workspace Agent
+    registry_kind: AGENT
+    execution_role: WORKSPACE
+    implementation_status: IMPLEMENTED
+    app_module: apps.agents.workspace_agent.agent
+    immutable_resource_env: SOLVAN_WORKSPACE_AGENT_RESOURCE
+    owner_department: application-engineering
+    discoverable_by: [sre, application-engineering]
+    capabilities:
+      - incident.deep-investigation.propose
+      - repository.patch.propose
+      - regression-test.propose
+    tools:
+      - workspace.code-repair.read-artifact
+      - workspace.code-repair.write-candidate-artifact
+      - workspace.code-repair.run-in-sandbox
+    permission_ceiling: INVOKE_WORKSPACE_TOOL_BROKER_ONLY
+    approval_status: PENDING_DEPLOYMENT_EVIDENCE
+    lifecycle: DRAFT
+optional_agents:
+  - agent_key: liaison-agent
+    display_name: Liaison Agent
+    registry_kind: AGENT
+    execution_role: SPECIALIST
+    implementation_status: IMPLEMENTED
+    application_module: solvan.application.liaison.adk_composer
+    service_modules:
+      - apps.api.main
+      - apps.liaison_maintenance.main
+    enable_env: SOLVAN_ENABLE_CONVERSATIONAL_SURFACE
+    platform: cloud-run
+    framework: google-adk
+    framework_version: 2.5.0
+    identity_type: WORKLOAD_IDENTITY
+    immutable_resource_env: SOLVAN_LIAISON_REGISTRY_RESOURCE
+    location: europe-west1
+    model_location: eu
+    model_endpoint: https://aiplatform.eu.rep.googleapis.com
+    model_resource: gemini-3.6-flash
+    owner_department: sre-platform
+    discoverable_by: [sre, platform, security, compliance, ai-platform]
+    capabilities:
+      - conversation.read.delegated-projection
+      - conversation.write.ledger
+      - coordinator.steer.propose
+    tools:
+      - resolve_anchor
+      - read_projection
+      - list_prior_incidents
+      - search_records
+      - catch_up
+      - recall_conversation
+      - recall_memory
+      - ask_principal
+      - steer_draft
+    data_classes: [INTERNAL, CONFIDENTIAL]
+    authority_ceiling:
+      reads: DELEGATED_PROJECTIONS_ONLY
+      writes: CONVERSATION_ROWS_ONLY
+      proposes: STEER_VIA_COORDINATOR_INBOX
+    prohibited_capabilities:
+      - telemetry.read.direct
+      - connector.invoke.direct
+      - production.mutate
+      - agent.dispatch
+      - action.approve
+      - verification.adjudicate
+      - incident.resolve
+      - case.close
+      - memory.promote
+    registry_behavior: REGISTER_ONLY_WHEN_ENABLED
+    release_stage: TARGET
+    approval_status: PENDING_DEPLOYMENT_EVIDENCE
+    lifecycle: DISABLED_BY_DEFAULT
+  - agent_key: antigravity-incident-workspace
+    display_name: Antigravity Incident Workspace Agent
+    registry_kind: AGENT
+    execution_role: WORKSPACE_PROVIDER
+    implementation_status: IMPLEMENTED
+    provider_module: solvan.platform.antigravity_workspace
+    service_module: apps.antigravity_workspace.main
+    enable_env: SOLVAN_ENABLE_ANTIGRAVITY_DEMO
+    platform: cloud-run
+    workspace_provider: AntigravityWorkspaceProvider
+    implementation_sdk: google-antigravity
+    implementation_sdk_version: 0.1.10
+    hosting_control_plane: cloud-run
+    hosting_data_plane: private-https
+    immutable_resource_env: SOLVAN_ANTIGRAVITY_WORKSPACE_SERVICE
+    location: europe-west1
+    model_location: global
+    model_resource: gemini-3.1-pro-preview
+    owner_department: application-engineering
+    discoverable_by: [sre, application-engineering, ai-platform]
+    capabilities:
+      - incident.deep-investigation.propose
+      - repository.patch.propose
+      - regression-test.propose
+    tools:
+      - workspace_read_artifact
+      - workspace_write_candidate
+    data_classes: [PUBLIC]
+    synthetic_attestation_required: true
+    permission_ceiling: PUBLIC_SYNTHETIC_EXPERIMENT_ONLY
+    prohibited_capabilities:
+      - root-cause.confirm
+      - patch.approve
+      - repository.merge
+      - deployment.execute
+      - production.mutate
+      - verification.adjudicate
+      - incident.resolve
+      - case.close
+      - memory.promote
+      - production-graph.approve
+    registry_behavior: REGISTER_ONLY_WHEN_ENABLED
+    release_stage: ALPHA_SDK
+    approval_status: EXPERIMENT_ONLY
+    lifecycle: DISABLED_BY_DEFAULT
+
+# Deterministic seats hold capability that no model-backed agent may hold.
+# They are registered because PR-031 requires every governed destination to be
+# catalogued, and because the fleet's security claim is only legible when the
+# one component that can mutate production is visible beside the six that
+# cannot. They carry no model by design: their value is that they cannot be
+# persuaded, only satisfied.
+deterministic_services:
+  - service_key: action-actuator
+    display_name: Action Actuator
+    registry_kind: DETERMINISTIC_SERVICE
+    implementation_status: IMPLEMENTED
+    app_module: apps.actuator.main
+    immutable_resource_env: SOLVAN_ACTUATOR_URL
+    owner_department: sre-platform
+    discoverable_by: [sre, platform, security, compliance]
+    model_backed: false
+    identity_type: WORKLOAD_IDENTITY
+    caller_ceiling: EXECUTION_AGENT_IDENTITY_ONLY
+    permission_ceiling: PRODUCTION_MUTATION_ALLOWLIST_ONLY
+    allowed_operations:
+      - PAYMENTS_POOL_RECYCLE
+      - CLOUD_RUN_TRAFFIC_ROLLBACK
+    accepts_from_caller:
+      - action_id
+      - scope
+      - invocation_id
+      - trace_id
+    prohibited_capabilities:
+      - action.author
+      - approval.grant
+      - policy.evaluate-weaker
+      - verification.adjudicate
+      - incident.resolve
+      - case.close
+    preconditions_revalidated:
+      - stored_action_digest
+      - approval_validity_and_expiry
+      - target_version_and_epoch
+      - policy_version
+      - target_reservation
+    approval_status: PENDING_DEPLOYMENT_EVIDENCE
+    lifecycle: DRAFT

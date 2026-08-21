@@ -1,0 +1,439 @@
+/* Incident evidence, impact, queue triage, and exact patch review.
+   Held apart from app.css because these serve one question — can the reader
+   check what they are being told — rather than the shell's general layout. */
+
+/* Resolvable evidence
+   A citation carries its kind and a readable label. The ref stays visible but
+   subordinate: it is the address, not the meaning. */
+.source-chip { max-width: 100%; gap: 6px; text-align: left; }
+.source-chip .chip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The ref stays subordinate through size, not through a dimmed colour that
+   drops below the contrast floor. */
+.source-chip .chip-ref { flex: none; font: var(--type-mono); font-size: 11px; }
+.source-chip:hover { border-color: var(--provenance-strong); }
+.source-chip.unresolved { border-style: dashed; border-color: var(--border-strong); background: var(--surface-muted); color: var(--text-muted); cursor: default; }
+.evidence-count { color: var(--text-muted); font-size: 11px; }
+.evidence-icon { display: inline-grid; place-items: center; color: var(--provenance-strong); }
+
+.evidence-ledger-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.evidence-ledger-list button { display: grid; width: 100%; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 9px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); text-align: left; }
+.evidence-ledger-list button:hover { border-color: var(--border-strong); background: var(--surface-muted); }
+.evidence-ledger-label { display: grid; gap: 1px; min-width: 0; }
+.evidence-ledger-label strong { font: var(--type-body); color: var(--text-primary); }
+.evidence-ledger-label small { font: var(--type-small); color: var(--text-muted); }
+
+.drawer-scrim { position: fixed; inset: 0; z-index: 40; background: rgb(0 0 0 / 32%); }
+.evidence-drawer { position: fixed; z-index: 41; top: 0; right: 0; bottom: 0; width: min(420px, 100vw); overflow-y: auto; padding: var(--space-5); border-left: 1px solid var(--border-strong); background: var(--surface); box-shadow: -18px 0 40px rgb(0 0 0 / 12%); }
+.evidence-drawer header { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.evidence-drawer h2 { margin: 2px 0 0; font: var(--type-h2); }
+.evidence-drawer dl { display: grid; gap: 12px; margin: 16px 0 0; }
+.evidence-drawer code { overflow-wrap: anywhere; }
+.drawer-kind { display: flex; align-items: center; gap: 7px; margin: 0; color: var(--text-secondary); font: var(--type-small); }
+.drawer-note { margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--border); color: var(--text-muted); font: var(--type-small); }
+@media (max-width: 760px) { .evidence-drawer { width: 100vw; } }
+
+/* Impact with shape
+   One row per measured signal, each naming what it happened to. */
+.impact-block { display: grid; gap: 10px; margin: 14px 0 0; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-muted); }
+.impact-window { margin: 0; font: var(--type-body); color: var(--text-primary); }
+.impact-lines { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.impact-lines li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.impact-lines strong { font-variant-numeric: tabular-nums; }
+.impact-lines code { font: var(--type-mono); color: var(--text-secondary); }
+.impact-lines span { color: var(--text-muted); font: var(--type-small); }
+.impact-dataloss { margin: 0; padding-top: 10px; border-top: 1px solid var(--border); color: var(--text-secondary); font: var(--type-small); }
+.impact-fallback { margin: 14px 0 0; color: var(--text-secondary); }
+
+/* Queue triage
+   The one row blocked on a person is marked structurally, not only by colour. */
+.row-needs-human td:first-child { box-shadow: inset 3px 0 0 var(--status-warning-strong); }
+.search-field { display: flex; align-items: center; gap: 7px; padding-left: 9px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-muted); }
+.search-field input { width: min(300px, 66vw); border: 0; background: transparent; }
+.secondary-button.active { border-color: var(--status-warning-border); background: var(--status-warning-bg); color: var(--status-warning-strong); }
+
+/* Human latency is the one interval Solvan does not control. */
+.timing-phase.human { border-style: dashed; }
+.timing-phase.human .phase-name::after { content: " · human"; color: var(--text-muted); }
+.source-chip.compact { gap: 4px; padding: 3px 7px; }
+
+
+/* The exact patch, shown
+   Approval is offered over a change a reviewer can read, never over a hash. */
+.patch-diff { margin: 14px 0; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.diff-summary { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-bottom: 1px solid var(--border); background: var(--surface-muted); font: var(--type-small); color: var(--text-secondary); }
+.diff-added { color: var(--status-success-strong); font-variant-numeric: tabular-nums; }
+.diff-removed { color: var(--status-danger-strong); font-variant-numeric: tabular-nums; }
+.diff-note { margin: 0; padding: 9px 12px; border-bottom: 1px solid var(--border); background: var(--status-warning-bg); color: var(--status-warning-strong); font: var(--type-small); }
+.patch-diff article + article { border-top: 1px solid var(--border); }
+.patch-diff article > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; background: var(--surface-muted); }
+.patch-diff article > header code { font: var(--type-mono); color: var(--text-primary); overflow-wrap: anywhere; }
+.patch-diff table { width: 100%; border-collapse: collapse; table-layout: auto; }
+.patch-diff td { padding: 1px 0; border: 0; font: var(--type-mono); font-size: 12px; line-height: 1.55; vertical-align: top; }
+.diff-gutter { width: 1%; min-width: 38px; padding: 1px 8px 1px 0 !important; text-align: right; color: var(--text-muted); user-select: none; font-variant-numeric: tabular-nums; }
+.diff-sign { width: 1%; padding: 1px 6px !important; color: var(--text-muted); user-select: none; }
+.diff-text { padding-right: 12px !important; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-primary); }
+.diff-add { background: var(--status-success-bg); }
+.diff-add .diff-sign { color: var(--status-success-strong); }
+.diff-remove { background: var(--status-danger-bg); }
+.diff-remove .diff-sign { color: var(--status-danger-strong); }
+.diff-meta .diff-text { color: var(--text-muted); }
+.diff-unavailable { margin: 14px 0; padding: 12px; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); color: var(--text-muted); font: var(--type-small); }
+
+/* Incident queue
+   Eight columns need room. Below it the row scrolls rather than crushing a
+   header into two letters; at card width it becomes labelled cards as usual. */
+.queue-table { min-width: 860px; table-layout: fixed; }
+.queue-table th { white-space: nowrap; }
+/* Widths are declared on the header row: `table-layout: fixed` reads column
+   widths from the first row and ignores them everywhere else. */
+.queue-table th:nth-child(1) { width: 88px; }
+.queue-table th:nth-child(2) { width: 84px; }
+.queue-table th:nth-child(3) { width: 116px; }
+.queue-table th:nth-child(4) { width: 176px; }
+.queue-table th:nth-child(5) { width: 174px; }
+.queue-table th:nth-child(6) { width: 132px; }
+.queue-table th:nth-child(7) { width: 56px; }
+.queue-table td:first-child, .queue-table td:nth-child(7) { white-space: nowrap; }
+.queue-table td:nth-child(5) { color: var(--text-secondary); }
+/* A human state label is as long as the state deserves. Under `table-layout:
+   fixed` a nowrap badge silently overruns the next column, so in the queue it
+   wraps inside its own cell instead. */
+.queue-table td:nth-child(4) .status-badge { white-space: normal; text-align: left; }
+.queue-table td { vertical-align: top; }
+@media (max-width: 900px) { .queue-table { min-width: 0; table-layout: auto; } }
+@media (max-width: 620px) {
+  .table-toolbar { flex-wrap: wrap; align-items: start; }
+  .table-toolbar label { width: 100%; }
+  .table-toolbar .search-field { width: 100%; }
+  .search-field input { width: 100%; }
+  /* A long human state label wraps rather than running under the card edge. */
+  .responsive-table td .status-badge { white-space: normal; text-align: left; }
+}
+
+/* Ask the ledger
+   Answers arrive as typed parts, so the styling distinguishes a verified
+   statement from a held one from a withheld one — the reader should never have
+   to infer which is which from tone of voice. */
+/* The conversation is a companion to the incident, not a section of it.
+   Docked to the right edge as a rail, it can be read beside the record it is
+   about — which is the whole point, and why it carries no scrim: the page
+   behind stays legible and scrollable while a question is being asked. That
+   also makes it deliberately non-modal, unlike the evidence drawer, which is a
+   lookup you finish and dismiss.
+
+   The rail is narrow, so prose is measured by the rail rather than by a `ch`
+   cap; past roughly 70 characters the eye loses the start of the next line. */
+.ask-rail {
+  position: fixed; z-index: 39; top: 0; right: 0; bottom: 0;
+  /* Flex, not a positional grid. A four-row grid silently gave the 1fr row to
+     whichever child happened to be third, so adding a control above the
+     transcript stretched it into a 450px empty box. Only the scroll region
+     claims the free space, whatever else is added around it. */
+  display: flex; flex-direction: column; gap: 12px;
+  max-width: 100vw; padding: var(--space-5);
+  border-left: 1px solid var(--border-strong);
+  /* One ground for the whole rail. A conversation read as a sequence needs a
+     continuous surface to be a sequence on; the previous panel put each part on
+     its own fill and the eye had to reassemble them. */
+  background: var(--surface-muted);
+  box-shadow: -18px 0 40px rgb(9 11 14 / 22%);
+}
+
+/* The primary Chat route uses the exact same transcript client as the
+   contextual rail, but it is a workspace surface rather than an overlay. */
+.ask-chat-page {
+  position: relative;
+  inset: auto;
+  min-height: calc(100vh - 148px);
+  /* `width` is load-bearing, not redundant with `max-width`. Auto inline
+     margins cancel a grid item's `stretch`, so without it the panel is
+     shrink-to-fit and its width becomes the max-content width of the
+     transcript — it re-measured, and visibly jumped, on every message. */
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+.ask-chat-page .ask-rail-scroll { min-height: 360px; }
+
+.central-chat-layout { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+.central-chat-directory { position: sticky; top: 82px; display: grid; gap: 14px; max-height: calc(100vh - 130px); overflow: hidden; }
+.central-chat-directory .section-heading { margin-bottom: 0; }
+.central-chat-directory .section-heading p { margin-bottom: 0; font-size: 12px; }
+.central-chat-directory-tabs,
+.central-chat-window { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.central-chat-directory-tabs button,
+.central-chat-window button { padding: 6px 9px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text-secondary); cursor: pointer; font: inherit; font-size: 12px; font-weight: 650; }
+.central-chat-directory-tabs button[aria-selected="true"],
+.central-chat-window button[aria-pressed="true"] { border-color: var(--status-info-border); background: var(--status-info-bg); color: var(--link); }
+.central-chat-window > span { margin-right: 2px; color: var(--text-muted); font-size: 12px; font-weight: 650; }
+.central-chat-search { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-muted); }
+.central-chat-search:focus-within { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.central-chat-search input { min-width: 0; width: 100%; border: 0; outline: 0; background: transparent; color: var(--text-primary); }
+.central-chat-records { display: grid; gap: 7px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.central-chat-records button { display: grid; width: 100%; gap: 7px; padding: 11px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); cursor: pointer; text-align: left; }
+.central-chat-records button:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface-muted); }
+.central-chat-records button:disabled { cursor: wait; opacity: .65; }
+.central-chat-records button > span { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.central-chat-records small { color: var(--text-muted); }
+.central-chat-records button > span:last-child { color: var(--link); font-size: 12px; font-weight: 650; }
+.central-chat-services button { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.central-chat-conversation { display: grid; gap: 10px; min-width: 0; }
+.central-chat-attached { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 980px; margin: 0 auto; width: 100%; padding: 10px 12px; border: 1px solid var(--status-info-border); border-radius: var(--radius-sm); background: var(--status-info-bg); }
+.central-chat-attached > div { display: grid; gap: 1px; min-width: 0; }
+.central-chat-attached strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.central-chat-attached .secondary-button { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+
+@media (max-width: 980px) {
+  .central-chat-layout { grid-template-columns: 1fr; }
+  .central-chat-directory { position: static; max-height: none; }
+  .central-chat-records { max-height: 280px; }
+}
+
+/* The resize edge. 10px of hit area around a 1px line — a border you can only
+   grab at exactly its own width is a border nobody grabs. */
+.ask-rail-grip {
+  position: absolute; z-index: 1; top: 0; bottom: 0; left: -5px; width: 10px;
+  cursor: col-resize; background: transparent;
+}
+.ask-rail-grip::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 4px; width: 2px;
+  background: transparent; transition: background 120ms ease;
+}
+.ask-rail-grip:hover::after, .ask-rail-grip:focus-visible::after { background: var(--focus-ring); }
+.ask-rail-grip:focus-visible { outline: none; }
+.ask-rail-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; flex: none; }
+.ask-rail-head-actions { display: flex; align-items: center; gap: 6px; }
+.ask-follow { padding: 5px 11px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); color: var(--text-secondary); font: var(--type-small); font-weight: 600; }
+.ask-follow:hover:not(:disabled) { color: var(--text-primary); }
+.ask-follow[aria-pressed="true"] { border-color: var(--provenance-border); background: var(--provenance-bg); color: var(--provenance-strong); }
+.ask-follow:disabled { opacity: 0.55; }
+.ask-rail-head h2 { margin: 2px 0 0; font: var(--type-h2); }
+.ask-people-panel { flex: none; display: grid; gap: 10px; max-height: 44vh; overflow-y: auto; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+.ask-people-panel > header { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.ask-people-panel h3, .ask-people-panel h4 { margin: 0; color: var(--text-primary); }
+.ask-people-panel ul { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.ask-people-panel li, .ask-access-requests article { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ask-people-panel li > span, .ask-access-requests article > span { display: grid; min-width: 0; }
+.ask-people-panel strong { overflow-wrap: anywhere; color: var(--text-primary); font: var(--type-small); font-weight: 650; }
+.ask-people-panel small { color: var(--text-muted); font: var(--type-small); }
+.ask-person-add { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px; padding-top: 9px; border-top: 1px solid var(--border); }
+.ask-person-add label { display: grid; gap: 4px; color: var(--text-secondary); font: var(--type-small); }
+.ask-person-add input { width: 100%; }
+.ask-access-requests { display: grid; gap: 8px; padding-top: 9px; border-top: 1px solid var(--border); }
+.ask-access-requests article > div { display: flex; gap: 6px; }
+
+/* Only the transcript scrolls: the heading stays put and the composer stays
+   reachable without hunting for the bottom of a long conversation. */
+.ask-rail-scroll { flex: 1; display: grid; align-content: start; gap: 14px; overflow-y: auto; min-height: 0; }
+
+.ask-open-button { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); font: var(--type-small); font-weight: 600; }
+.ask-open-button:hover { background: var(--surface-muted); }
+.ask-open-button[aria-expanded="true"] { border-color: var(--action-primary); }
+
+@media (max-width: 760px) {
+  /* Below this there is no record left to sit beside, so the rail takes the
+     screen and the drag handle stops being meaningful. */
+  /* The docked rail only. The Chat route carries `ask-rail` too, and it is a
+     workspace surface inside padded content: 100vw there is wider than the
+     space it sits in, which scrolls the whole page sideways. */
+  .ask-rail:not(.ask-chat-page) { width: 100vw !important; border-left: 0; }
+  .ask-rail-grip { display: none; }
+  .ask-chat-page { min-height: calc(100vh - 112px); border: 0; border-radius: 0; }
+}
+.ask-empty { display: flex; align-items: center; gap: 7px; margin: 0; color: var(--text-muted); font: var(--type-small); }
+.ask-thread { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.ask-thread > li { display: grid; gap: 8px; justify-items: stretch; }
+.ask-message { display: grid; gap: 6px; min-width: 0; }
+.ask-message-user { justify-items: end; }
+.ask-message-meta { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font: var(--type-small); }
+.ask-message-meta strong { color: var(--text-secondary); font-weight: 650; }
+.ask-message-meta time { cursor: help; }
+.ask-message-meta-user { justify-content: end; }
+.ask-avatar { display: inline-grid; place-items: center; width: 22px; height: 22px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); color: var(--text-secondary); font-size: 10px; font-weight: 700; }
+.ask-avatar-solvan { border-color: var(--provenance-border); background: var(--provenance-bg); color: var(--provenance-strong); }
+.ask-terminal-state { margin-left: auto; text-transform: capitalize; }
+/* The person's own words get the bubble; the answer does not. Giving both a
+   fill makes a transcript of competing boxes, and it is the question that needs
+   marking as the thing a human typed. */
+/* The bubble already marks these words as a person's, and the panel side says
+   whose. Weighting the text as well was a fourth signal for one fact. */
+.ask-question { justify-self: end; max-width: 90%; margin: 0; padding: 8px 12px; border-radius: var(--radius-md); background: var(--surface); color: var(--text-primary); }
+.ask-delivery { display: inline-flex; align-items: center; gap: 3px; color: var(--text-muted); font-size: 10px; cursor: help; }
+.ask-message-attachments { display: flex; flex-wrap: wrap; justify-content: end; gap: 4px; }
+.ask-message-attachments span { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 999px; color: var(--text-muted); font: var(--type-small); }
+.ask-message-attachments .clean { border-color: var(--status-success-border); color: var(--status-success-strong); background: var(--status-success-bg); }
+.ask-message-attachments .blocked { border-color: var(--status-danger-border); color: var(--status-danger-strong); background: var(--status-danger-bg); }
+.ask-pending { margin: 0; color: var(--text-muted); font: var(--type-small); }
+.ask-turn-state { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0; color: var(--text-secondary); font: var(--type-small); }
+.ask-turn-interrupted { color: var(--text-muted); }
+.ask-turn-state .link-button { padding: 2px 0; color: var(--action-primary); font: inherit; }
+/* Work in progress is a line, not a panel. The tinted, accent-bordered box it
+   used to sit in outweighed the answer beneath it, and it stayed on screen
+   after the turn had finished, where it had nothing left to say. */
+.ask-turn-work { display: grid; gap: 6px; color: var(--text-secondary); font: var(--type-small); }
+.ask-turn-work p { margin: 0; }
+.ask-activity { display: flex; align-items: center; gap: 7px; }
+.ask-activity-actions { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
+.ask-activity-pulse { width: 6px; height: 6px; border-radius: 999px; background: var(--provenance-strong); animation: ask-pulse 1.4s ease-in-out infinite; }
+@keyframes ask-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ask-activity-pulse { animation: none; } }
+.ask-tool-row summary { cursor: pointer; color: var(--text-primary); font-weight: 650; }
+.ask-tool-row dl { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 0; }
+.ask-tool-row dl div { display: flex; gap: 4px; }
+.ask-tool-row dt { color: var(--text-muted); }
+.ask-tool-row dd { margin: 0; }
+.ask-usage { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.ask-action-error { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex: none; }
+.ask-thread-picker { flex: none; display: grid; gap: 4px; }
+.ask-thread-picker select { width: 100%; padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-secondary); font: var(--type-small); }
+.ask-error, .ask-error-part { margin: 0; color: var(--status-danger-strong); font: var(--type-small); }
+.ask-connective { margin: 0; color: var(--text-secondary); font: var(--type-small); }
+
+/* A verified statement: rendered from a template, standing on its citations.
+   It is a sentence, not a card. The chrome around it never carried the
+   verification — the predicate did — and a stack of bordered boxes reads as a
+   list of alerts rather than as one answer. What remains inline is the *kind*
+   of record each sentence stands on; the ids are listed once, below. */
+.ask-claim { margin: 0; color: var(--text-primary); }
+/* Quiet: the sentence is the claim, the glyph only says what kind of record it
+   stands on. `nowrap` keeps the mark with the words it belongs to rather than
+   orphaning it onto a line of its own. */
+.ask-marks { display: inline-flex; flex-wrap: wrap; gap: 4px; margin-left: 5px; vertical-align: middle; }
+.ask-marks .source-chip { display: inline-flex; vertical-align: middle; }
+
+/* Answers read as prose; the gap separates statements without boxing them. */
+.ask-answer { display: grid; gap: 7px; }
+.ask-followups { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+
+/* A held answer is not an error: it is what is true, plus what would change it. */
+.ask-refusal { display: grid; gap: 6px; padding: 10px 12px; border: 1px dashed var(--status-warning-border); border-radius: var(--radius-sm); background: var(--status-warning-bg); }
+.ask-refusal-head { display: flex; align-items: center; gap: 6px; color: var(--status-warning-strong); font: var(--type-small); font-weight: 650; }
+.ask-refusal p { margin: 0; color: var(--text-primary); }
+.ask-refusal small { color: var(--text-secondary); font: var(--type-small); }
+.settings-refusal { display: grid; gap: 4px; padding: 12px 14px; border: 1px solid var(--status-warning-border); border-radius: var(--radius-sm); background: var(--status-warning-bg); }
+.settings-refusal strong { color: var(--status-warning-strong); }
+.settings-refusal p { margin: 0 0 6px; color: var(--text-primary); }
+
+.ask-withheld { display: flex; align-items: center; gap: 7px; margin: 0; padding: 8px 12px; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); color: var(--text-muted); font: var(--type-small); }
+.ask-steer { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--status-warning-border); border-radius: var(--radius-sm); background: var(--surface); }
+.ask-approval-ref .action-card { margin: 0; box-shadow: none; }
+.ask-guidance-ref { display: grid; gap: 6px; padding: 12px; border: 1px solid var(--status-info-border); border-radius: var(--radius-sm); background: var(--status-info-bg); }
+.ask-guidance-ref p { margin: 0; }
+.ask-guidance-ref code { width: fit-content; color: var(--text-secondary); }
+.ask-steer-missing { margin: 0; color: var(--text-secondary); font: var(--type-small); }
+.ask-steer-step { margin: 0; color: var(--text-primary); }
+/* Holds only the conditional identity field now; it collapses to nothing when
+   that field is absent rather than reserving a block of chrome. */
+.ask-rail-controls:empty { display: none; }
+.ask-rail-controls { display: grid; gap: 10px; flex: none; }
+.ask-identity-token { display: grid; gap: 5px; color: var(--text-secondary); font: var(--type-small); }
+.ask-identity-token small { font-weight: 400; }
+.ask-identity-token input { width: 100%; }
+.ask-steer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.ask-budget { margin: 0; color: var(--text-muted); font: var(--type-small); }
+.ask-parked { display: grid; gap: 9px; margin: 0; padding: 12px; border: 1px solid var(--status-warning-border); border-radius: 10px; background: var(--status-warning-bg); color: var(--text-primary); font: var(--type-small); }
+.ask-parked p, .ask-parked ol { margin: 0; }
+.ask-parked ol { padding-left: 20px; color: var(--text-secondary); }
+.ask-parked-step { display: grid; gap: 7px; margin: 2px 0; }
+.ask-parked-step > div { display: grid; grid-template-columns: minmax(72px, .35fr) 1fr; gap: 9px; }
+.ask-parked-step dt { color: var(--text-secondary); font-size: 12px; font-weight: 650; }
+.ask-parked-step dd { margin: 0; overflow-wrap: anywhere; }
+.ask-clarification { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.ask-clarification input { width: 100%; min-height: 36px; padding: 7px 9px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); color: var(--text-primary); }
+.ask-clarification .ask-error { grid-column: 1 / -1; }
+.ask-provenance { display: flex; align-items: center; gap: 6px; margin: 2px 0 0; color: var(--text-muted); font: var(--type-small); }
+
+.ask-suggestions { display: flex; flex-wrap: wrap; gap: 6px; }
+.ask-chip { padding: 6px 11px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text-secondary); font: var(--type-small); }
+.ask-chip:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface-muted); color: var(--text-primary); }
+.ask-chip:disabled { opacity: 0.55; }
+.ask-chip-more { border-style: dashed; color: var(--text-muted); }
+.ask-new-messages { position: sticky; bottom: 4px; justify-self: center; z-index: 1; padding: 6px 12px; border: 1px solid var(--action-primary); border-radius: 999px; background: var(--action-primary); color: var(--text-on-action); font: var(--type-small); font-weight: 650; box-shadow: 0 4px 16px rgb(9 11 14 / 18%); }
+
+.ask-form { position: relative; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; flex: none; }
+.ask-form label { flex: 1; min-width: 0; }
+/* The send control lives inside the field: right padding on the input reserves
+   its space so text never runs underneath the button. */
+.ask-composer { position: relative; display: block; }
+.ask-form textarea { display: block; width: 100%; min-height: 44px; max-height: 132px; resize: none; overflow-y: auto; padding: 11px 48px 10px 42px; border: 1px solid var(--border-strong); border-radius: 22px; background: var(--surface); color: var(--text-primary); font: inherit; line-height: 1.35; }
+.ask-form textarea:focus { border-color: var(--focus-ring); outline: 2px solid color-mix(in srgb, var(--focus-ring) 20%, transparent); outline-offset: 1px; }
+.ask-send { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 999px; background: var(--action-primary); color: var(--text-on-action); }
+.ask-send:hover:not(:disabled) { background: var(--action-primary-hover); }
+.ask-send:disabled { opacity: 0.4; }
+.ask-attach { position: absolute; top: 50%; left: 7px; transform: translateY(-50%); display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 999px; background: transparent; color: var(--text-muted); }
+.ask-attach:hover { background: var(--surface-muted); color: var(--text-primary); }
+.ask-attachment-tray { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 5px; }
+.ask-attachment-tray > span { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 3px 7px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text-secondary); font: var(--type-small); }
+.ask-attachment-tray > span button { display: inline-flex; padding: 0; border: 0; background: transparent; color: var(--text-muted); }
+.ask-attachment-notice { flex-basis: 100%; margin: 0; color: var(--text-muted); font: var(--type-small); }
+.ask-form .primary-button { display: inline-flex; align-items: center; gap: 7px; flex: none; }
+.ask-stop-send { display: inline-flex; align-items: center; gap: 6px; flex: none; min-height: 36px; padding: 7px 10px; border: 1px solid var(--status-warning-border); border-radius: var(--radius-sm); background: var(--status-warning-bg); color: var(--status-warning-strong); font: var(--type-small); font-weight: 650; }
+.ask-mention-menu { position: absolute; z-index: 2; left: 0; right: 0; bottom: calc(100% + 6px); display: grid; gap: 2px; max-height: 220px; overflow-y: auto; margin: 0; padding: 6px; list-style: none; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); box-shadow: 0 8px 24px rgb(9 11 14 / 16%); }
+.ask-mention-menu li { display: flex; align-items: center; gap: 7px; width: 100%; padding: 7px 8px; border-radius: 6px; color: var(--text-primary); text-align: left; cursor: pointer; }
+.ask-mention-menu li:hover, .ask-mention-menu li.active { background: var(--surface-muted); }
+.ask-mention-menu small { margin-left: auto; color: var(--text-muted); }
+.ask-mention-menu .ask-request-access { color: var(--text-secondary); }
+.ask-mention-menu button small { margin-left: auto; color: var(--text-muted); }
+.ask-mention-menu .ask-request-access { color: var(--action-primary); }
+.ask-skill-suggestions { position: absolute; z-index: 3; left: 0; right: 0; bottom: calc(100% + 6px); display: grid; gap: 2px; max-height: 240px; overflow-y: auto; padding: 6px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); box-shadow: 0 8px 24px rgb(9 11 14 / 16%); }
+.ask-skill-suggestions button { display: grid; gap: 2px; width: 100%; padding: 8px 9px; border: 0; border-radius: 6px; background: transparent; color: var(--text-primary); text-align: left; }
+.ask-skill-suggestions button:hover, .ask-skill-suggestions button.active { background: var(--surface-muted); }
+.ask-skill-suggestions span { overflow: hidden; color: var(--text-muted); font: var(--type-small); text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 620px) { .ask-form { flex-wrap: wrap; } .ask-form .primary-button { width: 100%; justify-content: center; } }
+
+/* Catch-up: a diff over committed rows, so each line wears the authority of
+   its source record rather than a uniform confident voice. */
+.ask-catchup { padding: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+.ask-catchup-head { display: flex; align-items: center; gap: 7px; padding: 9px 11px; cursor: pointer; color: var(--text-secondary); font: var(--type-small); font-weight: 650; list-style: none; }
+.ask-catchup-head::-webkit-details-marker { display: none; }
+.ask-catchup-head::after { content: "⌄"; margin-left: 2px; color: var(--text-muted); }
+.ask-catchup[open] .ask-catchup-head::after { transform: rotate(180deg); }
+.ask-catchup-head strong { margin-left: auto; min-width: 22px; text-align: center; }
+.ask-catchup-body { display: grid; gap: 8px; padding: 0 11px 11px; border-top: 1px solid var(--border); }
+.ask-catchup ol { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.ask-catchup-body ol { padding-top: 9px; }
+.ask-catchup li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.ask-catchup-phrase { color: var(--text-primary); font: var(--type-small); }
+.ask-catchup small { color: var(--text-muted); font: var(--type-small); }
+.ask-authority { flex: none; padding: 1px 7px; border: 1px solid var(--border); border-radius: 999px; font-size: 10px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.02em; color: var(--text-muted); background: var(--surface); }
+.ask-authority-verified { border-color: var(--status-success-border); color: var(--status-success-strong); background: var(--status-success-bg); }
+.ask-authority-confirmed, .ask-authority-reconciled { border-color: var(--provenance-border); color: var(--provenance-strong); background: var(--provenance-bg); }
+.ask-authority-model_proposed { border-color: var(--status-warning-border); color: var(--status-warning-strong); background: var(--status-warning-bg); }
+
+.skills-lifecycle-ledger { display: grid; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+.skills-lifecycle-ledger h3 { margin: 0; color: var(--text-primary); font-size: 15px; }
+.muted-copy { margin: 0; color: var(--text-secondary); font: var(--type-small); }
+.skills-lifecycle-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.skills-lifecycle-item { display: flex; align-items: flex-start; gap: 8px; padding: 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-muted); color: var(--text-secondary); font: var(--type-small); }
+.skills-lifecycle-item .status-badge { flex: none; }
+.skills-evidence-empty-state { display: grid; gap: 3px; padding: 10px; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); color: var(--text-secondary); font: var(--type-small); }
+.skills-evidence-empty-state strong { color: var(--text-primary); }
+.skills-evidence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+.skills-evidence-card { display: grid; gap: 8px; min-width: 0; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-muted); color: var(--text-secondary); font: var(--type-small); }
+.skills-evidence-card h3 { margin: 0; color: var(--text-primary); font-size: 15px; overflow-wrap: anywhere; }
+.skills-evidence-card p { margin: 0; }
+.skills-evidence-card ul { display: grid; gap: 6px; margin: 0; padding-left: 18px; }
+.skills-evidence-card code { overflow-wrap: anywhere; }
+.skills-command-panel { display: grid; gap: 14px; margin-top: 20px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-muted); }
+.skills-command-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.skills-command-fields label { display: grid; gap: 5px; color: var(--text-secondary); font: var(--type-small); font-weight: 650; }
+.skills-command-fields input { min-height: 40px; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); }
+.skills-command-wide { grid-column: span 2; }
+.skills-governance-panel { margin-top: 16px; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--text-secondary); }
+.skills-governance-panel > summary { cursor: pointer; color: var(--text-primary); font-weight: 700; }
+.skills-governance-panel > p { font: var(--type-small); }
+.skills-governance-panel .skills-command-fields { margin-top: 14px; }
+.skills-governance-panel .skills-command-fields > button { align-self: end; min-height: 40px; }
+.related-alerts-panel { margin: var(--space-4) 0 var(--space-5); }
+.related-alert-list { display: grid; gap: 10px; }
+.related-alert-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; width: 100%; padding: 13px 15px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-muted); color: inherit; text-align: left; cursor: pointer; }
+.related-alert-row:hover { border-color: var(--border-strong); }
+.related-alert-row > div:first-child { display: grid; gap: 3px; }
+.related-alert-row small { color: var(--text-muted); }
+.related-alert-relation { color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.related-alert-statuses { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+@media (max-width: 700px) { .skills-lifecycle-grid { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .skills-evidence-grid { grid-template-columns: 1fr; } .skills-command-fields { grid-template-columns: 1fr; } .skills-command-wide { grid-column: auto; } .related-alert-row { grid-template-columns: 1fr; } .related-alert-statuses { align-items: flex-start; } }

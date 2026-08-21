@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Load local, uncommitted configuration into the environment.
+#
+# Sourced rather than executed, because the point is to export into the caller.
+# `.env` is gitignored and `.env.example` documents what belongs in it — chiefly
+# the OAuth client that makes sign-in real Google rather than the harness
+# fixture, and the Solvan reader identity.
+#
+# An explicit export wins over the file, so a one-off run can override without
+# editing it, and a value already set by the caller is never quietly replaced.
+
+if [[ -f .env ]]; then
+  while IFS= read -r line; do
+    # CRLF files keep the carriage return attached to the value; strip it.
+    line="${line%$'\r'}"
+    [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    [[ "$line" =~ ^[[:space:]]*$ ]] && continue
+    # An `export KEY=...` line means the same as a bare one, not a key that
+    # silently never matches anything.
+    line="${line#export }"
+    key="${line%%=*}"
+    key="${key#"${key%%[![:space:]]*}"}"; key="${key%"${key##*[![:space:]]}"}"
+    [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+    [[ -n "${!key:-}" ]] && continue
+    value="${line#*=}"
+    if [[ "$value" =~ ^\".*\"$ || "$value" =~ ^\'.*\'$ ]]; then
+      value="${value%\"}"; value="${value#\"}"
+      value="${value%\'}"; value="${value#\'}"
+    else
+      # Unquoted values end at an inline comment; quoted ones keep their #.
+      value="${value%% #*}"
+      value="${value%"${value##*[![:space:]]}"}"
+    fi
+    export "$key=$value"
+  done < .env
+fi

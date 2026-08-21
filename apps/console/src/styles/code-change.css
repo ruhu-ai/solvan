@@ -1,0 +1,4 @@
+.code-change-review { margin-top: 1rem; }
+.decision-confirmation { border-top: 1px solid var(--border); margin-top: 1rem; padding-top: 1rem; }
+.decision-confirmation pre { background: var(--surface-subtle); border: 1px solid var(--border); border-radius: 0.5rem; max-height: 24rem; overflow: auto; padding: 0.875rem; white-space: pre-wrap; word-break: break-word; }
+.confirmation-check { align-items: flex-start; display: flex; gap: 0.625rem; margin: 1rem 0; }

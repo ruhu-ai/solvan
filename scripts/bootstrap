@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+install_browser=1
+ci_mode=0
+for argument in "$@"; do
+  case "$argument" in
+    --no-browser) install_browser=0 ;;
+    --ci) ci_mode=1 ;;
+    *) echo "Unknown argument: $argument" >&2; exit 2 ;;
+  esac
+done
+
+command -v git >/dev/null || { echo "git is required" >&2; exit 1; }
+command -v uv >/dev/null || { echo "uv is required: https://docs.astral.sh/uv/" >&2; exit 1; }
+command -v node >/dev/null || { echo "Node.js 20.19+ is required" >&2; exit 1; }
+command -v pnpm >/dev/null || { echo "pnpm 10.25.0 is required" >&2; exit 1; }
+command -v docker >/dev/null || { echo "Docker is required for isolated PostgreSQL" >&2; exit 1; }
+
+uv sync --frozen
+pnpm install --frozen-lockfile
+
+if [[ "$install_browser" -eq 1 ]]; then
+  if [[ "$ci_mode" -eq 1 ]]; then
+    pnpm exec playwright install --with-deps chromium
+  else
+    pnpm exec playwright install chromium
+  fi
+fi
+
+echo "Bootstrap complete. Run scripts/start or scripts/check."

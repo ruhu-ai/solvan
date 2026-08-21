@@ -1,0 +1,27 @@
+.production-graph-panel { display: grid; gap: var(--space-4); }
+.production-graph-panel > .section-heading, .production-graph-panel > .section-note { margin-bottom: 0; }
+.graph-operator-controls { display: grid; grid-template-columns: minmax(280px, 1fr) auto; align-items: end; gap: var(--space-4); padding: var(--space-4); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface-muted); }
+.graph-operator-controls .token-field { margin: 0; }
+.graph-command-row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.graph-command-row button:disabled, .graph-review button:disabled { cursor: not-allowed; opacity: .55; }
+.graph-error { border-color: var(--status-danger-border); background: var(--status-danger-bg); color: var(--status-danger-strong); }
+.graph-review { display: grid; gap: var(--space-4); padding: var(--space-5); border: 1px solid var(--status-warning-border); border-radius: var(--radius-md); background: var(--surface); }
+.graph-review > .section-heading { margin: 0; }
+.graph-review-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-muted); }
+.graph-review-facts > div { display: grid; gap: 4px; min-width: 0; }
+.graph-review-facts .mono-chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.graph-review-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.graph-review-columns > div, .graph-findings { padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.graph-review-columns ul, .graph-findings ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.graph-review-columns li { display: flex; align-items: center; justify-content: space-between; gap: 14px; color: var(--text-secondary); font-size: 12px; text-transform: capitalize; }
+.graph-review-columns li strong { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.graph-findings li { display: grid; gap: 3px; padding-top: 8px; border-top: 1px solid var(--border); }
+.graph-findings li:first-child { padding-top: 0; border-top: 0; }
+.graph-findings li strong { color: var(--text-primary); font-size: 12px; text-transform: capitalize; }
+.graph-findings li span { color: var(--text-secondary); font-family: var(--font-mono); font-size: 11px; overflow-wrap: anywhere; }
+.graph-review .approval-footer { margin: 0 calc(var(--space-5) * -1) calc(var(--space-5) * -1); border-radius: 0 0 var(--radius-md) var(--radius-md); }
+
+@media (max-width: 720px) {
+  .graph-operator-controls, .graph-review-facts, .graph-review-columns { grid-template-columns: 1fr; }
+  .graph-command-row { display: grid; justify-content: stretch; }
+}

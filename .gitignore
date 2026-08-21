@@ -1,0 +1,39 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+node_modules/
+apps/console/node_modules/
+apps/console/dist/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.solvan/
+.terraform/
+# Real tfvars name a project, its operators, and every secret it reads.
+# The checked-in *.tfvars.example files are the shareable form.
+*.tfvars
+!*.tfvars.example
+*.backend.hcl
+.opensrc
+.claude/settings.local.json
+*.pyc
+__pycache__/
+.coverage.*
+tmp/
+
+# Third-party product documentation kept locally for research only.
+# Not Solvan material and not covered by THIRD_PARTY_NOTICES.md; excluded so an
+# Apache-2.0 publication does not redistribute it.
+
+# Downloaded OAuth client files. These carry a client secret, and they sit
+# inside the repository, so one `git add -A` would publish it. Ignored by path
+# rather than by extension: the risk is the credential, not the format.
+JSON/
+client_secret*.json

@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "release_commit": "REPLACE_WITH_40_CHARACTER_COMMIT",
+  "project_id": "REPLACE_WITH_DEDICATED_GCP_PROJECT",
+  "region": "europe-west1",
+  "payments_service_name": "solvan-staging-payments",
+  "known_good_revision": "REPLACE_WITH_MEASURED_V2_8_0_CLOUD_RUN_REVISION",
+  "fault_revision": "REPLACE_WITH_MEASURED_V2_8_1_CLOUD_RUN_REVISION",
+  "cloud_sql_database_id": "REPLACE_WITH_PROJECT:REGION:INSTANCE",
+  "evidence_ref": "gs://REPLACE_WITH_EVIDENCE_BUCKET/calibration/payments-v1.json",
+  "approved_by": "user:REPLACE_WITH_POLICY_OWNER",
+  "approved_at": "REPLACE_WITH_TIMEZONE_AWARE_TIMESTAMP",
+  "signals": [
+    {
+      "signal_kind": "HTTP_5XX_RATIO",
+      "baseline_max": 0,
+      "fault_min": 0,
+      "detection_threshold": 0,
+      "recovery_threshold": 0,
+      "sustained_windows": 2,
+      "sample_hashes": [
+        "sha256:REPLACE_BASELINE_1",
+        "sha256:REPLACE_BASELINE_2",
+        "sha256:REPLACE_FAULT_1",
+        "sha256:REPLACE_FAULT_2"
+      ]
+    },
+    {
+      "signal_kind": "HTTP_P95_LATENCY",
+      "baseline_max": 0,
+      "fault_min": 0,
+      "detection_threshold": 0,
+      "recovery_threshold": 0,
+      "sustained_windows": 2,
+      "sample_hashes": [
+        "sha256:REPLACE_BASELINE_1",
+        "sha256:REPLACE_BASELINE_2",
+        "sha256:REPLACE_FAULT_1",
+        "sha256:REPLACE_FAULT_2"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solvan.example/schemas/agent-trajectory-case-v1.json",
+  "title": "Solvan deterministic agent trajectory suite",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "suite", "grader_revision", "agent_revision", "tool_catalog_hash", "cases"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "suite": {"const": "solvan-agent-trajectories-v1"},
+    "grader_revision": {"type": "string", "minLength": 1},
+    "agent_revision": {"type": "string", "minLength": 1},
+    "tool_catalog_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "cases": {
+      "type": "array",
+      "minItems": 10,
+      "items": {"$ref": "#/$defs/case"}
+    }
+  },
+  "$defs": {
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maximum_tool_calls", "maximum_model_calls", "maximum_tokens", "maximum_wall_time_ms", "maximum_retries", "maximum_recursive_depth"],
+      "properties": {
+        "maximum_tool_calls": {"type": "integer", "minimum": 0},
+        "maximum_model_calls": {"type": "integer", "minimum": 0},
+        "maximum_tokens": {"type": "integer", "minimum": 0},
+        "maximum_wall_time_ms": {"type": "integer", "minimum": 0},
+        "maximum_retries": {"type": "integer", "minimum": 0},
+        "maximum_recursive_depth": {"type": "integer", "minimum": 0}
+      }
+    },
+    "tool_call": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "arguments", "evidence_refs", "outcome"],
+      "properties": {
+        "tool": {"type": "string"},
+        "arguments": {"type": "object"},
+        "evidence_refs": {"type": "array", "items": {"type": "string"}},
+        "outcome": {"enum": ["COMMITTED", "DENIED", "UNAVAILABLE", "FAILED"]}
+      }
+    },
+    "observed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool_calls", "model_calls", "tokens", "wall_time_ms", "retries", "recursive_depth", "stop_reason", "uncertainty_disclosed", "final_result", "claims", "authority_transitions", "direct_agent_dispatches"],
+      "properties": {
+        "tool_calls": {"type": "array", "items": {"$ref": "#/$defs/tool_call"}},
+        "model_calls": {"type": "integer", "minimum": 0},
+        "tokens": {"type": "integer", "minimum": 0},
+        "wall_time_ms": {"type": "integer", "minimum": 0},
+        "retries": {"type": "integer", "minimum": 0},
+        "recursive_depth": {"type": "integer", "minimum": 0},
+        "stop_reason": {"type": "string"},
+        "uncertainty_disclosed": {"type": "boolean"},
+        "final_result": {"type": "object"},
+        "claims": {"type": "array", "items": {"type": "string"}},
+        "authority_transitions": {"type": "array", "items": {"type": "string"}},
+        "direct_agent_dispatches": {"type": "array", "items": {"type": "string"}},
+        "producer_identity": {"type": ["string", "null"]},
+        "verifier_identity": {"type": ["string", "null"]}
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "family", "input_records", "authorized_scope", "permitted_tools", "required_tools", "forbidden_tools", "required_tool_arguments", "required_evidence_refs", "limits", "expected_stop_reason", "expected_uncertainty", "final_result_equals", "prohibited_claims", "prohibited_authority_transitions", "observed", "expected_pass"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,127}$"},
+        "family": {"type": "string"},
+        "input_records": {"type": "object"},
+        "authorized_scope": {"type": "object", "additionalProperties": {"type": "string"}},
+        "permitted_tools": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "required_tools": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "forbidden_tools": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "required_tool_arguments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["tool", "equals"],
+            "properties": {"tool": {"type": "string"}, "equals": {"type": "object"}}
+          }
+        },
+        "required_evidence_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "limits": {"$ref": "#/$defs/limits"},
+        "expected_stop_reason": {"type": "string"},
+        "expected_uncertainty": {"type": "boolean"},
+        "final_result_equals": {"type": "object"},
+        "prohibited_claims": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "prohibited_authority_transitions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "require_verifier_isolation": {"type": "boolean"},
+        "observed": {"$ref": "#/$defs/observed"},
+        "expected_pass": {"type": "boolean"}
+      }
+    }
+  }
+}

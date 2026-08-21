@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+TF_ROOT="$ROOT/infra/terraform/environments/gcp"
+export TF_DATA_DIR="$ROOT/.solvan/terraform-check"
+
+terraform fmt -check -recursive "$ROOT/infra/terraform"
+terraform -chdir="$TF_ROOT" init -backend=false -input=false -lockfile=readonly >/dev/null
+terraform -chdir="$TF_ROOT" validate

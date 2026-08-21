@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solvan — Brand Sheet</title>
+<!-- Palette values are the console design tokens (apps/console/src/styles/
+     tokens.css), generated assets come from tools/generate_brand_assets.py.
+     Update the canonical source, not the swatches. -->
+<style>
+  :root{
+    --ink:#17191c; --paper:#f5f6f7;
+    --accent:#2563eb; --accent-tint:#c4d6f7;
+  }
+  *{margin:0;box-sizing:border-box}
+  body{font-family:ui-sans-serif,-apple-system,"Helvetica Neue",Arial,sans-serif;background:var(--paper);color:var(--ink);padding:56px 40px;max-width:1040px;margin:0 auto}
+  h1{font-size:15px;letter-spacing:.22em;text-transform:uppercase;font-weight:600;margin-bottom:6px}
+  .sub{font-size:13px;color:#5b616b;margin-bottom:44px}
+  h2{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:#5b616b;margin:40px 0 14px}
+  .panel{border:1px solid #d8dce1;border-radius:14px;padding:44px;display:flex;align-items:center;justify-content:center}
+  .panel.dark{background:var(--ink);border-color:var(--ink)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .chip{flex:1;min-width:140px;border-radius:12px;padding:16px;font-size:11px;letter-spacing:.06em;border:1px solid #d8dce1}
+  .chip b{display:block;font-size:12px;margin-bottom:22px}
+  .sizes{display:flex;align-items:flex-end;gap:28px;padding:28px;border:1px solid #d8dce1;border-radius:14px}
+  .sizes img{display:block}
+  .cap{font-size:11px;color:#5b616b;margin-top:8px;text-align:center}
+</style>
+</head>
+<body>
+  <h1>Solvan</h1>
+  <p class="sub">Autonomous reliability control plane — brand identity, v1. The mark traces a recovery path that resolves into a verified checkpoint: the system returned to steady state, with proof.</p>
+
+  <h2>Primary lockup</h2>
+  <div class="panel"><img src="solvan-logo-horizontal.svg" alt="Solvan primary logo" width="480"></div>
+
+  <h2>Dark surfaces</h2>
+  <div class="panel dark"><img src="solvan-logo-dark.svg" alt="Solvan dark logo" width="480"></div>
+
+  <h2>Icon &amp; app tile</h2>
+  <div class="grid">
+    <div class="panel"><img src="solvan-icon.svg" alt="Solvan icon" width="140"></div>
+    <div class="panel"><img src="solvan-app-icon.svg" alt="Solvan app icon" width="150" style="border-radius:32px"></div>
+  </div>
+
+  <h2>Monochrome</h2>
+  <!-- Rendered here at the default currentColor (black). Embedded inline
+       rather than via <img>, the same file follows the surrounding text
+       color — it carries no inline color of its own. -->
+  <div class="panel"><img src="solvan-logo-mono.svg" alt="Solvan monochrome logo" width="480"></div>
+
+  <h2>Small-size test</h2>
+  <div class="sizes">
+    <div><img src="solvan-icon.svg" width="16" height="16" alt=""><div class="cap">16</div></div>
+    <div><img src="solvan-icon.svg" width="24" height="24" alt=""><div class="cap">24</div></div>
+    <div><img src="solvan-icon.svg" width="32" height="32" alt=""><div class="cap">32</div></div>
+    <div><img src="solvan-icon.svg" width="48" height="48" alt=""><div class="cap">48</div></div>
+    <div><img src="solvan-icon.svg" width="64" height="64" alt=""><div class="cap">64</div></div>
+  </div>
+
+  <h2>Palette — console tokens</h2>
+  <div class="row">
+    <div class="chip" style="background:var(--ink);color:#fff;border-color:var(--ink)"><b>Ink</b>#17191c · --gray-950, primary</div>
+    <div class="chip" style="background:var(--paper)"><b>Paper</b>#f5f6f7 · --gray-25, light surfaces</div>
+    <div class="chip" style="background:var(--accent);color:#fff;border-color:var(--accent)"><b>Checkpoint Blue</b>#2563eb · --blue-600, light accent</div>
+    <div class="chip" style="background:var(--accent-tint);color:var(--ink);border-color:var(--accent-tint)"><b>Checkpoint Blue (dark)</b>#c4d6f7 · --blue-200, dark accent</div>
+  </div>
+
+  <h2>Usage notes</h2>
+  <p style="font-size:13px;line-height:1.7;color:#363940;max-width:640px">
+    The blue checkpoint is reserved for the mark and for "verified / checkpoint" states in product UI — never as a general decorative accent. The monochrome version uses <code>currentColor</code>, so it inherits any text color. Minimum clear space around the lockup: the height of the wordmark's "O". Icon holds legibility down to 16&nbsp;px for favicon use.
+  </p>
+</body>
+</html>

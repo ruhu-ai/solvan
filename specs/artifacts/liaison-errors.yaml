@@ -1,0 +1,75 @@
+schema_version: 1
+status: target
+codes:
+  INVALID_REQUEST:
+    http_status: 422
+    retryable: false
+    audit_class: validation
+    workflow_effect: none
+  TEMPORARILY_UNAVAILABLE:
+    http_status: 503
+    retryable: true
+    audit_class: dependency
+    workflow_effect: none
+  REVISION_CONFLICT:
+    http_status: 409
+    retryable: false
+    audit_class: conflict
+    workflow_effect: winner_only
+  NOT_FOUND_OR_FORBIDDEN:
+    http_status: 404
+    retryable: false
+    audit_class: authorization
+    workflow_effect: none
+  THREAD_ARCHIVED:
+    http_status: 409
+    retryable: false
+    audit_class: state
+    workflow_effect: none
+  CURSOR_POLICY_CHANGED:
+    http_status: 409
+    retryable: true
+    audit_class: authorization
+    workflow_effect: none
+  CURSOR_HISTORY_EXPIRED:
+    http_status: 410
+    retryable: true
+    audit_class: retention
+    workflow_effect: none
+  EVENT_BUFFER_OVERFLOW:
+    http_status: 409
+    retryable: true
+    audit_class: transport
+    workflow_effect: none
+  MANIFEST_INVALID:
+    http_status: 409
+    retryable: false
+    audit_class: dispatch
+    workflow_effect: fail_attempt
+  PARKED_REQUEST_EXPIRED:
+    http_status: 410
+    retryable: false
+    audit_class: parked_decision
+    workflow_effect: interrupt_attempt
+  PARKED_REQUEST_ALREADY_DECIDED:
+    http_status: 409
+    retryable: false
+    audit_class: parked_decision
+    workflow_effect: winner_only
+  CHANNEL_BINDING_REVOKED:
+    http_status: 403
+    retryable: false
+    audit_class: channel_identity
+    workflow_effect: none
+  RETENTION_PURGED:
+    http_status: 410
+    retryable: false
+    audit_class: retention
+    workflow_effect: none
+  DELEGATION_DENIED:
+    http_status: 403
+    retryable: false
+    audit_class: authorization
+    workflow_effect: none
+constants:
+  CLIENT_EVENT_BUFFER_CEILING: 2048

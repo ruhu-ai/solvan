@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solvan.dev/schemas/workspace-cognition-v1.json",
+  "title": "Solvan proposed workspace cognition artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "trust_class",
+    "workspace_id",
+    "workspace_generation",
+    "agent_run_id",
+    "confirmed_fast_lane_cause_id",
+    "mechanism",
+    "hypotheses",
+    "reproduction_command",
+    "citations"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "trust_class": {"const": "PROPOSED"},
+    "workspace_id": {"type": "string", "pattern": "^wsp_[0-7][0-9A-HJKMNP-TV-Z]{25}$"},
+    "workspace_generation": {"type": "integer", "minimum": 1},
+    "agent_run_id": {"type": "string", "pattern": "^run_[0-7][0-9A-HJKMNP-TV-Z]{25}$"},
+    "confirmed_fast_lane_cause_id": {"type": "string", "pattern": "^hyp_[0-7][0-9A-HJKMNP-TV-Z]{25}$"},
+    "mechanism": {"type": "string", "minLength": 1, "maxLength": 32000},
+    "hypotheses": {
+      "type": "array",
+      "minItems": 2,
+      "items": {"$ref": "#/$defs/hypothesis"}
+    },
+    "reproduction_command": {"type": "string", "minLength": 1, "maxLength": 4000},
+    "citations": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "$defs": {
+    "citation_list": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "hypothesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hypothesis_key",
+        "statement",
+        "supporting_citations",
+        "contradicting_citations",
+        "leading"
+      ],
+      "properties": {
+        "hypothesis_key": {"type": "string", "pattern": "^[a-z][a-z0-9._-]{2,127}$"},
+        "statement": {"type": "string", "minLength": 1, "maxLength": 16000},
+        "supporting_citations": {
+          "allOf": [{"$ref": "#/$defs/citation_list"}, {"minItems": 1}]
+        },
+        "contradicting_citations": {"$ref": "#/$defs/citation_list"},
+        "leading": {"type": "boolean"}
+      }
+    }
+  }
+}

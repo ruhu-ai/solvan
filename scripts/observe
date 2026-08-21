@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+eval "$(scripts/dev-env --shell)"
+
+case "${1:-status}" in
+  status)
+    scripts/dev-env
+    curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_API_PORT/internal/dev/metrics" || true
+    ;;
+  logs) tail -n "${2:-50}" "$SOLVAN_STATE_DIR/observability/logs.ndjson" ;;
+  traces) tail -n "${2:-50}" "$SOLVAN_STATE_DIR/observability/traces.ndjson" ;;
+  *) echo "Usage: scripts/observe [status|logs|traces] [count]" >&2; exit 2 ;;
+esac
+

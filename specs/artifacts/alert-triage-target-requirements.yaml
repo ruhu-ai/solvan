@@ -1,0 +1,37 @@
+schema_version: 1
+status: target_only
+governing_spec: specs/21-alert-triage.md
+requirements:
+  AT-001: {fixtures: [ATF-001, ATF-013], status: planned}
+  AT-002: {fixtures: [ATF-001, ATF-002, ATF-013], status: planned}
+  AT-003: {fixtures: [ATF-006, ATF-007, ATF-016, ATF-018], status: planned}
+  AT-004: {fixtures: [ATF-007, ATF-014, ATF-017, ATF-019], status: planned}
+  AT-005: {fixtures: [ATF-003, ATF-014, ATF-015], status: planned}
+  AT-006: {fixtures: [ATF-008], status: planned}
+  AT-007: {fixtures: [ATF-005], status: planned}
+  AT-008: {fixtures: [ATF-006], status: planned}
+  AT-009: {fixtures: [ATF-001, ATF-004, ATF-010, ATF-013, ATF-018], status: planned}
+  AT-010: {fixtures: [ATF-009], status: planned}
+  AT-011: {fixtures: [ATF-010], status: planned}
+  AT-012: {fixtures: [ATF-011, ATF-012], status: planned}
+  AT-013: {fixtures: [ATF-011, ATF-012], status: planned}
+  AT-014: {fixtures: [ATF-007, ATF-019], status: planned}
+  AT-015: {fixtures: [ATF-006, ATF-011], status: planned}
+  AT-016: {fixtures: [ATF-007, ATF-018], status: planned}
+  AT-017: {fixtures: [ATF-006, ATF-016], status: planned}
+  AT-018: {fixtures: [ATF-014], status: planned}
+  AT-019: {fixtures: [ATF-008], status: planned}
+  AT-020: {fixtures: [ATF-012], status: planned}
+  AT-021: {fixtures: [ATF-008], status: planned}
+  AT-022: {fixtures: [ATF-015], status: planned}
+  AT-023: {fixtures: [ATF-010], status: planned}
+  AT-024: {fixtures: [ATF-001, ATF-010, ATF-017, ATF-018], status: planned}
+  AT-025: {fixtures: [ATF-012, ATF-020], status: planned}
+  AT-026: {fixtures: [ATF-011, ATF-014, ATF-021], status: planned}
+  AT-027: {fixtures: [ATF-022], status: planned}
+  AT-028: {fixtures: [ATF-023], status: planned}
+  AT-029: {fixtures: [ATF-024], status: planned}
+  AT-030: {fixtures: [ATF-025], status: planned}
+  AT-031: {fixtures: [ATF-026], status: planned}
+  AT-032: {fixtures: [ATF-027], status: planned}
+  AT-033: {fixtures: [ATF-028], status: planned}

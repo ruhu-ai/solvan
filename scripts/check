@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+if [[ ! -x .venv/bin/python || ! -d node_modules ]]; then
+  echo "Dependencies are missing. Run scripts/bootstrap first." >&2
+  exit 1
+fi
+
+echo "[1/10] Python lint and format"
+uv run ruff check .
+uv run ruff format --check .
+
+echo "[2/10] Python types"
+uv run mypy
+
+echo "[3/10] Architecture boundaries"
+uv run python tools/check_architecture.py
+uv run python tools/check_agent_manifests.py
+uv run python tools/check_capability_parity.py
+uv run python tools/check_approval_audience.py
+uv run python tools/check_challenge_coverage.py
+uv run python tools/check_ruhu_profile.py
+uv run python tools/check_cloudbuild.py
+scripts/check-terraform
+uv run python scripts/validate_skill_packs.py
+uv run python tools/generate_brand_assets.py --check
+
+echo "[4/10] Documentation and repository knowledge"
+uv run python tools/check_docs.py
+uv run python tools/generate_repository_map.py --check
+uv run python tools/generate_alert_hash_vectors.py
+
+echo "[5/10] Executable schema and transition contracts"
+# Coverage is one receipt for every Python test the canonical gate executes,
+# including the PostgreSQL-backed contract suites. Erase once here, append
+# each contract shard, then append the unit/harness run below. Measuring only
+# step 6 would mark production paths exercised in step 5 as uncovered.
+uv run coverage erase
+SOLVAN_COLLECT_COVERAGE=1 scripts/check-contracts
+
+echo "[6/10] Unit and harness tests"
+# Both trees are named explicitly. A bare `--cov` also collects the data that
+# subprocess-spawning tests write through coverage's .pth hook, which is not in
+# branch mode, and the run dies combining statement data with branch data.
+uv run pytest --cov=solvan --cov=apps --cov-append --cov-report=term-missing
+
+echo "[7/10] Agent safety and trajectory evaluation"
+scripts/eval-agent --mode deterministic
+scripts/eval-trajectories
+
+echo "[8/10] Console types"
+pnpm check
+
+echo "[9/10] Console production build"
+pnpm build
+
+echo "[10/10] Browser critical path"
+scripts/check-browser
+
+echo "All local implementation checks passed. This is not a cloud release receipt."

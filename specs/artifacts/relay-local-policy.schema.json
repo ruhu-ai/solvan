@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solvan.dev/schemas/relay-local-policy-v1.json",
+  "title": "Solvant Relay local policy v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "policy_id",
+    "organization_binding_hash",
+    "relay_connection_id",
+    "relay_connection_epoch",
+    "relay_enrollment_id",
+    "relay_enrollment_epoch",
+    "relay_image_digest",
+    "control_plane_audience",
+    "region",
+    "classification_ceiling",
+    "connector_catalog_digest",
+    "redaction_revision",
+    "valid_from",
+    "expires_at",
+    "maximum_concurrent_jobs",
+    "adapters",
+    "signature"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "policy_id": {"type": "string", "pattern": "^rpol_[0-7][0-9A-HJKMNP-TV-Z]{25}$"},
+    "organization_binding_hash": {"$ref": "#/$defs/digest"},
+    "relay_connection_id": {"type": "string", "pattern": "^con_[0-7][0-9A-HJKMNP-TV-Z]{25}$"},
+    "relay_connection_epoch": {"type": "integer", "minimum": 1},
+    "relay_enrollment_id": {"type": "string", "pattern": "^ren_[0-7][0-9A-HJKMNP-TV-Z]{25}$"},
+    "relay_enrollment_epoch": {"type": "integer", "minimum": 1},
+    "relay_image_digest": {"$ref": "#/$defs/digest"},
+    "control_plane_audience": {"type": "string", "format": "uri", "pattern": "^https://"},
+    "region": {"type": "string", "minLength": 2, "maxLength": 63},
+    "classification_ceiling": {"enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"]},
+    "connector_catalog_digest": {"$ref": "#/$defs/digest"},
+    "redaction_revision": {"type": "string", "pattern": "^[a-z][a-z0-9.-]{0,63}$"},
+    "valid_from": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "maximum_concurrent_jobs": {"const": 1},
+    "adapters": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "adapter_key",
+          "adapter_revision",
+          "source_connection_id",
+          "source_connection_epoch",
+          "credential_ref",
+          "endpoint",
+          "tls_policy",
+          "operations",
+          "maximum_response_bytes",
+          "maximum_pages",
+          "maximum_calls_per_job",
+          "maximum_calls_per_minute"
+        ],
+        "properties": {
+          "adapter_key": {
+            "enum": [
+              "cloud-monitoring.v1",
+              "managed-prometheus.v1",
+              "cloud-logging.v1",
+              "cloud-trace.v1",
+              "kubernetes-metadata.v1"
+            ]
+          },
+          "adapter_revision": {"type": "string", "pattern": "^[a-z0-9][a-z0-9.-]{0,63}$"},
+          "source_connection_id": {"type": "string", "pattern": "^con_[0-7][0-9A-HJKMNP-TV-Z]{25}$"},
+          "source_connection_epoch": {"type": "integer", "minimum": 1},
+          "metrics_scope_project_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{4,61}[a-z0-9]$"},
+          "credential_ref": {"type": "string", "minLength": 1, "maxLength": 512},
+          "endpoint": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["scheme", "host", "port"],
+            "properties": {
+              "scheme": {"const": "https"},
+              "host": {
+                "type": "string",
+                "pattern": "^(?![0-9a-fA-F:.]+$)(?!.*\\*)(?!localhost$)[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$"
+              },
+              "port": {"const": 443}
+            }
+          },
+          "tls_policy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["minimum_version", "redirects", "server_name"],
+            "properties": {
+              "minimum_version": {"enum": ["TLS1_2", "TLS1_3"]},
+              "redirects": {"const": "DENY"},
+              "server_name": {"type": "string", "minLength": 1, "maxLength": 253},
+              "ca_bundle_ref": {"type": ["string", "null"], "maxLength": 512},
+              "client_certificate_ref": {"type": ["string", "null"], "maxLength": 512}
+            }
+          },
+          "operations": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 32,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]{2,95}$"}
+          },
+          "maximum_response_bytes": {"type": "integer", "minimum": 1, "maximum": 1048576},
+          "maximum_pages": {"type": "integer", "minimum": 1, "maximum": 20},
+          "maximum_calls_per_job": {"type": "integer", "minimum": 1, "maximum": 20},
+          "maximum_calls_per_minute": {"type": "integer", "minimum": 1, "maximum": 120},
+          "registered_query_keys": {
+            "type": "array", "maxItems": 32, "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]{1,79}$"}
+          },
+          "approved_log_signatures": {
+            "type": "array", "maxItems": 64, "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{1,79}$"}
+          },
+          "allowed_namespaces": {
+            "type": "array", "maxItems": 64, "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$"}
+          },
+          "allowed_resource_kinds": {
+            "type": "array", "maxItems": 8, "uniqueItems": true,
+            "items": {"enum": ["Deployment", "StatefulSet", "DaemonSet", "Pod", "Service"]}
+          }
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"adapter_key": {"const": "cloud-monitoring.v1"}}},
+            "then": {
+              "required": ["metrics_scope_project_id"],
+              "properties": {
+                "endpoint": {"properties": {"host": {"const": "monitoring.googleapis.com"}}},
+                "operations": {"const": ["monitoring.time-series.read.v1"]}
+              }
+            }
+          },
+          {
+            "if": {"properties": {"adapter_key": {"const": "managed-prometheus.v1"}}},
+            "then": {
+              "required": ["registered_query_keys"],
+              "properties": {
+                "endpoint": {"properties": {"host": {"const": "monitoring.googleapis.com"}}},
+                "operations": {"const": ["prometheus.registered-range.read.v1"]},
+                "maximum_pages": {"const": 1},
+                "maximum_calls_per_job": {"const": 1}
+              }
+            }
+          },
+          {
+            "if": {"properties": {"adapter_key": {"const": "cloud-logging.v1"}}},
+            "then": {
+              "required": ["approved_log_signatures"],
+              "properties": {
+                "endpoint": {"properties": {"host": {"const": "logging.googleapis.com"}}},
+                "operations": {"const": ["logging.entries.read.v1"]}
+              }
+            }
+          },
+          {
+            "if": {"properties": {"adapter_key": {"const": "cloud-trace.v1"}}},
+            "then": {
+              "properties": {
+                "endpoint": {"properties": {"host": {"const": "cloudtrace.googleapis.com"}}},
+                "operations": {"const": ["trace.spans.read.v1"]},
+                "maximum_pages": {"const": 1},
+                "maximum_calls_per_job": {"const": 1}
+              }
+            }
+          },
+          {
+            "if": {"properties": {"adapter_key": {"const": "kubernetes-metadata.v1"}}},
+            "then": {
+              "required": ["allowed_namespaces", "allowed_resource_kinds"],
+              "properties": {
+                "operations": {"const": ["kubernetes.metadata.list.v1"]},
+                "maximum_pages": {"const": 1},
+                "maximum_calls_per_job": {"const": 1}
+              }
+            }
+          }
+        ]
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "key_id", "signed_digest", "value_base64"],
+      "properties": {
+        "algorithm": {"const": "ECDSA_P256_SHA256"},
+        "key_id": {"type": "string", "minLength": 1, "maxLength": 255},
+        "signed_digest": {"$ref": "#/$defs/digest"},
+        "value_base64": {"type": "string", "minLength": 1, "maxLength": 512}
+      }
+    }
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}

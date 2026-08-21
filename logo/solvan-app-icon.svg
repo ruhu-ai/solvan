@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Solvan app icon">
+  <rect width="1024" height="1024" rx="232" fill="#17191c"/>
+  <g transform="translate(121.5,112) scale(12.5)">
+        <g fill="none" stroke="#f5f6f7" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M49 13 H33.5 A9.5 9.5 0 0 0 33.5 32 H37 A9.5 9.5 0 0 1 37 51 H29"/>
+    </g>
+    <circle cx="14.5" cy="51" r="5.5" fill="#c4d6f7"/>
+  </g>
+</svg>

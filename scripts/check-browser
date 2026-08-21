@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+eval "$(scripts/dev-env --shell)"
+
+# This suite performs a genuine sign-in rather than injecting a session, which
+# is how it catches a broken callback, a stale nonce, or an expiry. It cannot do
+# that against Google — the flow needs a person — so it runs against the harness
+# fixture, forced over any `.env` a developer keeps for real Google sign-in.
+export SOLVAN_USE_TEST_IDENTITY_PROVIDER=1
+# The local mailbox fixture is authenticated even though it is loopback-only.
+# Export the same explicit bearer `scripts/start` force-selects so Playwright
+# can retrieve the one-use code the way a person would read their mailbox.
+export SOLVAN_TEST_STEP_UP_SINK_TOKEN="solvan-local-test-step-up-sink-token-v1"
+
+started=0
+if ! curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_CONSOLE_PORT" >/dev/null 2>&1 \
+  || ! curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_API_PORT/api/console/settings" >/dev/null 2>&1; then
+  scripts/start
+  started=1
+fi
+# A harness already running for development may be pointed at real Google, and
+# reusing it would fail every case at the sign-in step with nothing saying why.
+# Checked rather than assumed, and refused with the one command that fixes it.
+if [[ "$started" -eq 0 ]]; then
+  # No `--fail`: this route answers 401 when nobody is signed in, which is the
+  # ordinary case, and `--fail` throws the body away with it — so the probe read
+  # empty and never refused anything.
+  provider="$(curl --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_CONSOLE_PORT/api/auth/session" || true)"
+  if [[ "$provider" == *'"provider_is_production":true'* ]]; then
+    echo "The harness already running is signed in against real Google, which this" >&2
+    echo "suite cannot complete: the flow needs a person. Restart it on the test" >&2
+    echo "identity provider first:" >&2
+    echo >&2
+    echo "  scripts/stop && scripts/check-browser" >&2
+    exit 1
+  fi
+fi
+
+cleanup() {
+  if [[ "$started" -eq 1 ]]; then scripts/stop; fi
+}
+trap cleanup EXIT
+
+# Start every browser run from the same conversation ledger.
+#
+# The local development database persists across runs, so answered and parked
+# turns accumulated: after enough runs the same suggested question sometimes
+# answered and sometimes parked, and the case asserting cited claims failed
+# with nothing wrong in the backend. Truncating the conversation tables makes
+# the suite depend on the fixture it declares rather than on how many times it
+# has been run before. This is the worktree development database and carries no
+# production authority.
+# Derived here rather than read from the environment: scripts/start exports
+# SOLVAN_DATABASE_URL, but this script also runs against an already-started
+# harness, where it would be unset and the reset would silently do nothing.
+SOLVAN_LIAISON_RESET_URL="postgresql://solvan_local:solvan_local_only@127.0.0.1:${SOLVAN_POSTGRES_PORT}/solvan_local" \
+uv run python - <<'RESET'
+import os
+
+import psycopg
+
+with psycopg.connect(os.environ["SOLVAN_LIAISON_RESET_URL"]) as connection:
+    connection.execute("TRUNCATE solvan_liaison.liaison_threads RESTART IDENTITY CASCADE")
+    connection.commit()
+RESET
+
+export SOLVAN_BASE_URL="http://$SOLVAN_DEV_HOST:$SOLVAN_CONSOLE_PORT"
+export SOLVAN_API_URL="http://$SOLVAN_DEV_HOST:$SOLVAN_API_PORT"
+pnpm exec playwright test

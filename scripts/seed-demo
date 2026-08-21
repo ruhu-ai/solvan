@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+echo "scripts/seed-demo is retained for compatibility; use scripts/seed-fault-drill." >&2
+exec scripts/seed-fault-drill "$@"

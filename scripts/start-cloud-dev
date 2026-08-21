@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+# Before the preflight below, which requires values that live only in `.env`.
+# shellcheck source=scripts/load-dotenv
+source scripts/load-dotenv
+eval "$(scripts/dev-env --shell)"
+
+control_project="solvan-dev"
+region="europe-west1"
+reader_service_account=""
+approval_audience="${SOLVAN_APPROVAL_AUDIENCE:-}"
+admin_email=""
+
+usage() {
+  cat <<'EOF'
+Usage: scripts/start-cloud-dev [options]
+
+Runs Solvan locally with a Solvan-owned development identity. Target estates
+are connected only through Integrations; this command intentionally has no
+target-project option.
+
+Options:
+  --control-project PROJECT        Solvan development identity project (default: solvan-dev)
+  --reader-service-account EMAIL   Exact Solvan development reader identity
+  --region REGION                  Control/evidence region (default: europe-west1)
+  --approval-audience CLIENT_ID    Google OAuth client ID for operator identity
+  --admin-email EMAIL              Google account allowed to administer this local scope
+EOF
+}
+
+control_project_set=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --control-project) control_project="${2:-}"; control_project_set=1; shift 2 ;;
+    --reader-service-account) reader_service_account="${2:-}"; shift 2 ;;
+    --region) region="${2:-}"; shift 2 ;;
+    --approval-audience) approval_audience="${2:-}"; shift 2 ;;
+    --admin-email) admin_email="${2:-}"; shift 2 ;;
+    --help|-h) usage; exit 0 ;;
+    *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
+  esac
+done
+
+# Precedence, most specific first: the flag, then `.env`, then the built-in
+# default. The built-in used to win over `.env`, so a worktree that had recorded
+# its reader identity started under a different one and said nothing — the
+# generated grant plan then named an identity the operator had not chosen.
+#
+# Two edges are handled explicitly rather than by accident. A dev-env
+# placeholder is not a reader identity: it means the key was never set, so it
+# falls through to the built-in default like an unset or empty value. And an
+# explicit --control-project with no explicit --reader-service-account derives
+# the reader from that project: an `.env` reader pinned for another control
+# project could only fail the guard below with a message blaming the wrong
+# choice.
+env_reader="${SOLVAN_READER_SERVICE_ACCOUNT:-}"
+if [[ "$env_reader" == *REPLACE-WITH-YOUR-SOLVAN-PROJECT* ]]; then
+  env_reader=""
+fi
+if [[ -z "$reader_service_account" ]]; then
+  reader_service_account="$env_reader"
+  if [[ $control_project_set -eq 1 && -n "$env_reader" \
+    && "$env_reader" != *"@${control_project}.iam.gserviceaccount.com" ]]; then
+    printf 'Ignoring the .env reader identity (%s): it belongs to a different control project than --control-project %s.\n' \
+      "$env_reader" "$control_project" >&2
+    reader_service_account=""
+  fi
+fi
+if [[ -z "$reader_service_account" ]]; then
+  reader_service_account="solvan-probe@${control_project}.iam.gserviceaccount.com"
+fi
+if [[ -z "$admin_email" ]]; then
+  admin_email="$(gcloud config get-value account 2>/dev/null)"
+fi
+if [[ ! "$admin_email" =~ ^[^@[:space:]]+@[^@[:space:]]+$ ]]; then
+  echo "A valid Google administrator email is required." >&2
+  exit 2
+fi
+admin_email="$(printf '%s' "$admin_email" | tr '[:upper:]' '[:lower:]')"
+if [[ "$reader_service_account" != *"@${control_project}.iam.gserviceaccount.com" ]]; then
+  echo "Reader service account must belong to the Solvan control project." >&2
+  exit 2
+fi
+
+if [[ -z "$approval_audience" ]]; then
+  cat >&2 <<'MSG'
+No approval token audience is configured.
+
+This defaulted to the Google Cloud SDK's own client, so `gcloud auth
+print-identity-token` output satisfied the audience check — which every
+installation of gcloud can produce. That proves nothing about this deployment.
+
+Create an OAuth client in this control project and pass its ID:
+  scripts/start-cloud-dev --approval-audience <ID>.apps.googleusercontent.com
+or export SOLVAN_APPROVAL_AUDIENCE.
+MSG
+  exit 2
+fi
+
+project_number="$(gcloud projects describe "$control_project" --format='value(projectNumber)')"
+if [[ -z "$project_number" ]]; then
+  echo "The Solvan control project is unavailable." >&2
+  exit 2
+fi
+
+export SOLVAN_LOCAL_CONNECTED_GCP=true
+export SOLVAN_GCP_PROJECT="$control_project"
+export SOLVAN_GCP_PROJECT_NUMBER="$project_number"
+export SOLVAN_GCP_REGION="$region"
+export SOLVAN_READER_SERVICE_ACCOUNT="$reader_service_account"
+export SOLVAN_APPROVAL_AUDIENCE="$approval_audience"
+export SOLVAN_LOCAL_ADMIN_PRINCIPAL="user:${admin_email}"
+export SOLVAN_EVIDENCE_BUCKET="${control_project}-dev-solvan-evidence"
+export SOLVAN_RUNTIME_BUCKET="${control_project}-dev-agent-runtime"
+export SOLVAN_LOCAL_DIRECT_GCP_READER_SOCKET="$SOLVAN_LOCAL_READER_SOCKET_PATH"
+export SOLVAN_LOCAL_READER_TOKEN_PATH="$SOLVAN_LOCAL_READER_TOKEN_FILE"
+
+uv run python - "$reader_service_account" <<'PY'
+import sys
+
+from solvan.platform.local_gcp_credentials import development_credentials
+
+expected_identity = sys.argv[1]
+try:
+    development_credentials(service_account=expected_identity)
+except Exception as error:
+    raise SystemExit(
+        "Application Default Credentials cannot mint the configured Solvan reader.\n"
+        f"Expected: {expected_identity}\n"
+        "Grant your development identity roles/iam.serviceAccountTokenCreator on that account.\n"
+        f"Cause: {type(error).__name__}"
+    ) from error
+PY
+
+gcloud storage buckets describe "gs://$SOLVAN_EVIDENCE_BUCKET" --format='value(name)' >/dev/null
+gcloud storage buckets describe "gs://$SOLVAN_RUNTIME_BUCKET" --format='value(name)' >/dev/null
+
+printf '%s\n' \
+  "Local-connected GCP preflight passed." \
+  "Solvan identity project: $control_project" \
+  "Solvan reader identity: $reader_service_account" \
+  "Local administrator: $SOLVAN_LOCAL_ADMIN_PRINCIPAL" \
+  "Target estates: selected only through Integrations" \
+  "Authority: LOCAL / NO PRODUCTION AUTHORITY"
+
+exec scripts/start

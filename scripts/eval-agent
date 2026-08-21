@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+eval "$(scripts/dev-env --shell)"
+mkdir -p "$SOLVAN_STATE_DIR/evals"
+mode="deterministic"
+previous=""
+for argument in "$@"; do
+  if [[ "$previous" == "--mode" ]]; then mode="$argument"; fi
+  previous="$argument"
+done
+if [[ "$mode" == "live" ]]; then
+  uv run --extra gemini-eval python tools/run_agent_evals.py "$@" \
+    --output "$SOLVAN_STATE_DIR/evals/live-gemini-safety-smoke.json"
+else
+  uv run python tools/run_agent_evals.py "$@" \
+    --output "$SOLVAN_STATE_DIR/evals/safety-smoke.json"
+fi

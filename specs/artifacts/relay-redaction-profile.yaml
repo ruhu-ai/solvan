@@ -1,0 +1,70 @@
+schema_version: 1
+status: target
+revision: relay-redaction.v1
+canonicalization: RFC8785_JSON
+failure_mode: REFUSE_WHOLE_RESULT
+rules:
+  - validate the provider response against the adapter's private input schema
+  - project only allowlisted fields into relay-evidence-envelope-v1
+  - replace principals and resource names marked sensitive with keyed scope-local hashes
+  - reject unknown output fields rather than forwarding them
+  - run secret and PII detectors over the serialized projected bytes
+  - refuse if either detector is unavailable, ambiguous, or returns a deny verdict
+  - serialize canonically, compute content and redaction-manifest hashes, then upload
+never_emit:
+  - access_token
+  - authorization_header
+  - certificate_private_key
+  - client_secret
+  - credential_reference
+  - environment_variable_value
+  - local_policy_content
+  - provider_request_body
+  - provider_response_body
+  - raw_log_message
+  - raw_provider_error
+  - secret_or_config_map_body
+  - service_account_key
+  - stack_local_value
+  - user_email
+  - user_ip_address
+record_policies:
+  METRIC_POINT:
+    allow: [kind, metric_key, timestamp, value, unit, attributes]
+    detectors: [SECRET, PII]
+  LOG_EVENT:
+    allow: [kind, timestamp, severity, message_template_key, safe_parameters, attributes]
+    deny_provider_fields: [textPayload, jsonPayload, protoPayload, labels]
+    detectors: [SECRET, PII, INSTRUCTION_LIKE_CONTENT]
+  AUDIT_EVENT:
+    allow: [kind, timestamp, method_key, actor_principal_hash, target_resource_hash, attributes]
+    hash_locally: [actor_principal, target_resource]
+    detectors: [SECRET, PII]
+  TRACE_SPAN:
+    allow: [kind, trace_id, span_id, name_key, start_time, duration_ms, status, attributes]
+    deny_provider_fields: [stack_trace, events, links, raw_attributes]
+    detectors: [SECRET, PII, INSTRUCTION_LIKE_CONTENT]
+  ERROR_GROUP:
+    allow: [kind, group_hash, signature_key, first_seen, last_seen, count, attributes]
+    deny_provider_fields: [exception_message, stack_trace, source_location]
+    detectors: [SECRET, PII, INSTRUCTION_LIKE_CONTENT]
+  CLOUD_RUN_REVISION:
+    allow: [kind, service_resource_hash, revision_name, traffic_percent, observed_generation, attributes]
+    hash_locally: [service_resource]
+    detectors: [SECRET, PII]
+  CLOUD_SQL_METADATA:
+    allow: [kind, instance_resource_hash, database_version, state, region, attributes]
+    hash_locally: [instance_resource]
+    deny_provider_fields: [ip_addresses, settings.database_flags, users, ssl_configuration]
+    detectors: [SECRET, PII]
+redaction_manifest_fields:
+  - schema_version
+  - revision
+  - collection_job_id
+  - input_provider_hash
+  - projected_content_hash
+  - field_drop_counts_by_rule
+  - local_hash_count
+  - detector_versions
+  - detector_verdicts
+  - completed_at

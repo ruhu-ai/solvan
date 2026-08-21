@@ -1,0 +1,195 @@
+project_id         = "REPLACE_WITH_SOLVAN_DEV_PROJECT_ID"
+billing_account_id = "REPLACE_WITH_BILLING_ACCOUNT_ID"
+environment        = "dev"
+monthly_budget_usd = 40
+database_admin_secret_name = "REPLACE_WITH_REGION_BOUND_SECRET_NAME"
+
+organization_id  = "org_REPLACE_WITH_ULID"
+scope_project_id = "prj_REPLACE_WITH_ULID"
+environment_id   = "env_REPLACE_WITH_ULID"
+
+# Dev accepts immutable images too, so what is tested can be promoted by digest.
+release_commit = "UNCONFIGURED"
+deployment_id  = "UNCONFIGURED"
+
+images = {
+  api                   = "europe-west1-docker.pkg.dev/PROJECT/solvan/api@sha256:REPLACE"
+  alert_ingress         = "europe-west1-docker.pkg.dev/PROJECT/solvan/alert-ingress@sha256:REPLACE"
+  direct_gcp_reader     = "europe-west1-docker.pkg.dev/PROJECT/solvan/direct-gcp-reader@sha256:REPLACE"
+  pilot_qualification_verifier = "europe-west1-docker.pkg.dev/PROJECT/solvan/pilot-qualification-verifier@sha256:REPLACE"
+  coordinator           = "europe-west1-docker.pkg.dev/PROJECT/solvan/coordinator@sha256:REPLACE"
+  detector              = "europe-west1-docker.pkg.dev/PROJECT/solvan/detector@sha256:REPLACE"
+  actuator              = "europe-west1-docker.pkg.dev/PROJECT/solvan/actuator@sha256:REPLACE"
+  evidence_broker       = "europe-west1-docker.pkg.dev/PROJECT/solvan/evidence-broker@sha256:REPLACE"
+  verifier              = "europe-west1-docker.pkg.dev/PROJECT/solvan/verifier@sha256:REPLACE"
+  payments_good         = "europe-west1-docker.pkg.dev/PROJECT/solvan/payments-good@sha256:REPLACE"
+  payments_bad          = "europe-west1-docker.pkg.dev/PROJECT/solvan/payments-bad@sha256:REPLACE"
+  console               = "europe-west1-docker.pkg.dev/PROJECT/solvan/console@sha256:REPLACE"
+  outbox_publisher      = "europe-west1-docker.pkg.dev/PROJECT/solvan/publisher@sha256:REPLACE"
+  memory_promoter       = "europe-west1-docker.pkg.dev/PROJECT/solvan/memory-promoter@sha256:REPLACE"
+  antigravity_workspace = "europe-west1-docker.pkg.dev/PROJECT/solvan/antigravity-workspace@sha256:REPLACE"
+  workspace_sandbox     = "europe-west1-docker.pkg.dev/PROJECT/solvan/workspace-sandbox@sha256:REPLACE"
+  workspace_adapter     = "europe-west1-docker.pkg.dev/PROJECT/solvan/workspace-adapter@sha256:REPLACE"
+  github_provider       = "europe-west1-docker.pkg.dev/PROJECT/solvan/github-provider@sha256:REPLACE"
+  github_identity_broker = "europe-west1-docker.pkg.dev/PROJECT/solvan/github-identity-broker@sha256:REPLACE"
+  deployment_controller  = "europe-west1-docker.pkg.dev/PROJECT/solvan/deployment-controller@sha256:REPLACE"
+  release_verifier        = "europe-west1-docker.pkg.dev/PROJECT/solvan/release-verifier@sha256:REPLACE"
+  slack_liaison         = "europe-west1-docker.pkg.dev/PROJECT/solvan/slack-liaison@sha256:REPLACE"
+  liaison_maintenance   = "europe-west1-docker.pkg.dev/PROJECT/solvan/liaison-maintenance@sha256:REPLACE"
+  trigger_scheduler     = "europe-west1-docker.pkg.dev/PROJECT/solvan/trigger-scheduler@sha256:REPLACE"
+  mcp_facade            = "europe-west1-docker.pkg.dev/PROJECT/solvan/mcp-facade@sha256:REPLACE"
+  discord_liaison       = "europe-west1-docker.pkg.dev/PROJECT/solvan/discord-liaison@sha256:REPLACE"
+  email_liaison         = "europe-west1-docker.pkg.dev/PROJECT/solvan/email-liaison@sha256:REPLACE"
+  relay_control         = "europe-west1-docker.pkg.dev/PROJECT/solvan/relay-control@sha256:REPLACE"
+  fixture_attester      = "europe-west1-docker.pkg.dev/PROJECT/solvan/fixture-attester@sha256:REPLACE"
+  release_admin         = "europe-west1-docker.pkg.dev/PROJECT/solvan/release-admin@sha256:REPLACE"
+}
+
+antigravity_demo_enabled = false
+# The synthetic payments workload is an explicit acceptance fault drill, never
+# a normal Solvan development dependency.
+fault_drill_enabled  = false
+direct_gcp_alert_triage_pilot_enabled = false
+
+github_release_enabled                = false
+github_repository_id                  = "UNCONFIGURED"
+github_installation_id                = 0
+github_webhook_secret_name            = "UNCONFIGURED"
+github_installation_token_secret_name = "UNCONFIGURED"
+github_coordinator_audience           = "UNCONFIGURED"
+github_coordinator_principal          = "UNCONFIGURED"
+
+target_product_enabled    = false
+solvant_relay_enabled     = false
+solvant_relay_invoker_members = []
+channel_enrollment_hmac_secret_name = "UNCONFIGURED"
+alert_cursor_signing_secret_name = "UNCONFIGURED"
+slack_liaison_enabled     = false
+slack_team_id             = "UNCONFIGURED"
+slack_signing_secret_name = "UNCONFIGURED"
+slack_bot_token_secret_name = "UNCONFIGURED"
+discord_liaison_enabled      = false
+discord_application_id       = "UNCONFIGURED"
+discord_public_key_secret_name = "UNCONFIGURED"
+discord_bot_token_secret_name = "UNCONFIGURED"
+email_liaison_enabled        = false
+channel_qualification_receipts = {}
+email_relay_url              = "UNCONFIGURED"
+email_relay_service_account  = "UNCONFIGURED"
+
+calibration_receipt_uri  = null
+calibration_receipt_hash = null
+
+warm_min_instances = 0
+scheduler_paused        = true
+deletion_protection     = false
+console_public          = false
+
+approver_principals = [
+  "user:REPLACE_WITH_APPROVER_EMAIL",
+]
+
+# An OAuth client this environment's own project owns. A shared public client
+# is not an audience: every installation mints tokens against it.
+approval_token_audience = "REPLACE_WITH_ENVIRONMENT_OAUTH_CLIENT_ID.apps.googleusercontent.com"
+
+# Google Workspace domains whose verified accounts may sign in. An empty list
+# admits nobody. A verified account at an admitted domain is eligible; an
+# explicit membership is what actually lets it in.
+admitted_workspace_domains = ["REPLACE_WITH_WORKSPACE_DOMAIN"]
+
+# Secret Manager secret holding this environment's OAuth client secret. One
+# client per environment, owned by that environment's project, with
+# "${console_url}/api/auth/callback" registered as its redirect URI.
+oauth_client_secret_name = "REPLACE_WITH_OAUTH_CLIENT_SECRET_NAME"
+operator_step_up_email_relay_url   = "https://REPLACE_WITH_PRIVATE_EMAIL_RELAY"
+operator_step_up_pepper_secret_name = "REPLACE_WITH_OPERATOR_STEP_UP_PEPPER_SECRET"
+
+# Granted ADMIN on first sign-in, and only while no administrator exists. Every
+# later grant is authored from the console by somebody who already holds ADMIN.
+founding_administrator_email = "REPLACE_WITH_FOUNDING_ADMIN_EMAIL"
+
+execution_agent_principal           = null
+evidence_agent_principal            = null
+infrastructure_agent_principal      = null
+verification_agent_principal        = null
+incident_supervisor_agent_principal = null
+workspace_agent_principal           = null
+
+agent_runtime_resources = {
+  incident_supervisor   = "UNCONFIGURED"
+  evidence_agent       = "UNCONFIGURED"
+  execution_agent      = "UNCONFIGURED"
+  infrastructure_agent = "UNCONFIGURED"
+  verification_agent   = "UNCONFIGURED"
+  workspace_agent      = "UNCONFIGURED"
+}
+
+agent_runtime_revisions = {
+  incident_supervisor   = "UNCONFIGURED"
+  evidence_agent       = "UNCONFIGURED"
+  execution_agent      = "UNCONFIGURED"
+  infrastructure_agent = "UNCONFIGURED"
+  verification_agent   = "UNCONFIGURED"
+  workspace_agent      = "UNCONFIGURED"
+}
+
+# Replace every UNCONFIGURED identity and connection set with exact probe-backed
+# deployment receipts before unpausing the coordinator. Tool-less profiles
+# intentionally have no connection or Gateway entries.
+agent_tool_bindings = {
+  incident_supervisor = {
+    profile_ref = "supervisor.plan.v1@1"
+    identity_ref = "UNCONFIGURED"
+    accepted_tool_ordinals = []
+    connection_epochs = {}
+    gateway_destinations = []
+    data_classification = "INTERNAL"
+  }
+  evidence_agent = {
+    profile_ref = "evidence.ruhu-observability.v1@1"
+    identity_ref = "UNCONFIGURED"
+    accepted_tool_ordinals = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    connection_epochs = {}
+    gateway_destinations = []
+    data_classification = "INTERNAL"
+  }
+  infrastructure_agent = {
+    profile_ref = "infrastructure.ruhu-change.v1@1"
+    identity_ref = "UNCONFIGURED"
+    accepted_tool_ordinals = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    connection_epochs = {}
+    gateway_destinations = []
+    data_classification = "INTERNAL"
+  }
+  execution_agent = {
+    profile_ref = "execution.authorized-action.v1@1"
+    identity_ref = "UNCONFIGURED"
+    accepted_tool_ordinals = [1]
+    connection_epochs = {}
+    gateway_destinations = []
+    data_classification = "INTERNAL"
+  }
+  verification_agent = {
+    profile_ref = "verification.payments.v1@1"
+    identity_ref = "UNCONFIGURED"
+    accepted_tool_ordinals = [1]
+    connection_epochs = {}
+    gateway_destinations = []
+    data_classification = "INTERNAL"
+  }
+  workspace_agent = {
+    profile_ref = "workspace.code-repair.v1@1"
+    identity_ref = "UNCONFIGURED"
+    accepted_tool_ordinals = [1, 2, 3]
+    connection_epochs = {}
+    gateway_destinations = ["solvan-workspace-adapter.internal"]
+    data_classification = "INTERNAL"
+  }
+}
+
+# Catalog publication is deliberately unavailable until exact review receipts
+# and a digest-pinned network policy replace these values.
+catalog_network_policy_hash = "UNCONFIGURED"
+catalog_approval_ref        = "UNCONFIGURED"
+catalog_evaluation_ref      = "UNCONFIGURED"

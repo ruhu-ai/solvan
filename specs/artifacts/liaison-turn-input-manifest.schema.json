@@ -1,0 +1,370 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solvan.dev/schemas/liaison-turn-input-manifest-v2.json",
+  "title": "Solvan Liaison turn input manifest",
+  "description": "Target v2 reference-only manifest emitted by the Conversation Context Compiler before provider dispatch. It contains no user or transcript prose.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "thread_id",
+    "liaison_message_id",
+    "user_message_id",
+    "reader_principal",
+    "scope",
+    "cell_id",
+    "placement_epoch",
+    "purpose",
+    "classification_ceiling",
+    "region",
+    "anchor_ref",
+    "conversation_intent",
+    "authority_route",
+    "resolved_references",
+    "source_versions",
+    "scope_sequence_high_water",
+    "working_context"
+  ],
+  "properties": {
+    "schema_version": {"const": 2},
+    "thread_id": {"type": "string", "minLength": 1},
+    "liaison_message_id": {"type": "string", "minLength": 1},
+    "user_message_id": {"type": "string", "minLength": 1},
+    "reader_principal": {"type": "string", "minLength": 1},
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["organization_id", "project_id", "environment_id"],
+      "properties": {
+        "organization_id": {"type": "string", "minLength": 1},
+        "project_id": {"type": "string", "minLength": 1},
+        "environment_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "cell_id": {"type": "string", "minLength": 1},
+    "placement_epoch": {"type": "integer", "minimum": 1},
+    "purpose": {"type": "string", "minLength": 1},
+    "classification_ceiling": {
+      "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL"]
+    },
+    "region": {"type": "string", "minLength": 2},
+    "anchor_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": {
+        "kind": {"enum": ["RECORD", "SERVICE_WINDOW", "SCOPE"]},
+        "ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "conversation_intent": {
+      "enum": [
+        "SOCIAL",
+        "HELP",
+        "LEDGER_QUERY",
+        "FOLLOW_UP",
+        "STEER_DRAFT",
+        "ACTION_REFERENCE",
+        "OUT_OF_SCOPE"
+      ]
+    },
+    "authority_route": {
+      "enum": ["NONE", "ASK", "STEER", "ACT_SURFACE_ONLY"]
+    },
+    "resolved_references": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/typedReference"}
+    },
+    "source_versions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/sourceVersion"}
+    },
+    "scope_sequence_high_water": {"type": "integer", "minimum": 0},
+    "working_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "compiler_version",
+        "compiler_binding_epoch",
+        "compiler_digest",
+        "tokenizer_digest",
+        "model_resource",
+        "template_registry_digest",
+        "tool_registry_digest",
+        "read_grant_digest",
+        "stable_prefix_digest",
+        "variable_suffix_digest",
+        "context_digest",
+        "compiled_at",
+        "expires_at",
+        "token_budget",
+        "items",
+        "omitted_counts"
+      ],
+      "properties": {
+        "compiler_version": {"type": "string", "minLength": 1},
+        "compiler_binding_epoch": {"type": "integer", "minimum": 1},
+        "compiler_digest": {"$ref": "#/$defs/sha256"},
+        "tokenizer_digest": {"$ref": "#/$defs/sha256"},
+        "model_resource": {"type": "string", "minLength": 1},
+        "template_registry_digest": {"$ref": "#/$defs/sha256"},
+        "tool_registry_digest": {"$ref": "#/$defs/sha256"},
+        "read_grant_digest": {"$ref": "#/$defs/sha256"},
+        "stable_prefix_digest": {"$ref": "#/$defs/sha256"},
+        "variable_suffix_digest": {"$ref": "#/$defs/sha256"},
+        "context_digest": {"$ref": "#/$defs/sha256"},
+        "compiled_at": {"type": "string", "format": "date-time"},
+        "expires_at": {"type": "string", "format": "date-time"},
+        "token_budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model_input_limit",
+            "stable_prefix_tokens",
+            "reserved_output_tokens",
+            "safety_margin_tokens",
+            "dynamic_context_ceiling",
+            "actual_context_tokens"
+          ],
+          "properties": {
+            "model_input_limit": {"type": "integer", "minimum": 1},
+            "stable_prefix_tokens": {"type": "integer", "minimum": 0},
+            "reserved_output_tokens": {"type": "integer", "minimum": 1},
+            "safety_margin_tokens": {"type": "integer", "minimum": 1},
+            "dynamic_context_ceiling": {"type": "integer", "minimum": 1},
+            "actual_context_tokens": {"type": "integer", "minimum": 0}
+          }
+        },
+        "items": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/contextItem"}
+        },
+        "omitted_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "expired_or_purged",
+            "superseded",
+            "budget",
+            "context_reduced_by_policy"
+          ],
+          "properties": {
+            "expired_or_purged": {"type": "integer", "minimum": 0},
+            "superseded": {"type": "integer", "minimum": 0},
+            "budget": {"type": "integer", "minimum": 0},
+            "context_reduced_by_policy": {"type": "boolean"}
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "conversation_intent": {"enum": ["SOCIAL", "HELP", "OUT_OF_SCOPE"]}
+        },
+        "required": ["conversation_intent"]
+      },
+      "then": {
+        "properties": {
+          "authority_route": {"const": "NONE"},
+          "working_context": {
+            "properties": {
+              "items": {"maxItems": 0}
+            }
+          }
+        }
+      }
+    }
+    ,
+    {
+      "if": {
+        "properties": {
+          "conversation_intent": {"enum": ["LEDGER_QUERY", "FOLLOW_UP"]}
+        },
+        "required": ["conversation_intent"]
+      },
+      "then": {
+        "properties": {
+          "authority_route": {"const": "ASK"},
+          "working_context": {
+            "properties": {
+              "items": {
+                "contains": {
+                  "type": "object",
+                  "properties": {"kind": {"const": "CURRENT_USER"}},
+                  "required": ["kind"]
+                },
+                "minContains": 1,
+                "maxContains": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"conversation_intent": {"const": "STEER_DRAFT"}},
+        "required": ["conversation_intent"]
+      },
+      "then": {
+        "properties": {
+          "authority_route": {"const": "STEER"},
+          "working_context": {
+            "properties": {
+              "items": {
+                "contains": {
+                  "type": "object",
+                  "properties": {"kind": {"const": "CURRENT_USER"}},
+                  "required": ["kind"]
+                },
+                "minContains": 1,
+                "maxContains": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"conversation_intent": {"const": "ACTION_REFERENCE"}},
+        "required": ["conversation_intent"]
+      },
+      "then": {
+        "properties": {
+          "authority_route": {"const": "ACT_SURFACE_ONLY"},
+          "working_context": {
+            "properties": {"items": {"maxItems": 0}}
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "typedReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "MESSAGE",
+            "PART",
+            "CLAIM_TEMPLATE",
+            "SUBJECT",
+            "RECORD",
+            "ACTION",
+            "TIME_WINDOW"
+          ]
+        },
+        "ref": {"type": "string", "minLength": 1},
+        "source_part_id": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "sourceVersion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_type", "record_id", "version", "digest"],
+      "properties": {
+        "record_type": {"type": "string", "minLength": 1},
+        "record_id": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "digest": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "contextItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "kind",
+        "ref",
+        "digest",
+        "token_count",
+        "classification",
+        "trust"
+      ],
+      "properties": {
+        "sequence": {"type": "integer", "minimum": 1},
+        "kind": {
+          "enum": [
+            "CURRENT_USER",
+            "THREAD_TURN",
+            "COMPACTION",
+            "RECORD",
+            "ARTIFACT_REF",
+            "MEMORY_REF",
+            "TOOL_RESULT",
+            "TRUNCATION_MARKER"
+          ]
+        },
+        "ref": {"type": "string", "minLength": 1},
+        "digest": {"$ref": "#/$defs/sha256"},
+        "token_count": {"type": "integer", "minimum": 0},
+        "classification": {
+          "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL"]
+        },
+        "trust": {
+          "enum": [
+            "UNTRUSTED_USER_CONTENT",
+            "UNTRUSTED_CONTEXT_ONLY",
+            "AUTHORITATIVE_REFERENCE"
+          ]
+        },
+        "access_verdict_ref": {"type": ["string", "null"], "minLength": 1}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"kind": {"const": "CURRENT_USER"}},
+            "required": ["kind"]
+          },
+          "then": {"properties": {"trust": {"const": "UNTRUSTED_USER_CONTENT"}}}
+        },
+        {
+          "if": {
+            "properties": {"kind": {"const": "RECORD"}},
+            "required": ["kind"]
+          },
+          "then": {"properties": {"trust": {"const": "AUTHORITATIVE_REFERENCE"}}}
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "THREAD_TURN",
+                  "COMPACTION",
+                  "ARTIFACT_REF",
+                  "MEMORY_REF",
+                  "TOOL_RESULT",
+                  "TRUNCATION_MARKER"
+                ]
+              }
+            },
+            "required": ["kind"]
+          },
+          "then": {"properties": {"trust": {"const": "UNTRUSTED_CONTEXT_ONLY"}}}
+        },
+        {
+          "if": {
+            "properties": {"kind": {"const": "TRUNCATION_MARKER"}},
+            "required": ["kind"]
+          },
+          "then": {"properties": {"access_verdict_ref": {"type": "null"}}},
+          "else": {
+            "required": ["access_verdict_ref"],
+            "properties": {"access_verdict_ref": {"type": "string", "minLength": 1}}
+          }
+        }
+      ]
+    }
+  }
+}

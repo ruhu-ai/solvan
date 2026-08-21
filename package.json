@@ -1,0 +1,16 @@
+{
+  "name": "solvan",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.25.0",
+  "scripts": {
+    "build": "pnpm --dir apps/console build",
+    "check": "pnpm --dir apps/console check",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.12.1",
+    "@playwright/test": "1.54.2",
+    "@types/node": "24.2.0"
+  }
+}

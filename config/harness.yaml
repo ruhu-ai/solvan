@@ -1,0 +1,23 @@
+schema_version: 1
+repository_phase: implementation
+canonical_commands:
+  bootstrap: scripts/bootstrap
+  start: scripts/start
+  stop: scripts/stop
+  check: scripts/check
+gates:
+  architecture: required
+  documentation: required
+  unit_tests: required
+  deterministic_agent_safety_smoke: required
+  console_typecheck_and_build: required
+  browser_critical_path: required
+  live_gemini_agent_eval: target
+  product_requirement_test_implementations: required
+  cloud_release_receipts: target
+phase_transition:
+  implementation_requires:
+    - product_requirement_test_implementations
+  release_requires:
+    - live_gemini_agent_eval
+    - cloud_release_receipts

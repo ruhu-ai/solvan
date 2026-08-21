@@ -1,0 +1,142 @@
+/* Integrations: connection posture, capability matrix, actuator registry. */
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* `1fr` carries an automatic min-width of auto, so a long resource name would
+   push the column past its container. minmax(0, …) clamps it; min(340px, 100%)
+   keeps the track from forcing 340px inside a narrower parent. */
+.connection-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: var(--space-4); padding: var(--space-4); }
+/* An empty estate list is the normal first state, so the grid must collapse
+   rather than hold its padding open as a void under the heading. */
+.connection-grid:empty { display: none; }
+.connection-grid > * { min-width: 0; }
+.connection-card { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); }
+.connection-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+.connection-head > div, .connection-meta, .cell-detail { min-width: 0; overflow-wrap: anywhere; }
+.connection-head h3 { margin: 0; font: var(--type-h3); }
+.connection-meta { margin: var(--space-1) 0 0; font: var(--type-small); color: var(--text-muted); }
+.posture-row { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; font: var(--type-small); color: var(--text-secondary); }
+/* A grant name is long and must never be clipped. On wide screens the column
+   widths are declared on the first row, because `table-layout: fixed` reads
+   them there and ignores later rows. Below the narrow breakpoint the matrix
+   becomes labeled rows, per design system section 10. */
+.capability-scroll { overflow-x: auto; }
+.capability-matrix { width: 100%; border-collapse: collapse; font: var(--type-body-sm); table-layout: fixed; }
+.capability-matrix th:nth-child(1) { width: 38%; }
+.capability-matrix th:nth-child(2) { width: 30%; }
+.capability-matrix th:nth-child(3) { width: 32%; }
+.capability-matrix .mono-chip { max-width: 100%; white-space: normal; overflow-wrap: break-word; }
+/* A probe receipt or grant name is longer than a connection card; the chip
+   wraps rather than escaping it. */
+.availability-reason .mono-chip { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  .capability-matrix, .capability-matrix tbody, .capability-matrix tr, .capability-matrix td { display: block; width: auto; }
+  .capability-matrix thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+  .capability-matrix tr { padding: var(--space-2) 0; border-bottom: 1px solid var(--border); }
+  .capability-matrix tr:last-child { border-bottom: none; }
+  /* A resource name is longer than any sensible label gutter, so the label
+     stacks above its value rather than competing with it for width. */
+  .capability-matrix td { padding: 3px 0; border-bottom: none; min-width: 0; }
+  .capability-matrix td::before { content: attr(data-label); display: block; margin-bottom: 2px; font: var(--type-micro); color: var(--text-muted); }
+  .responsive-table .mono-chip { white-space: normal; overflow-wrap: break-word; }
+}
+.section-note { margin: 0; padding: 0 var(--space-4) var(--space-3); font: var(--type-body-sm); color: var(--text-secondary); }
+.cell-detail { display: block; font: var(--type-micro); color: var(--text-muted); }
+.responsive-table td, .responsive-table th { min-width: 0; overflow-wrap: anywhere; }
+.responsive-table .mono-chip { white-space: normal; overflow-wrap: anywhere; }
+.responsive-table a { overflow-wrap: anywhere; }
+@media (max-width: 760px) { .connection-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Phase rail: wall-clock time per stage of the recovery loop, read from
+   committed transitions. Approval wait is its own stage so a slow human is
+   never mistaken for a slow system. */
+.timing-rail { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-4); padding: 0; list-style: none; }
+.timing-phase { display: flex; flex-direction: column; gap: 1px; padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); min-width: 0; }
+.phase-name { font: var(--type-micro); color: var(--text-muted); }
+.phase-duration { font: var(--type-body-sm); font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+.timing-phase.current { border-color: var(--status-info-border); background: var(--status-info-bg); }
+.timing-phase.current .phase-name { color: var(--status-info-strong); }
+.timing-phase.current .phase-duration { color: var(--status-info-strong); font-weight: 500; }
+@media (max-width: 760px) { .timing-rail { gap: 6px; } .timing-phase { padding: 5px 9px; } }
+
+/* Connect flow: the customer receives commands to run, never a field asking
+   for a credential. Commands are selectable text, not an action button. */
+.connect-flow { margin-bottom: var(--space-4); padding-bottom: var(--space-4); }
+.connect-guide-link { padding: 0 var(--space-4) var(--space-3); }
+.connect-guide-link .text-button { min-height: 0; padding: 0; text-align: left; }
+.connect-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: var(--space-3); padding: 0 var(--space-4) var(--space-3); }
+.connect-fields > * { min-width: 0; }
+.connect-fields label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; line-height: 16px; color: var(--text-secondary); }
+.connect-fields input, .connect-fields select { min-height: 34px; padding: 6px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); font-size: 13px; line-height: 19px; }
+.connect-fields input:focus-visible, .connect-fields select:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+
+/* Setup forms elsewhere on this page carried class names with no rules behind
+   them, so `<label>text<input></label>` rendered the caption inline against an
+   unstyled control at its intrinsic width. Every field here is a value the
+   operator must read back against what they ran in their own project, so the
+   caption sits above a full-width control. `.field-label` also labels
+   read-only values as a span, so only the label element is given layout. */
+.connect-form { display: grid; gap: var(--space-3); }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: var(--space-3); }
+.form-grid > * { min-width: 0; }
+label.field-label { display: grid; gap: 4px; min-width: 0; }
+.connect-form input, .connect-form select, .form-grid input, .form-grid select, label.field-label input, label.field-label select {
+  width: 100%; min-height: 34px; padding: 6px 10px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary);
+  font-family: inherit; font-size: 13px; font-weight: 400; line-height: 19px;
+}
+/* Digests, resource paths, and receipt references are compared character by
+   character; proportional type makes that harder than it needs to be. */
+.connect-form input, .form-grid input, label.field-label input { font-family: var(--font-mono); font-size: 12px; }
+.connect-form input:focus-visible, .connect-form select:focus-visible,
+.form-grid input:focus-visible, .form-grid select:focus-visible,
+label.field-label input:focus-visible, label.field-label select:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.connect-form button[type="submit"] { justify-self: start; }
+
+/* Choosing what a GitHub binding may do is the read-only boundary, so it is a
+   grouped radio set rather than a checkbox row: exactly one authority applies,
+   and the option that grants nothing is the one already selected. A fieldset
+   and legend carry that grouping to assistive technology, which a styled div
+   would not. */
+.operation-choice { display: grid; gap: var(--space-2); margin: 0; padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+.operation-choice legend { padding: 0 6px; font: var(--type-micro); color: var(--text-muted); }
+/* The control sits on the first text line rather than centred against a block
+   that grows with its explanation. */
+.choice-option { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-2); align-items: start; font: var(--type-body-sm); color: var(--text-secondary); }
+/* This form's shared input rule sizes and borders text controls, which would
+   otherwise be inherited by a native radio and render it as a small box. */
+.choice-option input[type="radio"], .choice-option input[type="checkbox"] { appearance: auto; accent-color: var(--accent); width: auto; min-height: 0; margin: 3px 0 0; padding: 0; border: none; border-radius: 0; background: none; }
+.choice-option input[type="radio"]:focus-visible, .choice-option input[type="checkbox"]:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.choice-option:has(input:disabled) { color: var(--text-muted); }
+.choice-option > span { display: grid; gap: 2px; min-width: 0; }
+.connect-posture { display: flex; flex-direction: column; gap: 6px; justify-content: flex-end; }
+/* Telemetry is a set rather than a choice, so it is a grouped checkbox set. It
+   sits outside `.connect-fields` because it is one control, not another column
+   in that grid of single values. */
+.connect-capabilities { display: grid; gap: var(--space-2); padding: 0 var(--space-4) var(--space-3); }
+.connect-actions { padding: 0 var(--space-4) var(--space-3); }
+.grant-plan { padding: 0 var(--space-4); }
+.grant-summary { margin: 0 0 var(--space-3); font: var(--type-body-sm); color: var(--text-secondary); }
+.grant-steps { margin: 0 0 var(--space-3); padding-left: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+.grant-purpose { margin: 0 0 4px; font: var(--type-body-sm); color: var(--text-primary); }
+.grant-command { margin: 0; padding: 10px 12px; overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-muted); font: var(--type-mono); color: var(--text-secondary); white-space: pre; }
+
+.connection-scope { margin: var(--space-2) 0 0; color: var(--text-secondary); font: var(--type-small); overflow-wrap: anywhere; }
+.connection-guide-callout { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3); align-items: start; padding: var(--space-4); margin-bottom: var(--space-4); border-color: var(--status-info-border); background: var(--status-info-bg); }
+.connection-guide-callout h2, .connection-guide-card h2 { margin: 0; font: var(--type-h3); }
+.connection-guide-callout p, .connection-guide-card > p { margin: var(--space-1) 0 0; color: var(--text-secondary); }
+.connection-guide-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-bottom: var(--space-4); }
+.connection-guide-card { padding: var(--space-4); margin-bottom: var(--space-4); }
+.connection-guide-card ul { margin: var(--space-3) 0 0; padding-left: 20px; color: var(--text-secondary); }
+.connection-guide-card li + li { margin-top: var(--space-2); }
+.guide-links { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+.guide-links a { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+.guide-facts { display: grid; gap: var(--space-3); margin: var(--space-3) 0 0; }
+.guide-facts div { display: grid; gap: 3px; }
+.guide-facts dt { font-weight: 650; color: var(--text-primary); }
+.guide-facts dd { margin: 0; color: var(--text-secondary); overflow-wrap: anywhere; }
+.guide-steps { display: grid; gap: var(--space-3); margin: var(--space-3) 0 0; padding-left: 24px; }
+.guide-steps li { padding-left: var(--space-2); }
+.guide-steps p { margin: 3px 0 0; color: var(--text-secondary); }
+@media (max-width: 760px) { .connection-guide-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Deterministic seats: registered and identified like an agent, but never
+   toned like one. The absence of a model is the property being shown. */

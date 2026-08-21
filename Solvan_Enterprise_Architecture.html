@@ -1,0 +1,1398 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Solvan Enterprise Architecture</title>
+  <style>
+    @page { size: A3 portrait; margin: 14mm 18mm; }
+
+    :root {
+      --ink: #171a20;
+      --muted: #565d68;
+      --line: #d5dae2;
+      --soft-line: #e6eaef;
+      --paper: #fdfdfe;
+      --cool: #f7f9fb;
+      --band: #eef2f6;
+      --primary: #1f5c9e;
+      --primary-dark: #143e6d;
+      --green: #147a5c;
+      --amber: #a8781f;
+      --violet: #6e55a8;
+      --red: #b3372a;
+      --charcoal: #22262c;
+      --code: #f1f4f7;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--cool); color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 12px; line-height: 1.48;
+    }
+
+    body { counter-reset: section; }
+
+    h1, h2, h3, p, ul, ol, table, figure { margin-top: 0; }
+
+    h1 { font-size: 34px; line-height: 1.08; margin-bottom: 12px; }
+
+    h2 {
+      break-after: avoid; font-size: 20px; line-height: 1.18;
+      margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid var(--line);
+    }
+    h2::before {
+      counter-increment: section;
+      content: counter(section, decimal-leading-zero) " ";
+      color: var(--primary); font-weight: 800;
+    }
+
+    h3 { break-after: avoid; font-size: 14px; margin: 0 0 8px; }
+    p { margin-bottom: 8px; }
+    ul, ol { padding-left: 18px; margin-bottom: 10px; }
+    li { margin-bottom: 4px; }
+
+    code {
+      font-family: "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.9em; background: var(--code);
+      border: 1px solid var(--soft-line); border-radius: 4px;
+      padding: 1px 4px; white-space: nowrap;
+    }
+
+    table {
+      width: 100%; border-collapse: collapse; font-size: 10.4px;
+      margin-bottom: 12px; background: var(--paper);
+    }
+    th, td { text-align: left; vertical-align: top; border: 1px solid var(--line); padding: 6px 7px; }
+    th { background: var(--band); color: var(--charcoal); font-weight: 800; }
+
+    .page { min-height: calc(420mm - 28mm); padding: 0; break-after: page; }
+    .page:last-child { break-after: auto; }
+
+    .hero {
+      min-height: calc(420mm - 28mm);
+      display: flex; flex-direction: column; justify-content: space-between;
+      background: linear-gradient(135deg, rgba(31, 92, 158, 0.10), rgba(20, 122, 92, 0.08)), var(--paper);
+      border: 1px solid var(--line); border-radius: 8px; padding: 30px 34px;
+    }
+    .hero-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 28px; align-items: start; }
+
+    .kicker {
+      color: var(--primary-dark); font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.08em; font-size: 10px; margin-bottom: 12px;
+    }
+    .lede { font-size: 15px; color: var(--muted); max-width: 720px; }
+
+    .callout {
+      background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--primary);
+      border-radius: 6px; padding: 10px 12px; margin: 12px 0; font-size: 12px;
+    }
+    .note { border-left-color: var(--green); }
+    .warning { border-left-color: var(--amber); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+
+    .card {
+      background: var(--paper); border: 1px solid var(--line);
+      border-radius: 8px; padding: 12px 14px;
+    }
+    .card h3 { color: var(--charcoal); }
+    .card ul { margin-bottom: 0; }
+
+    .metric strong { display: block; font-size: 22px; color: var(--primary-dark); }
+    .metric span { color: var(--muted); font-size: 11px; }
+
+    .stack { display: grid; gap: 12px; }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+    .pill {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
+      padding: 3px 10px; font-size: 10.5px; font-weight: 600; color: var(--charcoal);
+    }
+    .pill.ok { border-color: var(--green); color: var(--green); }
+    .pill.target { border-color: var(--amber); color: var(--amber); }
+
+    .diagram {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+      padding: 14px; margin-bottom: 12px;
+    }
+    .diagram svg { width: 100%; height: auto; display: block; }
+    .caption { color: var(--muted); font-size: 10.5px; margin: 8px 2px 0; }
+
+    .small { font-size: 10.5px; color: var(--muted); }
+    .mono { font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+
+    .status-ok { color: var(--green); font-weight: 700; }
+    .status-target { color: var(--amber); font-weight: 700; }
+
+    .footer-meta {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      border-top: 1px solid var(--line); padding-top: 14px; margin-top: 22px;
+      font-size: 10.5px; color: var(--muted);
+    }
+    .footer-meta strong { color: var(--charcoal); }
+
+    pre.shell {
+      background: var(--charcoal); color: #e8ecf1; border-radius: 8px;
+      padding: 12px 14px; font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+      font-size: 10.5px; line-height: 1.6; overflow-x: auto; margin: 0 0 12px;
+    }
+
+    /* ================= Shared SVG idiom system =================
+       Reused by every figure: ground panel, tinted zones, product cards,
+       tool chips, label tags, numbered badges, speech bubbles, journey
+       paths, runtime bars, chevron arrows, gates. */
+    svg text { font-family: Inter, ui-sans-serif, sans-serif; }
+
+    svg .ground   { fill: #e9f0f7; }
+    svg .band     { fill: #1f5c9e; }
+    svg .band-t   { font: 800 15px Inter, sans-serif; fill: #ffffff; letter-spacing: 0.02em; }
+    svg .band-s   { font: 600 10.5px Inter, sans-serif; fill: #cfe0f2; }
+
+    svg .zone-trig { fill: #eef1f5; stroke: #ccd5df; stroke-width: 1.4; }
+    svg .zone-core { fill: #e2ecf7; stroke: #b9cfe6; stroke-width: 1.4; }
+    svg .zone-ai   { fill: #efeaf8; stroke: #d4c7e9; stroke-width: 1.4; }
+    svg .zone-gov  { fill: #f8f0dc; stroke: #e4d4a9; stroke-width: 1.4; }
+    svg .zone-data { fill: #e5f2ea; stroke: #bcdccc; stroke-width: 1.4; }
+    svg .zone-op   { fill: #fdeeea; stroke: #eccabf; stroke-width: 1.4; }
+    svg .zlab     { font: 800 10px Inter, sans-serif; fill: #55637a; letter-spacing: 0.09em; }
+
+    svg .card     { fill: #ffffff; stroke: #c7d1dc; stroke-width: 1.4; }
+    svg .card-hi  { fill: #f4fadf; stroke: #a9c86a; stroke-width: 1.6; }
+    svg .card-t   { font: 700 11.5px Inter, sans-serif; fill: #171a20; }
+    svg .card-s   { font: 500 9.5px Inter, sans-serif; fill: #565d68; }
+    svg .card-div { stroke: #dde3ea; stroke-width: 1.2; }
+    svg .plat-t   { font: 600 9.5px Inter, sans-serif; fill: #8a93a1; }
+    svg .icon     { font-size: 17px; }
+    svg .icon-lg  { font-size: 24px; }
+
+    svg .chip     { fill: #eaf4cd; stroke: #c2d494; stroke-width: 1.3; }
+    svg .chip-t   { font: 600 10px "JetBrains Mono", ui-monospace, monospace; fill: #33421c; }
+
+    svg .tag      { fill: #ffffff; stroke: #a9b5c2; stroke-width: 1.4; }
+    svg .tag-t    { font: 700 10.5px Inter, sans-serif; fill: #22262c; }
+
+    svg .badge    { fill: #4f9d4a; stroke: #ffffff; stroke-width: 2; }
+    svg .badge-t  { font: 800 12px Inter, sans-serif; fill: #ffffff; text-anchor: middle; }
+    svg .badge-red{ fill: #b3372a; stroke: #ffffff; stroke-width: 2; }
+
+    svg .bubble   { fill: #f0f2f5; stroke: #98a2ae; stroke-width: 1.4; }
+    svg .bubble-t { font: 600 10.5px Inter, sans-serif; fill: #22262c; }
+
+    svg .journey  { fill: none; stroke: #3c5a78; stroke-width: 2.6; stroke-dasharray: 0.5 7.5; stroke-linecap: round; }
+    svg .way      { fill: #3c5a78; stroke: #ffffff; stroke-width: 1.6; }
+
+    svg .bar      { fill: #e3e6ea; stroke: #c2c8cf; stroke-width: 1.3; }
+    svg .bar-t    { font: 600 10.5px "JetBrains Mono", ui-monospace, monospace; fill: #343a42; }
+
+    svg .chev    { fill: #2f6cb3; }
+    svg .chev-t  { font: 800 10.5px Inter, sans-serif; fill: #ffffff; }
+    svg .chev-amb{ fill: #a8781f; }
+
+    svg .flow     { stroke: #565d68; stroke-width: 1.8; fill: none; }
+    svg .flow-b   { stroke: #1f5c9e; stroke-width: 2.2; fill: none; }
+    svg .flow-r   { stroke: #b3372a; stroke-width: 2.2; fill: none; }
+    svg .flow-dash{ stroke: #8a93a1; stroke-width: 1.5; fill: none; stroke-dasharray: 4 3; }
+
+    svg .code-bl  { fill: #22262c; }
+    svg .code-t   { font: 500 9.8px "JetBrains Mono", ui-monospace, monospace; fill: #dfe6ee; }
+    svg .code-hl  { font: 700 9.8px "JetBrains Mono", ui-monospace, monospace; fill: #9fd08c; }
+
+    svg .fence    { stroke: #b3372a; stroke-width: 2.6; fill: none; }
+    svg .fence-t  { font: 700 10px Inter, sans-serif; fill: #b3372a; }
+
+    svg .gate     { fill: #f8f0dc; stroke: #a8781f; stroke-width: 2.2; }
+    svg .wall     { fill: #b3372a; }
+
+    svg .mono-t   { font: 600 9.5px "JetBrains Mono", ui-monospace, monospace; fill: #147a5c; }
+    svg .status-i { font: 700 9.5px Inter, sans-serif; fill: #147a5c; }
+    svg .status-g { font: 700 9.5px Inter, sans-serif; fill: #a8781f; }
+  </style>
+</head>
+<body>
+  <!-- Document-wide SVG defs: markers and drawn glyphs reused by every figure. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#565d68"></path>
+      </marker>
+      <marker id="ar-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#1f5c9e"></path>
+      </marker>
+      <marker id="ar-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#b3372a"></path>
+      </marker>
+      <marker id="ar-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#147a5c"></path>
+      </marker>
+      <!-- persona: drawn operator figure -->
+      <g id="persona">
+        <circle cx="0" cy="-14" r="7.5" fill="none" stroke="#22262c" stroke-width="2.6"></circle>
+        <path d="M -11 8 Q -11 -4 0 -4 Q 11 -4 11 8" fill="none" stroke="#22262c" stroke-width="2.6"></path>
+      </g>
+      <!-- agent mascot: robot head -->
+      <g id="mascot">
+        <circle cx="0" cy="0" r="10" fill="#dceafc" stroke="#2f5d96" stroke-width="2"></circle>
+        <rect x="-6" y="-3.4" width="12" height="6.2" rx="3" fill="#f7c948" stroke="#2f5d96" stroke-width="1.4"></rect>
+        <circle cx="-3" cy="-0.4" r="1.2" fill="#22262c"></circle>
+        <circle cx="3" cy="-0.4" r="1.2" fill="#22262c"></circle>
+        <path d="M -2.4 3.4 Q 0 5 2.4 3.4" fill="none" stroke="#22262c" stroke-width="1.1"></path>
+        <line x1="0" y1="-10" x2="0" y2="-13.4" stroke="#2f5d96" stroke-width="1.6"></line>
+        <circle cx="0" cy="-14.6" r="1.6" fill="#b3372a"></circle>
+      </g>
+      <!-- wrench glyph for tool chips -->
+      <g id="wrench">
+        <path d="M 1.5 -5.5 A 4 4 0 1 0 5.5 -1.5 L 3.2 -1.5 L 1.5 -3.2 Z M 3.5 -0.5 L 9 5 L 6.6 7.4 L 1.2 1.9"
+              fill="#c9527a" stroke="#8e3355" stroke-width="1" transform="rotate(15)"></path>
+      </g>
+      <!-- brain + toolbox glyphs for agent cards -->
+      <g id="brain">
+        <path d="M -4 2 Q -6 -1 -3.4 -3 Q -3.6 -5.4 -1 -5.4 Q 0 -6.6 1.6 -5.8 Q 4 -6 4.2 -3.6 Q 6.4 -2 5 0.6 Q 5.6 3 3 3.4 Q 2 5 0 4.4 Q -2.6 5.4 -4 2 Z"
+              fill="#e6d6f5" stroke="#6e55a8" stroke-width="1.4"></path>
+      </g>
+      <g id="toolbox">
+        <rect x="-5.6" y="-2.6" width="11.2" height="7" rx="1.4" fill="#f2c7dd" stroke="#8e3355" stroke-width="1.3"></rect>
+        <path d="M -2.4 -2.6 V -4 Q -2.4 -5 -1.4 -5 H 1.4 Q 2.4 -5 2.4 -4 V -2.6" fill="none" stroke="#8e3355" stroke-width="1.3"></path>
+        <line x1="-5.6" y1="0.4" x2="5.6" y2="0.4" stroke="#8e3355" stroke-width="1"></line>
+      </g>
+    </defs>
+  </svg>
+
+  <!-- ============================ COVER ============================ -->
+  <section class="page hero">
+    <div>
+      <div class="kicker">Solvan Enterprise Architecture · Ruhu</div>
+      <div class="hero-grid">
+        <div>
+          <h1>Solvan Enterprise Architecture</h1>
+          <p class="lede">
+            The authoritative architecture description of the Solvan autonomous production
+            engineering platform: system context, runtime and logical structure, data authority,
+            integration seams, security, isolation, deployment, reliability, operations, quality
+            governance, and the decision record — written to the standard an enterprise
+            architecture review board expects, and verifiable against the repository it describes.
+            Solvan was built for the All Things Agentic hackathon and is engineered to outlive it
+            as Ruhu Inc.'s production reliability platform for its wider product line.
+          </p>
+          <div class="callout">
+            <strong>How to read this document.</strong> Every named component, table count, test
+            name, and boundary is checkable in the repository at the pinned revision. Status
+            vocabulary follows <code>docs/documentation-policy.md</code>: <em>implemented</em> means
+            a production path exists; <em>verified</em> means named deterministic checks passed;
+            <em>target</em> means a reviewed normative contract not necessarily in the current
+            release. Nothing labelled target is offered as evidence of implementation.
+          </div>
+          <div class="callout note">
+            <strong>Companion document.</strong> The illustrated competition reference
+            (<code>Solvan_Competition_Architecture.html</code>) presents the same system through
+            the lens of the hackathon's assessment material. This document is the standalone
+            engineering reference; where the two overlap, both derive from the same specifications
+            and tests.
+          </div>
+          <div class="pill-row">
+            <span class="pill">Python 3.12</span>
+            <span class="pill">Google ADK 2</span>
+            <span class="pill">Gemini on Vertex AI</span>
+            <span class="pill">Agent Runtime</span>
+            <span class="pill">PostgreSQL 16 · Cloud SQL</span>
+            <span class="pill">Cloud Run</span>
+            <span class="pill">Pub/Sub · Cloud Scheduler</span>
+            <span class="pill">Terraform</span>
+            <span class="pill">React · TypeScript</span>
+            <span class="pill">OpenTelemetry · Cloud Trace</span>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card">
+            <h3>Document control</h3>
+            <table>
+              <tr><td>Version</td><td>1.0</td></tr>
+              <tr><td>Date</td><td>14 August 2026</td></tr>
+              <tr><td>Source revision</td><td><span class="mono">fba2365</span></td></tr>
+              <tr><td>Owner</td><td>Solvan engineering</td></tr>
+              <tr><td>Status</td><td>verified against repository audit</td></tr>
+              <tr><td>Audience</td><td>engineering, security review, platform operations, enterprise assessment</td></tr>
+            </table>
+          </div>
+          <div class="card">
+            <h3>Normative sources</h3>
+            <ul class="small">
+              <li><code>specs/01–22</code> — behavior contracts (17,218 lines)</li>
+              <li><code>specs/artifacts/schema.sql</code> — authoritative DDL</li>
+              <li><code>AGENTS.md</code> — engineering invariants</li>
+              <li><code>ARCHITECTURE.md</code> — concise runtime map</li>
+              <li><code>docs/documentation-policy.md</code> — authority and status</li>
+            </ul>
+          </div>
+          <div class="card metric">
+            <strong>953</strong>
+            <span>test functions behind a ten-stage merge gate with PR-001..050 requirement-to-test traceability enforced in CI.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-meta">
+      <div><strong>Scope</strong><br />the Solvan platform: control plane, agents, action path, data, channels, deployment</div>
+      <div><strong>Out of scope</strong><br />customer estate internals; Google-managed service internals; the demo fixture's business logic</div>
+      <div><strong>Print setup</strong><br />A3 portrait, 14mm top/bottom, 18mm left/right</div>
+      <div><strong>Change rule</strong><br />update the smallest governing specification with every behavior change</div>
+    </div>
+  </section>
+
+  <!-- ====================== 01 SYSTEM CONTEXT ====================== -->
+  <section class="page">
+    <h2>System Context And Scope</h2>
+    <p class="small">
+      What Solvan is: a governed fleet of institutional agents that detects production degradation
+      from events, investigates live evidence, executes bounded policy-authorized recovery, verifies
+      the outcome independently, and owns a multi-day permanent-repair case. What surrounds it, and
+      on what terms:
+    </p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 620" role="img" aria-label="System context: actors and external systems around the Solvan platform">
+        <rect class="ground" x="16" y="10" width="1108" height="596" rx="8"></rect>
+
+        <!-- trust boundary -->
+        <rect x="320" y="60" width="500" height="500" rx="14" fill="#ffffff" stroke="#143e6d" stroke-width="2.4" stroke-dasharray="10 6"></rect>
+        <text class="zlab" x="340" y="86">SOLVAN PLATFORM — ONE TRUST BOUNDARY, GCP europe-west1</text>
+        <g>
+          <rect class="card" x="344" y="102" width="212" height="88" rx="9"></rect>
+          <text class="card-t" x="358" y="126">Deterministic plane</text>
+          <text class="card-s" x="358" y="144">coordinator · actuator · verifier ·</text>
+          <text class="card-s" x="358" y="158">typed application services</text>
+          <text class="plat-t" x="358" y="176">owns permissions, state, mutations</text>
+        </g>
+        <g>
+          <rect class="card" x="584" y="102" width="212" height="88" rx="9"></rect>
+          <text class="card-t" x="598" y="126">Probabilistic plane</text>
+          <text class="card-s" x="598" y="144">Gemini agents on Agent Runtime,</text>
+          <text class="card-s" x="598" y="158">bounded single-turn invocations</text>
+          <text class="plat-t" x="598" y="176">proposes and cites — never owns</text>
+        </g>
+        <g>
+          <rect class="card" x="344" y="206" width="212" height="88" rx="9"></rect>
+          <text class="card-t" x="358" y="230">Authoritative data</text>
+          <text class="card-s" x="358" y="248">Cloud SQL workflow ledger ·</text>
+          <text class="card-s" x="358" y="262">GCS evidence · Memory Bank</text>
+          <text class="plat-t" x="358" y="280">immutable histories, superseding rows</text>
+        </g>
+        <g>
+          <rect class="card" x="584" y="206" width="212" height="88" rx="9"></rect>
+          <text class="card-t" x="598" y="230">Governance plane</text>
+          <text class="card-s" x="598" y="248">Agent Identity · Gateway · Model</text>
+          <text class="card-s" x="598" y="262">Armor · Registry · broker</text>
+          <text class="plat-t" x="598" y="280">every call, fail closed</text>
+        </g>
+        <g>
+          <rect class="card" x="344" y="310" width="452" height="74" rx="9"></rect>
+          <text class="card-t" x="358" y="334">Conversation surface</text>
+          <text class="card-s" x="358" y="352">console + channel liaisons over one Cloud SQL conversation ledger;</text>
+          <text class="card-s" x="358" y="366">reads projections of durable state — can never mint facts or approve</text>
+        </g>
+        <g>
+          <rect class="card" x="344" y="400" width="452" height="74" rx="9"></rect>
+          <text class="card-t" x="358" y="424">Release harness · outside the agent trust boundary</text>
+          <text class="card-s" x="358" y="442">separate injector and oracle identities: healthy baseline, synthetic fault,</text>
+          <text class="card-s" x="358" y="456">post-action grading; agents cannot read fixtures, oracle logic, or grades</text>
+        </g>
+        <text class="plat-t" x="344" y="508">identity from verified cryptographic claims only — never a header, request body,</text>
+        <text class="plat-t" x="344" y="521">channel assertion, or model output; absent or unparsable policy refuses</text>
+
+        <!-- left actors -->
+        <g>
+          <use href="#persona" transform="translate(80,120)"></use>
+          <text class="card-t" x="46" y="156">Operators</text>
+          <text class="card-s" x="46" y="172">investigate, approve,</text>
+          <text class="card-s" x="46" y="186">steer, audit</text>
+        </g>
+        <path class="flow" d="M 150 140 L 320 140" marker-end="url(#ar)"></path>
+        <text class="plat-t" x="160" y="132">console · IAP-verified identity</text>
+
+        <g>
+          <rect class="card" x="40" y="220" width="220" height="70" rx="9"></rect>
+          <text class="icon" x="52" y="244">💬</text>
+          <text class="card-t" x="78" y="242">Chat channels</text>
+          <line class="card-div" x1="52" y1="254" x2="246" y2="254"></line>
+          <text class="plat-t" x="52" y="270">Slack/Discord signed · email OIDC relay ·</text>
+          <text class="plat-t" x="52" y="283">MCP via verified OAuth claims</text>
+        </g>
+        <path class="flow" d="M 260 252 L 320 252" marker-end="url(#ar)"></path>
+
+        <g>
+          <rect class="card" x="40" y="320" width="220" height="70" rx="9"></rect>
+          <text class="icon" x="52" y="344">📈</text>
+          <text class="card-t" x="78" y="342">Production telemetry</text>
+          <line class="card-div" x1="52" y1="354" x2="246" y2="354"></line>
+          <text class="plat-t" x="52" y="370">Cloud Monitoring · Logging · Trace;</text>
+          <text class="plat-t" x="52" y="383">alerts push, reads are brokered</text>
+        </g>
+        <path class="flow" d="M 260 352 L 320 352" marker-end="url(#ar)"></path>
+
+        <g>
+          <rect class="card" x="40" y="420" width="220" height="70" rx="9"></rect>
+          <text class="icon" x="52" y="444">🐙</text>
+          <text class="card-t" x="78" y="442">GitHub</text>
+          <line class="card-div" x1="52" y1="454" x2="246" y2="454"></line>
+          <text class="plat-t" x="52" y="470">policy-bound App; signed webhooks;</text>
+          <text class="plat-t" x="52" y="483">coordinator-only PR operations</text>
+        </g>
+        <path class="flow" d="M 260 452 L 320 452" marker-end="url(#ar)"></path>
+
+        <!-- right actors -->
+        <g>
+          <rect class="card" x="860" y="102" width="240" height="80" rx="9"></rect>
+          <text class="icon" x="872" y="126">✨</text>
+          <text class="card-t" x="898" y="124">Vertex AI · Gemini</text>
+          <line class="card-div" x1="872" y1="136" x2="1086" y2="136"></line>
+          <text class="plat-t" x="872" y="152">Gemini 3.6 Flash via the jurisdictional eu</text>
+          <text class="plat-t" x="872" y="165">endpoint; one documented global exception</text>
+        </g>
+        <path class="flow" d="M 820 142 L 860 142" marker-end="url(#ar)"></path>
+
+        <g>
+          <rect class="card" x="860" y="206" width="240" height="80" rx="9"></rect>
+          <text class="icon" x="872" y="230">🏭</text>
+          <text class="card-t" x="898" y="228">Managed workloads</text>
+          <line class="card-div" x1="872" y1="240" x2="1086" y2="240"></line>
+          <text class="plat-t" x="872" y="256">judged slice: isolated payments stack;</text>
+          <text class="plat-t" x="872" y="269">mutations only via the private actuator</text>
+        </g>
+        <path class="flow" d="M 820 246 L 860 246" marker-end="url(#ar)"></path>
+
+        <g>
+          <rect class="card" x="860" y="310" width="240" height="80" rx="9"></rect>
+          <text class="icon" x="872" y="334">🏢</text>
+          <text class="card-t" x="898" y="332">Customer estates · target</text>
+          <line class="card-div" x1="872" y1="344" x2="1086" y2="344"></line>
+          <text class="plat-t" x="872" y="360">customer-deployed actuator + read-only</text>
+          <text class="plat-t" x="872" y="373">Relay; Solvan holds no mutating credential</text>
+        </g>
+        <path class="flow-dash" d="M 820 350 L 860 350" marker-end="url(#ar)"></path>
+
+        <g>
+          <rect class="card" x="860" y="414" width="240" height="80" rx="9"></rect>
+          <text class="icon" x="872" y="438">🧾</text>
+          <text class="card-t" x="898" y="436">Customer-owned sinks</text>
+          <line class="card-div" x1="872" y1="448" x2="1086" y2="448"></line>
+          <text class="plat-t" x="872" y="464">action receipts dual-written to a sink the</text>
+          <text class="plat-t" x="872" y="477">customer controls, not only to Solvan</text>
+        </g>
+        <path class="flow" d="M 820 454 L 860 454" marker-end="url(#ar)"></path>
+      </svg>
+      <p class="caption">
+        Context view. Solid arrows are implemented interfaces; dashed are reviewed target contracts.
+        Every inbound edge terminates at a verified-identity checkpoint before anything durable
+        happens; every outbound mutation passes through exactly one component (the private actuator).
+      </p>
+    </div>
+    <table>
+      <tr><th>Interface</th><th>Direction</th><th>Protocol and authentication</th><th>Status</th></tr>
+      <tr><td>Monitoring alerts</td><td>in</td><td>Pub/Sub push with verified push identity → token-fenced inbox</td><td><span class="status-ok">implemented</span></td></tr>
+      <tr><td>Scheduler ticks</td><td>in</td><td>Cloud Scheduler → authenticated tick endpoints; the only driver of work</td><td><span class="status-ok">implemented</span></td></tr>
+      <tr><td>Operator console</td><td>in/out</td><td>authenticated HTTP; console is a projection surface, never an authorization boundary</td><td><span class="status-ok">implemented</span></td></tr>
+      <tr><td>Chat channels</td><td>in/out</td><td>Slack/Discord native signatures · email audience-bound OIDC relay · MCP verified OAuth claims (<code>ask</code>, <code>catch_up</code>, <code>resolve_ref</code>)</td><td><span class="status-ok">implemented</span> · locally verified (spec 14)</td></tr>
+      <tr><td>Model inference</td><td>out</td><td>Vertex AI Gemini, region-pinned <code>eu</code> endpoint; optional deep workspace uses a documented <code>global</code> exception</td><td><span class="status-ok">implemented</span></td></tr>
+      <tr><td>Production mutation</td><td>out</td><td>private Action Actuator only: reservation → dry-run → actuate → receipt</td><td><span class="status-ok">implemented</span> (judged slice)</td></tr>
+      <tr><td>GitHub operations</td><td>in/out</td><td>private regional provider service; signed webhooks; coordinator-only PR operations; no generic git push</td><td><span class="status-ok">implemented</span></td></tr>
+      <tr><td>Customer estate evidence</td><td>in</td><td>Solvant Relay: outbound poll for one signed job, closed-catalog read, local redaction before egress</td><td><span class="status-target">target</span> (spec 22)</td></tr>
+    </table>
+  </section>
+
+  <!-- ====================== 02 PRINCIPLES ====================== -->
+  <section class="page">
+    <h2>Architecture Principles And Invariants</h2>
+    <p class="small">
+      These are not aspirations: each principle is enforced by code, schema, or a required test, and
+      changing one requires changing the governing specification. They bind every section that
+      follows.
+    </p>
+    <div class="grid-2">
+      <div class="card">
+        <h3>P1 · Two planes, one authority</h3>
+        <p class="small">Gemini may investigate, rank hypotheses, plan, summarize, and draft. Typed
+        application services own permissions, state transitions, risk, action budgets, approval
+        validity, target reservations, idempotency, and mutations. Model output can become a
+        proposal — never authority.</p>
+      </div>
+      <div class="card">
+        <h3>P2 · Events start work, never prompts</h3>
+        <p class="small">Incidents begin from events. Chat can explain and request; only external
+        events create lifecycle. Nothing in the platform wakes itself: Cloud Scheduler and Pub/Sub
+        are the only drivers.</p>
+      </div>
+      <div class="card">
+        <h3>P3 · Cloud SQL is the only workflow authority</h3>
+        <p class="small">Agent Runtime executions, Sessions, Memory Bank, traces, model output, and
+        connector responses are never workflow authority. Every decision reads typed rows; every
+        prompt is rebuilt from them.</p>
+      </div>
+      <div class="card">
+        <h3>P4 · No agent invokes another agent</h3>
+        <p class="small">Agents return typed plans and results; the coordinator creates every durable
+        <code>agent_run</code> and performs all dispatch. Isolation is structural, not configured,
+        and cannot regress by editing a prompt.</p>
+      </div>
+      <div class="card">
+        <h3>P5 · Every mutation crosses the same gates</h3>
+        <p class="small">Deterministic Execution Agent → exact digest-bound authorization →
+        target-level reservation → TOCTOU recheck → dry-run and effect comparison → receipt →
+        independent verification. No second road exists.</p>
+      </div>
+      <div class="card">
+        <h3>P6 · Nothing verifies itself</h3>
+        <p class="small">No agent approves its own action or selects a weaker verification profile.
+        Verification shares no identity, provider process, conversation, or mutable artifact with
+        the producer it adjudicates. Proposer ≠ approver is enforced in code and SQL.</p>
+      </div>
+      <div class="card">
+        <h3>P7 · Identity from cryptographic claims only</h3>
+        <p class="small">Principal and scope are never taken from a header, request body, channel
+        assertion, or model tool argument. A read-audience grant is never proof of write or steer
+        authority. No configuration value may downgrade an identity, policy, or isolation control;
+        absent or unparsable policy refuses.</p>
+      </div>
+      <div class="card">
+        <h3>P8 · Everything external is untrusted data</h3>
+        <p class="small">Logs, traces, repositories, tickets, tool responses, model output, and
+        Memory Bank content are data, never instructions. Model Armor verdicts persist on evidence
+        and gate memory promotion.</p>
+      </div>
+      <div class="card">
+        <h3>P9 · Histories are immutable</h3>
+        <p class="small">Incidents, approvals, receipts, verification results, and promoted memories
+        are never rewritten; superseding records are added. Structured decisions and evidence
+        references are recorded — never secrets, raw credentials, unredacted PII, or model
+        chain-of-thought.</p>
+      </div>
+      <div class="card">
+        <h3>P10 · Sovereignty before retrieval, again before prompts</h3>
+        <p class="small">Tenant, project, environment, purpose, classification, and region filters
+        are applied before retrieval and re-applied before prompt construction. Preview platform
+        features carry tested degradation paths and are never the sole control on a consequential
+        action.</p>
+      </div>
+    </div>
+    <div class="callout">
+      <strong>Enforcement, not prose.</strong> The repository prefers deterministic enforcement in
+      code, tests, hooks, or CI over adding prose. Where this document states a rule, the
+      corresponding constraint lives in <code>specs/artifacts/schema.sql</code>, a typed service, or
+      a named test cited in Sections 09–11.
+    </div>
+  </section>
+
+  <!-- ====================== 03 RUNTIME VIEW ====================== -->
+  <section class="page">
+    <h2>Runtime View: Services And Planes</h2>
+    <p class="small">
+      Twenty-three deployable applications, each a bounded, stateless Cloud Run service with its own
+      service account and least-privilege IAM — no shared identities. Nothing is resident between
+      steps: the platform's unit of execution is a bounded run resumed from rows.
+    </p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 560" role="img" aria-label="Runtime service groups and their data stores">
+        <rect class="ground" x="16" y="10" width="1108" height="536" rx="8"></rect>
+
+        <rect class="zone-core" x="32" y="30" width="350" height="240" rx="10"></rect>
+        <text class="zlab" x="46" y="52">CONTROL PLANE</text>
+        <g>
+          <rect class="card" x="46" y="64" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="58" y="86">coordinator</text>
+          <text class="plat-t" x="58" y="102">all dispatch · leases · CAS</text>
+          <rect class="card" x="212" y="64" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="224" y="86">api</text>
+          <text class="plat-t" x="224" y="102">ingress + projections</text>
+          <rect class="card" x="46" y="132" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="58" y="154">actuator</text>
+          <text class="plat-t" x="58" y="170">private · mutations only</text>
+          <rect class="card" x="212" y="132" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="224" y="154">verifier</text>
+          <text class="plat-t" x="224" y="170">independent verdicts</text>
+          <rect class="card" x="46" y="200" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="58" y="222">detector</text>
+          <text class="plat-t" x="58" y="238">burst checks 0s/25s/50s</text>
+          <rect class="card" x="212" y="200" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="224" y="222">evidence broker</text>
+          <text class="plat-t" x="224" y="238">governed reads · receipts</text>
+        </g>
+
+        <rect class="zone-ai" x="398" y="30" width="350" height="240" rx="10"></rect>
+        <text class="zlab" x="412" y="52">WORKSPACE &amp; MODEL PLANE</text>
+        <g>
+          <rect class="card" x="412" y="64" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="424" y="86">Agent Runtime</text>
+          <text class="plat-t" x="424" y="102">six bounded agent roles</text>
+          <rect class="card" x="578" y="64" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="590" y="86">workspace · ADK</text>
+          <text class="plat-t" x="590" y="102">production + Ruhu path</text>
+          <rect class="card" x="412" y="132" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="424" y="154">workspace · SDK</text>
+          <text class="plat-t" x="424" y="170">public-synthetic flagship</text>
+          <rect class="card" x="578" y="132" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="590" y="154">sandbox</text>
+          <text class="plat-t" x="590" y="170">no-egress patch/test truth</text>
+          <rect class="card" x="412" y="200" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="424" y="222">github provider</text>
+          <text class="plat-t" x="424" y="238">review/merge seam</text>
+          <rect class="card" x="578" y="200" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="590" y="222">memory promoter</text>
+          <text class="plat-t" x="590" y="238">gated promotion only</text>
+        </g>
+
+        <rect class="zone-op" x="764" y="30" width="344" height="240" rx="10"></rect>
+        <text class="zlab" x="778" y="52">CONVERSATION &amp; OPERATOR PLANE</text>
+        <g>
+          <rect class="card" x="778" y="64" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="790" y="86">console</text>
+          <text class="plat-t" x="790" y="102">static UI · projections</text>
+          <rect class="card" x="944" y="64" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="956" y="86">liaisons ×5</text>
+          <text class="plat-t" x="956" y="102">slack · email · discord · mcp</text>
+          <rect class="card" x="778" y="132" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="790" y="154">publisher</text>
+          <text class="plat-t" x="790" y="170">outbox → Pub/Sub</text>
+          <rect class="card" x="944" y="132" width="150" height="58" rx="8"></rect>
+          <text class="card-t" x="956" y="154">fixtures</text>
+          <text class="plat-t" x="956" y="170">payments demo workload</text>
+          <text class="card-s" x="778" y="222">liaison workers claim only their own channel</text>
+          <text class="card-s" x="778" y="236">kind; freeze reader-filtered payloads in GCS;</text>
+          <text class="card-s" x="778" y="250">recheck binding epoch under a database lock</text>
+        </g>
+
+        <rect class="zone-data" x="32" y="290" width="1076" height="130" rx="10"></rect>
+        <text class="zlab" x="46" y="312">SHARED STATE — NO SERVICE OWNS PRIVATE DURABLE STATE</text>
+        <g>
+          <rect class="card" x="46" y="324" width="250" height="80" rx="8"></rect>
+          <text class="icon" x="58" y="348">🐘</text>
+          <text class="card-t" x="84" y="346">Cloud SQL · PostgreSQL 16</text>
+          <line class="card-div" x1="58" y1="358" x2="282" y2="358"></line>
+          <text class="plat-t" x="58" y="374">the workflow ledger; schema revision-pinned,</text>
+          <text class="plat-t" x="58" y="387">contract-tested on every merge</text>
+          <rect class="card" x="316" y="324" width="250" height="80" rx="8"></rect>
+          <text class="icon" x="328" y="348">🪣</text>
+          <text class="card-t" x="354" y="346">Cloud Storage</text>
+          <line class="card-div" x1="328" y1="358" x2="552" y2="358"></line>
+          <text class="plat-t" x="328" y="374">evidence and runtime objects, addressed by</text>
+          <text class="plat-t" x="328" y="387">ref + sha256; frozen channel payloads</text>
+          <rect class="card" x="586" y="324" width="250" height="80" rx="8"></rect>
+          <text class="icon" x="598" y="348">📨</text>
+          <text class="card-t" x="624" y="346">Pub/Sub + Cloud Scheduler</text>
+          <line class="card-div" x1="598" y1="358" x2="822" y2="358"></line>
+          <text class="plat-t" x="598" y="374">the only wake-up fabric: pushes ingest,</text>
+          <text class="plat-t" x="598" y="387">ticks drive; durable outbox feeds topics</text>
+          <rect class="card" x="856" y="324" width="250" height="80" rx="8"></rect>
+          <text class="icon" x="868" y="348">🔭</text>
+          <text class="card-t" x="894" y="346">Cloud Trace · Memory Bank</text>
+          <line class="card-div" x1="868" y1="358" x2="1092" y2="358"></line>
+          <text class="plat-t" x="868" y="374">OTel spans joined to rows by trace_id/span_id;</text>
+          <text class="plat-t" x="868" y="387">scoped advisory recall behind the promotion gate</text>
+        </g>
+
+        <rect class="bar" x="32" y="440" width="1076" height="34" rx="7"></rect>
+        <text class="bar-t" x="48" y="462">23 applications · 22 immutable Cloud Run images · one service account each · zero resident processes between steps</text>
+        <text class="card-s" x="32" y="502">The coordination pattern is uniform: claim durable work under a token-fenced lease → act in a bounded step → commit typed results and the</text>
+        <text class="card-s" x="32" y="516">next durable intent in one transaction → exit. Any process can die at any point; a fresh one continues from rows alone.</text>
+      </svg>
+      <p class="caption">
+        Runtime view. Group membership is enforced by IAM, not convention: read-plane identities
+        cannot reach mutation endpoints (<code>SEC-IAM-READONLY-001</code>,
+        <code>SEC-ACTUATOR-IAM-001</code>), and the actuator is network-private.
+      </p>
+    </div>
+  </section>
+
+  <!-- ====================== 04 LOGICAL VIEW ====================== -->
+  <section class="page">
+    <h2>Logical View: Packages And Dependency Rules</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Package responsibilities</h3>
+        <table>
+          <tr><th>Package</th><th>Responsibility</th></tr>
+          <tr><td><code>domain</code></td><td>identifiers, states, transitions, risk, budgets, verification rules</td></tr>
+          <tr><td><code>application</code></td><td>incident/case use cases, orchestration, durable investigation plans, policy, approvals, memory promotion</td></tr>
+          <tr><td><code>persistence</code></td><td>Cloud SQL repositories, transactions, inbox/outbox, leases, reservations</td></tr>
+          <tr><td><code>agents</code></td><td>catalogued ADK institutional agents and bounded coordinator-dispatched roles</td></tr>
+          <tr><td><code>tools</code></td><td>immutable catalog revisions, capability profiles, typed read/compute/mutate contracts, connector wrappers</td></tr>
+          <tr><td><code>platform</code></td><td>Registry, Runtime, Sessions, Memory Bank, Identity, Gateway, Armor, OTel adapters</td></tr>
+          <tr><td><code>connectors</code></td><td>GCP telemetry/deployment, policy-bound GitHub App, PostgreSQL and synthetic-check adapters</td></tr>
+          <tr><td><code>api</code> / <code>console</code></td><td>authenticated ingress and projections / operator UI — never an authorization boundary</td></tr>
+          <tr><td><code>benchmarks</code></td><td>injectors, oracles, evaluators, immutable evidence receipts</td></tr>
+          <tr><td><code>infra</code></td><td>Terraform, IAM, network, regional placement, deployment preflight</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Dependency rules (architecture-tested)</h3>
+        <ol class="small">
+          <li><code>domain</code> imports no Solvan package.</li>
+          <li><code>persistence</code> depends only on <code>domain</code> and database libraries.</li>
+          <li>Agents and delivery adapters call <code>application</code>; application code never imports the console or HTTP routes.</li>
+          <li>Connectors cannot update incident or case state directly.</li>
+          <li>Only the private Action Actuator can import mutation connectors; the Execution Agent may invoke only that actuator, with an action ID.</li>
+          <li>Verification does not import remediation planning or mutation connectors.</li>
+          <li>Memory promotion consumes confirmed domain events, never raw prompt text.</li>
+          <li>Solvant Relay and the Action Actuator may share audited utility libraries, but neither executable may import the other's connector, route, identity, or repository boundary.</li>
+        </ol>
+        <p class="small">
+          These rules are checked by the architecture-boundary stage of <code>scripts/check</code>;
+          a violating import fails the merge, not a review comment.
+        </p>
+        <h3>Adoption profiles</h3>
+        <p class="small">
+          Workload-specific topology, signals, operations, and verification journeys load as
+          <em>adoption profiles</em> that never alter the domain or grant permissions implicitly.
+          Ruhu's GCP profile (spec 11) is the first: observe-only by default, with separately gated
+          approval-bound and bounded-autonomous phases.
+        </p>
+      </div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 300" role="img" aria-label="Layered dependency direction">
+        <rect class="ground" x="16" y="10" width="1108" height="276" rx="8"></rect>
+        <g>
+          <rect class="card" x="60" y="40" width="200" height="60" rx="9"></rect>
+          <text class="card-t" x="74" y="64">delivery</text>
+          <text class="plat-t" x="74" y="80">api · console · liaisons · agents</text>
+          <rect class="card" x="60" y="120" width="200" height="60" rx="9"></rect>
+          <text class="card-t" x="74" y="144">application</text>
+          <text class="plat-t" x="74" y="160">use cases · policy · approvals</text>
+          <rect class="card" x="60" y="200" width="200" height="60" rx="9"></rect>
+          <text class="card-t" x="74" y="224">domain</text>
+          <text class="plat-t" x="74" y="240">pure; imports nothing of Solvan</text>
+          <path class="flow" d="M 160 100 L 160 120" marker-end="url(#ar)"></path>
+          <path class="flow" d="M 160 180 L 160 200" marker-end="url(#ar)"></path>
+        </g>
+        <g>
+          <rect class="card" x="330" y="120" width="200" height="60" rx="9"></rect>
+          <text class="card-t" x="344" y="144">persistence</text>
+          <text class="plat-t" x="344" y="160">repositories · leases · outbox</text>
+          <path class="flow" d="M 430 180 C 430 200, 300 214, 262 226" marker-end="url(#ar)"></path>
+          <path class="flow" d="M 330 150 L 262 150" marker-end="url(#ar)"></path>
+        </g>
+        <g>
+          <rect class="card" x="600" y="120" width="200" height="60" rx="9"></rect>
+          <text class="card-t" x="614" y="144">platform · tools</text>
+          <text class="plat-t" x="614" y="160">GEAP adapters · tool catalog</text>
+          <rect class="card" x="600" y="200" width="200" height="60" rx="9"></rect>
+          <text class="card-t" x="614" y="224">connectors</text>
+          <text class="plat-t" x="614" y="240">no direct state updates</text>
+        </g>
+        <g>
+          <rect class="card" x="870" y="120" width="230" height="60" rx="9" style="stroke:#b3372a"></rect>
+          <text class="card-t" x="884" y="144">actuator boundary</text>
+          <text class="plat-t" x="884" y="160">the only importer of mutation connectors</text>
+          <path class="flow-r" d="M 970 180 L 830 232" marker-end="url(#ar-r)"></path>
+        </g>
+        <text class="card-s" x="330" y="60">arrows point toward what may be imported;</text>
+        <text class="card-s" x="330" y="74">everything converges on a dependency-free domain</text>
+      </svg>
+      <p class="caption">
+        Dependency direction. The red edge is deliberately unique: exactly one boundary in the
+        system may import mutation connectors, which is what makes "no second road to production"
+        a compile-time property rather than a review habit.
+      </p>
+    </div>
+  </section>
+
+  <!-- ====================== 05 DATA ARCHITECTURE ====================== -->
+  <section class="page">
+    <h2>Data Architecture And Authority Model</h2>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Release schema · 61 tables</h3>
+        <ul class="small">
+          <li>Incidents, cases, plans, steps, runs, tool calls, evidence, hypotheses, actions, approvals, reservations, receipts, transitions, wakeups, inbox/outbox, memory, workspaces.</li>
+          <li>Loaded from empty into clean PostgreSQL 16 in CI (<code>scripts/check-contracts</code>); constraint oracles assert negative cases; append-only audit triggers.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Operability schema · 54 tables</h3>
+        <ul class="small">
+          <li>Governed Tool Catalog and capability profiles; Operational Guidance revisions with registered completion predicates; trigger policies; skills interchange records.</li>
+          <li>Status: <strong>implemented and locally verified</strong> (specs 16–18); guidance selection, tool-catalog wiring, and quarantined skills import run in real coordinator paths. Cloud release qualification pending.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Conversation schema · 34 tables</h3>
+        <ul class="small">
+          <li>One canonical Liaison ledger across console and channels: read/steer grants, per-part access modes (an empty access set denies), durable delivery, compaction.</li>
+          <li>Identity from verified claims only; a read grant never proves write or steer authority.</li>
+          <li>Status: <strong>implemented and locally verified</strong> (spec 14); cloud release qualification pending.</li>
+        </ul>
+      </div>
+    </div>
+    <table>
+      <tr><th>Store</th><th>Holds</th><th>Authority</th><th>Integrity mechanism</th></tr>
+      <tr>
+        <td>Cloud SQL workflow ledger</td>
+        <td>every incident, case, run, action, approval, receipt, transition, wakeup</td>
+        <td><strong>authoritative — the only tier any decision reads</strong></td>
+        <td>CAS + workflow versions; token-fenced leases; partial unique indexes (one active attempt); append-only histories with superseding records</td>
+      </tr>
+      <tr>
+        <td>GCS evidence objects</td>
+        <td>telemetry extracts, artifacts, frozen channel payloads</td>
+        <td>citable evidence; never instructions</td>
+        <td>ref + sha256 addressing; classification, residency, freshness, retrieval actor, and armor verdict recorded per item</td>
+      </tr>
+      <tr>
+        <td>Memory Bank</td>
+        <td>promoted, scoped operational facts</td>
+        <td>advisory recall only</td>
+        <td>promotion requires type-specific confirmation rules plus a recorded armor verdict (<code>armor_verdict_ref NOT NULL</code>); revocable; quarantine for poisoned candidates</td>
+      </tr>
+      <tr>
+        <td>ADK Sessions</td>
+        <td>interaction context for a bounded invocation</td>
+        <td>none — never resumed as truth</td>
+        <td>rebuilt from authoritative rows for every fresh fenced attempt</td>
+      </tr>
+      <tr>
+        <td>Conversation ledger</td>
+        <td>liaison threads, compaction summaries</td>
+        <td>durable projection; reads state, never mints it</td>
+        <td>compaction may summarize talk but cannot rewrite plans, evidence, approvals, receipts, or workflow state (spec 03 §14.1)</td>
+      </tr>
+    </table>
+    <p class="small">
+      Further target schemas — alert triage (28 tables, implemented), outcome quality (17),
+      production graph (16), connection scope (4), relay (18), SaaS scale (28) — bring the
+      platform's schema surface to 260 tables.
+    </p>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Idempotency — layered and schema-enforced</h3>
+        <ul class="small">
+          <li>Alert ingress unique on <code>(source, source_event_id)</code>; duplicates return the original durable event.</li>
+          <li>One active attempt per logical step (partial unique index); unique <code>invocation_id</code> and <code>provider_request_id</code>.</li>
+          <li>Approvals bind an exact digest with expiry; execution re-checks state, version, and policy (TOCTOU) and releases without mutating on drift.</li>
+          <li>Receipts unique per dispatch; undo plans derived from observed pre-state; action budgets and cooldowns bound repetition.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Data protection and sovereignty</h3>
+        <ul class="small">
+          <li>Tenant/project/environment scope columns on every row; classification, purpose, and residency filters applied before retrieval and again before prompt construction.</li>
+          <li>Authoritative data is region-pinned to <code>europe-west1</code>; a placement violation is a release-blocking policy failure.</li>
+          <li>Tenant material under CMEK; stored long-lived credentials are read-only scoped Secret Manager references with recorded posture (target, spec 13).</li>
+          <li>No secrets, raw credentials, unredacted PII, or model chain-of-thought in any log, row, or trace.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== 06 INTEGRATION VIEW ====================== -->
+  <section class="page">
+    <h2>Integration View: Channels, Connectors, And Seams</h2>
+    <table>
+      <tr><th>Seam</th><th>Contract</th><th>Why it cannot escalate</th><th>Status</th></tr>
+      <tr>
+        <td>Conversational channels<br /><span class="small">Slack · Discord · email · MCP · console</span></td>
+        <td>One Cloud SQL Liaison ledger; public Slack/Discord ingress verifies native signatures; email accepts only an audience-bound relay identity; MCP derives binding from verified OAuth claims and exposes exactly <code>ask</code>, <code>catch_up</code>, <code>resolve_ref</code>.</td>
+        <td>No external channel can approve or mutate production; channel workers claim only their own channel kind; payloads frozen reader-filtered in GCS; binding epoch rechecked under a database lock before delivery.</td>
+        <td><span class="status-ok">implemented</span> · locally verified (spec 14)</td>
+      </tr>
+      <tr>
+        <td>Evidence tools</td>
+        <td>Broker-fronted, allow-listed, approved query signatures; every request writes one <code>tool_calls</code> row (cache hits included); bounded, citation-bearing receipts.</td>
+        <td>Read-only IAM; classification and residency filters precede execution; immutable call budgets; argument fingerprints make repeats return the prior receipt.</td>
+        <td><span class="status-ok">implemented</span></td>
+      </tr>
+      <tr>
+        <td>Production mutation</td>
+        <td>Private Action Actuator loads stored, approved actions by ID; reservation → TOCTOU recheck → dry-run and effect comparison → actuate → receipt dual-written to a customer-owned sink.</td>
+        <td>Agents never see credentials or payloads; the actuator reloads and revalidates all authority itself; receipts unique per dispatch.</td>
+        <td><span class="status-ok">implemented</span> (judged slice)</td>
+      </tr>
+      <tr>
+        <td>GitHub release provider</td>
+        <td>Private regional Cloud Run boundary: signed webhook ingress, CI-published branch check, coordinator-only PR operations, independent review/check/head gates, receipt-backed Cloud SQL projection.</td>
+        <td>Not a model-facing tool; never performs a generic <code>git push</code>; never exposes credentials to the console.</td>
+        <td><span class="status-ok">implemented</span></td>
+      </tr>
+      <tr>
+        <td>Solvant Relay</td>
+        <td>Separate customer-resident read-only product: polls outward for one coordinator-authored signed job, performs one closed-catalog read under customer-signed local policy, redacts locally, returns one idempotent evidence projection.</td>
+        <td>Separate executable, image, identity, audience, registry, API, repository, and deployment boundary from the actuator; contains no mutation capability and cannot gain one through configuration.</td>
+        <td><span class="status-target">target</span> (spec 22)</td>
+      </tr>
+      <tr>
+        <td>Workspace providers</td>
+        <td>Two implementations behind one internal <code>WorkspaceAgent</code> contract: Google ADK + regional Agent Runtime (production/Ruhu), and the pinned official <code>google-antigravity==0.1.10</code> SDK self-hosted on private regional Cloud Run (public-synthetic flagship). Exact patch/test truth comes only from the separate no-egress Cloud Run Sandbox in <code>europe-west1</code>.</td>
+        <td>The Alpha SDK provider receives only inputs classified PUBLIC and independently attested <code>synthetic=true</code>; no repository secrets, telemetry, customer data, credentials, or GCS/SQL authority. Both providers return proposals only.</td>
+        <td><span class="status-ok">implemented</span></td>
+      </tr>
+      <tr>
+        <td>Agent Skills interchange</td>
+        <td>The open Agent Skills format is adopted as a quarantined interchange profile: packages are hardened, scanned, held as inert records; a human compiles them into governed guidance via evaluation and independent approval.</td>
+        <td>Scripts never execute; <code>allowed-tools</code> grants nothing; activation pins content and never fetches origins.</td>
+        <td><span class="status-ok">implemented</span> · locally verified (spec 18)</td>
+      </tr>
+    </table>
+    <div class="callout">
+      <strong>The uniform rule at every seam.</strong> Discovery is never authorization; a
+      connection is never authority; a transport is resolved by the coordinator from an exact
+      registered binding, never selected by a model.
+    </div>
+  </section>
+
+  <!-- ====================== 07 SECURITY ARCHITECTURE ====================== -->
+  <section class="page">
+    <h2>Security Architecture</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Identity and access</h3>
+        <ul class="small">
+          <li>Distinct SPIFFE principal per agent; every Cloud Run service has its own service account with least-privilege IAM, proven by negative tests (<code>SEC-IAM-READONLY-001</code>, <code>SEC-ACTUATOR-IAM-001</code>).</li>
+          <li>Human identity established from verified cryptographic claims; approvals additionally require the APPROVER role, proposer ≠ approver, and an unexpired digest-bound grant.</li>
+          <li>Grants for reads and proposals on a person's behalf are short-lived and audience-bound, minted from verified identity — never inferred from headers, bodies, or channel assertions.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Model and content safety</h3>
+        <ul class="small">
+          <li>All external content — logs, traces, repositories, tickets, tool output, model output, memory — is data, never instructions; agent prompts state it and the broker enforces it.</li>
+          <li>Model Armor screens supported paths inline; verdicts persist durably on evidence and gate memory promotion; a poisoned candidate is quarantined, not retried into memory.</li>
+          <li>Operator-facing factual claims instantiate from an enumerated, digest-pinned template registry; a failed predicate is withheld, never softened into prose.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Secrets and credentials</h3>
+        <ul class="small">
+          <li>Solvan's target posture: never hold a credential capable of mutating a customer estate; mutation capability lives only in a customer-deployed actuator under customer policy, kill switch, and rate budget (spec 13).</li>
+          <li>Every stored credential records its posture; federated short-lived credentials preferred; stored long-lived keys are read-only scoped Secret Manager references under per-tenant CMEK, surfaced in the console.</li>
+          <li>Development and key-file hosts are never production-eligible by default.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Fail-closed configuration</h3>
+        <ul class="small">
+          <li>No configuration value may downgrade an identity, policy, or isolation control to a permissive mode; absent or unparsable policy refuses.</li>
+          <li>The Agent Gateway is registry-governed and fail-closed with no generic mutation route; bypass denial is a deployed test (<code>SEC-GATEWAY-BYPASS-001</code>) re-proven by deployment preflight (<code>gateway_bypass_denied</code>).</li>
+          <li>Preview platform features carry tested degradation paths and are never the sole control protecting a consequential action.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 240" role="img" aria-label="Defense in depth for one tool call and one mutation">
+        <rect class="ground" x="16" y="10" width="1108" height="216" rx="8"></rect>
+        <text class="zlab" x="36" y="38">DEFENSE IN DEPTH — READ PATH AND WRITE PATH</text>
+        <g>
+          <rect class="card" x="36" y="54" width="160" height="54" rx="8"></rect>
+          <text class="card-t" x="48" y="76">Agent Identity</text>
+          <text class="plat-t" x="48" y="92">SPIFFE per agent</text>
+          <rect class="card" x="216" y="54" width="160" height="54" rx="8"></rect>
+          <text class="card-t" x="228" y="76">Agent Gateway</text>
+          <text class="plat-t" x="228" y="92">registered routes only</text>
+          <rect class="card" x="396" y="54" width="160" height="54" rx="8"></rect>
+          <text class="card-t" x="408" y="76">Model Armor</text>
+          <text class="plat-t" x="408" y="92">durable verdicts</text>
+          <rect class="card" x="576" y="54" width="180" height="54" rx="8"></rect>
+          <text class="card-t" x="588" y="76">Evidence broker</text>
+          <text class="plat-t" x="588" y="92">allow-list · budget · filters</text>
+          <rect class="card" x="776" y="54" width="150" height="54" rx="8" style="stroke:#147a5c"></rect>
+          <text class="card-t" x="788" y="76">Typed receipt</text>
+          <text class="plat-t" x="788" y="92">one tool_calls row</text>
+          <path class="flow" d="M 196 81 L 216 81" marker-end="url(#ar)"></path>
+          <path class="flow" d="M 376 81 L 396 81" marker-end="url(#ar)"></path>
+          <path class="flow" d="M 556 81 L 576 81" marker-end="url(#ar)"></path>
+          <path class="flow" d="M 756 81 L 776 81" marker-end="url(#ar)"></path>
+        </g>
+        <g>
+          <rect class="card" x="36" y="140" width="160" height="54" rx="8"></rect>
+          <text class="card-t" x="48" y="162">Exact approval</text>
+          <text class="plat-t" x="48" y="178">digest · expiry · separation</text>
+          <rect class="card" x="216" y="140" width="160" height="54" rx="8"></rect>
+          <text class="card-t" x="228" y="162">Reservation</text>
+          <text class="plat-t" x="228" y="178">target epoch + version</text>
+          <rect class="card" x="396" y="140" width="160" height="54" rx="8"></rect>
+          <text class="card-t" x="408" y="162">TOCTOU recheck</text>
+          <text class="plat-t" x="408" y="178">drift releases, no act</text>
+          <rect class="card" x="576" y="140" width="180" height="54" rx="8"></rect>
+          <text class="card-t" x="588" y="162">Dry-run + effect compare</text>
+          <text class="plat-t" x="588" y="178">undo from observed pre-state</text>
+          <rect class="card" x="776" y="140" width="150" height="54" rx="8" style="stroke:#147a5c"></rect>
+          <text class="card-t" x="788" y="162">Receipt + verify</text>
+          <text class="plat-t" x="788" y="178">independent verdict</text>
+          <path class="flow" d="M 196 167 L 216 167" marker-end="url(#ar)"></path>
+          <path class="flow" d="M 376 167 L 396 167" marker-end="url(#ar)"></path>
+          <path class="flow" d="M 556 167 L 576 167" marker-end="url(#ar)"></path>
+          <path class="flow" d="M 756 167 L 776 167" marker-end="url(#ar)"></path>
+        </g>
+        <text class="card-s" x="950" y="81">read path</text>
+        <text class="card-s" x="950" y="167">write path</text>
+        <text class="plat-t" x="950" y="100">any gate failing = refusal</text>
+        <text class="plat-t" x="950" y="186">any gate failing = release,</text>
+        <text class="plat-t" x="950" y="199">no mutation</text>
+      </svg>
+      <p class="caption">
+        Both paths are chains of independent gates with no shared discretion: the components that
+        propose, approve, execute, and verify are different identities with different IAM, and the
+        review-time threat model (stale attempts, duplicate delivery, cross-incident target races,
+        restart recovery, memory poisoning, cross-tenant access) has a named test per row in
+        Section 10.
+      </p>
+    </div>
+  </section>
+
+  <!-- ====================== 08 TENANCY AND ISOLATION ====================== -->
+  <section class="page">
+    <h2>Tenancy, Isolation, And The Cell Model</h2>
+    <p class="small">
+      The competition deployment is one cell. The open-source and managed product uses the same
+      runtime inside the placement and capacity boundary of specification 19 — a reviewed target
+      contract, drawn here as such.
+    </p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 360" role="img" aria-label="Cell isolation model">
+        <rect class="ground" x="16" y="10" width="1108" height="336" rx="8"></rect>
+        <g>
+          <rect class="card" x="40" y="60" width="200" height="64" rx="9"></rect>
+          <text class="card-t" x="54" y="84">Verified identity</text>
+          <text class="plat-t" x="54" y="100">cryptographic claims only</text>
+          <rect class="card" x="290" y="60" width="230" height="64" rx="9"></rect>
+          <text class="card-t" x="304" y="84">Content-free routing plane</text>
+          <text class="plat-t" x="304" y="100">stores no incident, evidence, prompt,</text>
+          <text class="plat-t" x="304" y="112">credential, memory, or repo content</text>
+          <path class="flow" d="M 240 92 L 290 92" marker-end="url(#ar)"></path>
+        </g>
+        <g>
+          <rect class="zone-core" x="580" y="40" width="520" height="90" rx="10"></rect>
+          <text class="card-t" x="596" y="64">Regional shared cell</text>
+          <text class="card-s" x="596" y="82">tenant-first admission + fair scheduler → cell-local Cloud SQL,</text>
+          <text class="card-s" x="596" y="96">agents, tools, events</text>
+          <path class="flow" d="M 520 80 L 580 80" marker-end="url(#ar)"></path>
+          <text class="plat-t" x="596" y="116">signed placement grant</text>
+        </g>
+        <g>
+          <rect class="zone-ai" x="580" y="140" width="520" height="90" rx="10"></rect>
+          <text class="card-t" x="596" y="164">Dedicated tenant cell</text>
+          <text class="card-s" x="596" y="182">tenant admission + dedicated quota → tenant-project Cloud SQL,</text>
+          <text class="card-s" x="596" y="196">agents, tools, events</text>
+          <path class="flow" d="M 520 105 C 550 130, 550 160, 580 180" marker-end="url(#ar)"></path>
+          <text class="plat-t" x="596" y="216">signed placement grant</text>
+        </g>
+        <g>
+          <rect class="zone-data" x="580" y="240" width="520" height="90" rx="10"></rect>
+          <text class="card-t" x="596" y="264">OSS single-tenant cell</text>
+          <text class="card-s" x="596" y="282">same admission and scope contracts → operator-owned</text>
+          <text class="card-s" x="596" y="296">PostgreSQL/GCP resources</text>
+          <path class="flow" d="M 520 118 C 560 180, 550 250, 580 280" marker-end="url(#ar)"></path>
+          <text class="plat-t" x="596" y="316">static one-tenant binding</text>
+        </g>
+        <g>
+          <rect class="tag" x="40" y="170" width="480" height="150" rx="8"></rect>
+          <text class="card-t" x="56" y="194">Isolation guarantees</text>
+          <text class="card-s" x="56" y="214">· an organization has one writable home cell and placement epoch</text>
+          <text class="card-s" x="56" y="230">· a capacity failure queues or refuses — it never moves a request to</text>
+          <text class="card-s" x="56" y="244">&nbsp;&nbsp;another tenant, region, model, endpoint, or weaker isolation tier</text>
+          <text class="card-s" x="56" y="260">· Cloud Run scale is bounded by provider quota receipts and the</text>
+          <text class="card-s" x="56" y="274">&nbsp;&nbsp;tested database connection envelope</text>
+          <text class="card-s" x="56" y="290">· workspace isolation: the sandbox has no egress; the Alpha SDK</text>
+          <text class="card-s" x="56" y="304">&nbsp;&nbsp;provider receives only attested PUBLIC + synthetic inputs</text>
+        </g>
+      </svg>
+      <p class="caption">
+        Cell model (target, spec 19). Placement is a signed grant resolved before any content
+        flows; the routing plane cannot leak what it never stores.
+      </p>
+    </div>
+    <div class="callout">
+      <strong>Isolation inside one cell today.</strong> The judged deployment already enforces the
+      in-cell contracts: tenant/project/environment scope on every row, per-agent identity,
+      verification separated from producers, the no-egress sandbox, and the public-synthetic
+      boundary for the Alpha SDK provider.
+    </div>
+  </section>
+
+  <!-- ====================== 09 DEPLOYMENT AND ENVIRONMENTS ====================== -->
+  <section class="page">
+    <h2>Deployment, Environments, And Release Path</h2>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Local worktree</h3>
+        <ul class="small">
+          <li><code>scripts/bootstrap</code> installs locked dependencies; <code>scripts/start</code> runs an isolated stack: this worktree's PostgreSQL, API, console, logs, metrics, traces.</li>
+          <li>Ports, databases, processes, and artifacts are scoped per worktree through <code>scripts/dev-env</code>; no production authority exists locally.</li>
+          <li>Compose/state names carry the schema revision; prior-revision volumes are preserved during DDL expansion.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>GCP <code>dev</code></h3>
+        <ul class="small">
+          <li>Mutable engineering environment in <code>europe-west1</code>; never release proof.</li>
+          <li>Same Terraform stack (<code>infra/terraform/environments/gcp</code>) with its own project, backend prefix, identities, secrets, and data resources.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>GCP <code>staging</code></h3>
+        <ul class="small">
+          <li>The authoritative release, dry-run, recording, and submission environment.</li>
+          <li>Isolated project; region-pinned; deployment preflight validates agents, identities, gateway policies, armor templates, IAM matrix, and region policy before any release exists — a missing control blocks the deploy.</li>
+        </ul>
+      </div>
+    </div>
+    <table>
+      <tr><th>Release step</th><th>Mechanism</th><th>Evidence</th></tr>
+      <tr><td>Build</td><td>Cloud Build produces 22 immutable images from the pinned revision.</td><td><code>cloudbuild.yaml</code> contract, checked in CI</td></tr>
+      <tr><td>Preflight</td><td><code>tools/deploy_release.py</code> validates the governance plane before traffic: registry entries, per-agent identity, gateway routes and bypass denial, armor templates per region, IAM matrix, region policy.</td><td>stored preflight receipts; <code>gateway_bypass_denied</code></td></tr>
+      <tr><td>Deploy</td><td>Cloud Run services + Agent Runtime resources updated as a unit; each service keeps its own identity.</td><td>service revisions pinned in the release record</td></tr>
+      <tr><td>Verify</td><td>Isolated baseline/fault/action/oracle release scenario against live GCP, including pool-recycle recovery and a demo run-through from a clean environment.</td><td>immutable release receipts</td></tr>
+      <tr><td>Boundary rule</td><td>Local harness evidence never counts as a GCP release receipt; cloud proofs are captured separately at deploy time.</td><td><code>AGENTS.md</code> canonical-commands contract</td></tr>
+    </table>
+    <div class="callout">
+      <strong>Region posture.</strong> All authoritative state and control-plane services are pinned
+      to <code>europe-west1</code>. Fast-fleet Gemini inference uses the documented <code>eu</code>
+      multi-region via <code>aiplatform.eu.rep.googleapis.com</code>; the optional Gemini 3.1 Pro
+      Preview deep workspace is the single documented <code>global</code> location exception, and it
+      is not load-bearing for any consequential action.
+    </div>
+  </section>
+
+  <!-- ====================== 10 RELIABILITY ====================== -->
+  <section class="page">
+    <h2>Reliability And Continuity</h2>
+    <p class="small">
+      Solvan's continuity model is structural: there is no long-lived process whose loss can lose
+      work. Suspension is a database state; recovery is a fresh, fenced attempt rebuilt from rows;
+      repeated effects are impossible by constraint rather than unlikely by care.
+    </p>
+    <table>
+      <tr><th>Failure</th><th>Deterministic recovery</th><th>Named proof</th></tr>
+      <tr><td>Worker dies holding an inbox claim</td><td>Claim expiry re-opens the work; the dead worker's token is fenced and can no longer complete it.</td><td><code>test_expired_inbox_claim_is_recovered_and_old_token_is_fenced</code></td></tr>
+      <tr><td>Process dies after durable create, before dispatch</td><td>The tick sweeps expired CREATED runs into failure + the declared fallback path.</td><td><code>_recover_expired_created_runs</code> · reserve/expire logic</td></tr>
+      <tr><td>Process dies after dispatch, before the result</td><td>Any fresh process polls the durable operation name, validates, and accepts the result exactly once — no session state required.</td><td><code>test_dispatched_runtime_operation_is_recovered_by_fresh_process_without_session_state</code></td></tr>
+      <tr><td>Poison event crash-loops its handler</td><td>Bounded claim budget (5 inbox / 25 outbox) parks the event as quarantined: visible, audited, inert.</td><td><code>test_crash_looping_inbox_event_is_quarantined_after_bounded_claims</code></td></tr>
+      <tr><td>Transient provider fault on dispatch</td><td>Durable retry backoff (<code>retry_not_before</code> as a column) defers the single declared fallback across restarts and workers.</td><td><code>test_declared_agent_fallback_is_attempted_once_after_dispatch_failure</code></td></tr>
+      <tr><td>Contention at scale</td><td>Twenty-five simultaneous incidents are neither lost nor duplicated.</td><td><code>test_twenty_five_simultaneous_incidents_are_not_lost_or_duplicated</code></td></tr>
+      <tr><td>Silent dormancy of long work</td><td>Case liveness policy: every operational state must hold a next action and an active wakeup; stale progress escalates instead of rotting.</td><td>case machine YAML · <code>test_mitigated_incident_opens_one_case_and_due_wakeup_is_fenced</code></td></tr>
+    </table>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Continuity of multi-week work</h3>
+        <p class="small">
+          Reliability Cases (15 states) and <code>scheduled_wakeups</code> carry work across days
+          with zero resident compute: an 18-hour approval pause or a 7-day case survives any
+          deployment or crash because it is rows, not a parked invocation. Workspace continuity uses
+          hibernated checkpoints rehydrated under exact provider revision and boot-proof validation.
+        </p>
+      </div>
+      <div class="card">
+        <h3>What is deliberately not promised</h3>
+        <p class="small">
+          No mid-invocation resume: a half-finished model invocation is never trustworthy state and
+          is always discarded in favor of a fresh fenced attempt. Upstream exactly-once is never
+          claimed without a separately qualified provider idempotency contract; Solvan's own
+          exactly-once claims are per-dispatch receipts and schema constraints, and stop at its
+          boundary.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== 11 OBSERVABILITY AND OPERATIONS ====================== -->
+  <section class="page">
+    <h2>Observability And Operations</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Telemetry model</h3>
+        <ul class="small">
+          <li>OpenTelemetry across every service; spans exported to Cloud Trace and joined to the domain timeline via <code>trace_id</code>/<code>span_id</code> columns on runs — a judge or operator can walk from an incident row to the exact trace and back.</li>
+          <li>Structured decision records with reason codes and budget states; stop reasons are recorded, chain-of-thought never is.</li>
+          <li>Every tool call, cache hit included, is one <code>tool_calls</code> row with fingerprint and receipt.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Operator surfaces</h3>
+        <ul class="small">
+          <li>Console: incidents, cases, fleet, approvals (target, digest, environment, risk, expiry), evidence (source, freshness, classification, armor verdict), release evidence — control made visible.</li>
+          <li>Validated versus inferred findings are visually and semantically distinct; an unresolvable citation renders inert and demotes the statement to inferred.</li>
+          <li>Local parity: <code>scripts/observe [status|logs|traces]</code> inspects any worktree's isolated stack.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Operational guidance</h3>
+        <ul class="small">
+          <li>Runbooks and skills live as governed data with registered completion predicates (specs 17–18): guidance versions are approved, pinned, and evaluated — never free prose a model can drift. Implemented and locally verified.</li>
+          <li>Autonomy is an earned, revocable receipt derived from outcome quality, not a configuration default (spec 20).</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Alert operations</h3>
+        <ul class="small">
+          <li>Canonical event ingress normalizes Cloud Monitoring webhooks and detector bursts into idempotent durable events; alert triage (spec 21) runs on the same fenced-claim machinery as everything else.</li>
+          <li>Nothing pages a human by default: escalation is a policy outcome with a durable record, and abandoned work escalates via the stale-progress policy.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout note">
+      <strong>Auditability as a feature.</strong> Because histories are append-only and superseded
+      rather than rewritten, the answer to "who decided what, on which evidence, under which
+      authority" is a query, not an investigation.
+    </div>
+  </section>
+
+  <!-- ====================== 12 QUALITY GOVERNANCE ====================== -->
+  <section class="page">
+    <h2>Quality And Release Governance</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>The one authoritative merge check</h3>
+        <ol class="small">
+          <li>Python lint and format</li>
+          <li>Python types (mypy, 315 files)</li>
+          <li>Architecture boundaries, agent manifests, Ruhu profile, Cloud Build contract</li>
+          <li>Documentation and repository knowledge</li>
+          <li>Executable schema + transition contracts on clean PostgreSQL 16</li>
+          <li>Unit and harness tests with coverage (953 test functions)</li>
+          <li>Agent safety and trajectory evaluation</li>
+          <li>Console types</li>
+          <li>Console production build</li>
+          <li>Browser critical path</li>
+        </ol>
+        <p class="small"><code>scripts/check</code> is the single gate; a failing canonical check is
+        never bypassed with an alternate command — the harness is fixed or the result recorded as
+        blocked.</p>
+      </div>
+      <div class="card">
+        <h3>Traceability and change discipline</h3>
+        <ul class="small">
+          <li>PR-001..050 requirement-to-test traceability enforced in CI: a missing or skipped required test fails the merge.</li>
+          <li>Verification map: unit (transitions, digests, risk, budgets, redaction) · contract (agents, tools, registry, gateway, schemas) · integration (transactions, leases, approvals, plan-before-dispatch, Memory Bank scopes) · end-to-end (six competition acceptance scenarios) · security (negative IAM, bypass, injection, PII, tenant, region) · release (preflight, live GCP evidence, recovery, dry run).</li>
+          <li>Every behavior change updates the smallest governing specification; safety-sensitive changes are reviewed against the standing threat checklist (stale attempts, duplicate delivery, target races, restart recovery, memory poisoning, cross-tenant access).</li>
+          <li>No tool, permission, connector, model, region, or platform feature is added without updating its threat model, registry contract, and acceptance tests.</li>
+        </ul>
+      </div>
+    </div>
+    <pre class="shell">scripts/bootstrap     # locked dependencies and Chromium
+scripts/start         # isolated stack: PostgreSQL, API, console, logs, traces
+scripts/check         # the full ten-stage gate, including restart-recovery,
+                      # idempotency, TOCTOU, quarantine, and approval-digest tests</pre>
+    <p class="small">
+      Anyone with the repository can reproduce the quality claim in one command; the release claim
+      additionally requires the stored GCP receipts described in Section 09.
+    </p>
+  </section>
+
+  <!-- ====================== 13 DECISION RECORD ====================== -->
+  <section class="page">
+    <h2>Architecture Decision Record</h2>
+    <p class="small">
+      The ten decisions that shape everything else, with the consequence each one buys and the cost
+      it accepts. Full rationale lives in the cited specifications.
+    </p>
+    <table>
+      <tr><th>ID</th><th>Decision</th><th>Why</th><th>Accepted cost</th><th>Where</th></tr>
+      <tr><td>AD-01</td><td>Split the system into a probabilistic plane that proposes and a deterministic plane that owns all authority.</td><td>Model output can be wrong, injected, or stale; making it structurally non-authoritative removes the whole class of "the model did it" failures.</td><td>More typed contracts and validation code than a prompt-centric design.</td><td>spec 02, 03</td></tr>
+      <tr><td>AD-02</td><td>Make Cloud SQL the only workflow authority; Sessions, Memory Bank, and traces are never truth.</td><td>One authoritative ledger makes recovery, audit, and idempotency provable with schema constraints.</td><td>Prompts must be rebuilt from rows; nothing convenient may be read back from a transcript.</td><td>spec 04</td></tr>
+      <tr><td>AD-03</td><td>Coordinator-only dispatch: no agent invokes another agent.</td><td>Orchestration lives where it can be tested; isolation cannot regress by editing a prompt.</td><td>Multi-agent flows require durable plan validation instead of free delegation.</td><td>spec 03</td></tr>
+      <tr><td>AD-04</td><td>No mid-invocation resume; the unit of recovery is the durable <code>agent_run</code>.</td><td>A half-finished invocation's in-memory state is untrustworthy; fresh fenced attempts plus idempotency constraints are strictly safer.</td><td>Re-doing bounded work after a crash instead of resuming it.</td><td>spec 03</td></tr>
+      <tr><td>AD-05</td><td>Approval is a cryptographic act over an exact digest, with expiry and proposer/approver separation.</td><td>A remembered "yes" cannot authorize drifted content; TOCTOU rechecks make approval and execution one auditable pair.</td><td>Any drift after approval requires a fresh proposal round-trip.</td><td>spec 05</td></tr>
+      <tr><td>AD-06</td><td>Independent verification with zero shared context with producers.</td><td>Connector success is not recovery; self-confirmation is the classic autonomous-agent failure.</td><td>Every mitigation pays for a second, independent observation pass.</td><td>spec 05</td></tr>
+      <tr><td>AD-07</td><td>Mutation capability lives in exactly one private actuator; target: deployed customer-side so Solvan holds no estate-mutating credential.</td><td>Concentrating mutation makes "no second road" enforceable by IAM and import rules; customer-side deployment makes the blast radius customer-governed.</td><td>An extra deployment artifact and policy surface per customer.</td><td>spec 13</td></tr>
+      <tr><td>AD-08</td><td>Pin all authoritative state and control services to <code>europe-west1</code>; fail closed on placement.</td><td>Data sovereignty must be a property of the topology, not a promise in prose.</td><td>A documented, non-load-bearing exception path for one global model endpoint.</td><td>spec 07, 20</td></tr>
+      <tr><td>AD-09</td><td>Immutable histories with superseding records; no rewrite of incidents, approvals, receipts, verdicts, or promoted memories.</td><td>Audit is a query; compaction and summaries can never corrupt authority.</td><td>Storage growth and superseding-record complexity.</td><td>spec 04</td></tr>
+      <tr><td>AD-10</td><td>Adopt open interchange (Agent Skills) only through quarantine, human compilation, and independent approval.</td><td>Interoperability without inheriting arbitrary third-party instructions as authority.</td><td>Slower import path than direct skill execution.</td><td>spec 18</td></tr>
+    </table>
+  </section>
+
+  <!-- ====================== 14 STATUS AND ROADMAP ====================== -->
+  <section class="page">
+    <h2>Implementation Status And Roadmap</h2>
+    <div class="callout note">
+      <strong>The honest claim, in three levels.</strong> The release-gated slice runs under
+      enterprise controls and is the only basis of any release claim. A second tier is implemented
+      and locally verified in this same codebase, with cloud release qualification deliberately
+      pending. The remainder is specified: reviewed normative contracts with acceptance tests, not
+      roadmap prose. Solvan continues beyond the competition as Ruhu Inc.'s production reliability
+      platform.
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <h3><span class="status-ok">Release-gated</span> — the demonstrated slice</h3>
+        <ul class="small">
+          <li>Event-driven incident lifecycle with durable coordination, recovery, quarantine, and multi-day cases.</li>
+          <li>Bounded agent fleet on Agent Runtime with typed contracts and structural isolation.</li>
+          <li>Action safety path: exact approvals, reservations, TOCTOU rechecks, dry-run, receipts, independent verification.</li>
+          <li>Governance plane: per-agent SPIFFE identity, fail-closed Gateway with tested bypass denial, Model Armor verdicts, Registry-driven routing.</li>
+          <li>Data authority model: 61-table release schema, evidence objects, gated Memory Bank.</li>
+          <li>Region-pinned dual-project deployment with preflight-gated releases.</li>
+          <li>Ten-stage merge gate with PR-001..050 traceability (953 tests).</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="status-ok">Implemented</span> — locally verified, qualification pending</h3>
+        <ul class="small">
+          <li><strong>Conversational surface</strong> (spec 14): five channel liaisons on one ledger — Slack lifecycle, steer confirmation, subscriptions, deterministic compaction.</li>
+          <li><strong>Governed Tool Catalog</strong> (16) and <strong>Operational Guidance</strong> (17): hash-bound selection and computed completion in real coordinator dispatch.</li>
+          <li><strong>Agent Skills interchange</strong> (18): quarantined import; local implementation gate passed.</li>
+          <li><strong>Alert triage</strong> (21): 28-table schema, fenced-claim runtime, console surfaces.</li>
+          <li><strong>Production environment model</strong> (20): production graph and earned-autonomy receipts substantially implemented.</li>
+          <li>None of this tier is part of any release claim until cloud qualification runs with valid authority.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="status-target">Specified</span> — target contracts</h3>
+        <ul class="small">
+          <li><strong>SaaS cells and isolation</strong> (spec 19): content-free routing, placement grants, admission — implementation under way.</li>
+          <li><strong>Solvant Relay</strong> (spec 22): customer-resident read-only evidence collection; specification complete, implementation early.</li>
+          <li><strong>Customer-deployed actuator</strong> (spec 13): Solvan never holds an estate-mutating credential.</li>
+          <li><strong>Multi-tenant sovereignty</strong>: per-tenant CMEK across a tenant population (depends on 19).</li>
+          <li><strong>Ruhu adoption profile</strong> (spec 11): observe-only → approval-bound → bounded autonomy, receipt-gated phases.</li>
+        </ul>
+      </div>
+    </div>
+    <table>
+      <tr><th>Enterprise property</th><th>Mechanism</th><th>Status</th></tr>
+      <tr><td>Data sovereignty</td><td>Classification + residency filters before retrieval and before prompts; region-pinned storage; CMEK for tenant material.</td><td><span class="status-ok">implemented</span> (judged scope) / <span class="status-target">target</span> (multi-tenant)</td></tr>
+      <tr><td>Credential posture</td><td>Recorded posture per credential; federated short-lived preferred; read-only long-lived keys under CMEK, surfaced in console.</td><td><span class="status-target">target</span> (spec 13)</td></tr>
+      <tr><td>Auditability</td><td>Append-only transitions and audit events; structured decisions; no chain-of-thought anywhere.</td><td><span class="status-ok">implemented</span></td></tr>
+      <tr><td>Fail-closed configuration</td><td>No config value may downgrade identity, policy, or isolation; absent or unparsable policy refuses.</td><td><span class="status-ok">implemented</span></td></tr>
+      <tr><td>Preview-feature honesty</td><td>Launch stages recorded with retrieval dates; preview features carry tested degradation paths.</td><td><span class="status-ok">implemented</span></td></tr>
+    </table>
+  </section>
+
+  <!-- ====================== 15 GLOSSARY ====================== -->
+  <section class="page">
+    <h2>Glossary</h2>
+    <div class="grid-2">
+      <div class="card">
+        <table>
+          <tr><td><strong>Incident</strong></td><td>The durable record of one detected degradation, driven by a 14-state machine from DETECTED to a verified terminal state.</td></tr>
+          <tr><td><strong>Reliability Case</strong></td><td>The multi-day, 15-state follow-up that owns permanent repair after mitigation; subject to the liveness policy.</td></tr>
+          <tr><td><strong>agent_run</strong></td><td>The durable unit of model work: one bounded attempt with pinned hashes, budget, deadline, and provider operation name — created before dispatch.</td></tr>
+          <tr><td><strong>Bounded invocation</strong></td><td>The complete authority ceiling for one agent attempt: scope, owner, allowed tools, deadline, budget, evidence refs, trace context.</td></tr>
+          <tr><td><strong>Token-fenced lease</strong></td><td>A claim on durable work that expires; a stale holder's token can no longer commit results.</td></tr>
+          <tr><td><strong>CAS transition</strong></td><td>Compare-and-set state change bound to expected state and workflow version; the only way workflow state moves.</td></tr>
+          <tr><td><strong>TOCTOU recheck</strong></td><td>Re-validation of state, versions, epoch, and policy at execution time; any drift releases the reservation without mutating.</td></tr>
+          <tr><td><strong>Receipt</strong></td><td>The unique-per-dispatch durable record of an actuation, dual-written to a customer-owned sink.</td></tr>
+          <tr><td><strong>Evidence object</strong></td><td>A hash-addressed GCS artifact with classification, residency, freshness, retrieval actor, and armor verdict.</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <table>
+          <tr><td><strong>Promotion gate</strong></td><td>The rule set (type-specific confirmation + recorded armor verdict) between confirmed events and Memory Bank.</td></tr>
+          <tr><td><strong>Liaison</strong></td><td>A channel worker (Slack, email, Discord, MCP, console) reading reader-filtered projections of one conversation ledger.</td></tr>
+          <tr><td><strong>Workspace</strong></td><td>A logical Cloud SQL/GCS record executed through bounded stateless provider tasks; no provider process or filesystem is durable state.</td></tr>
+          <tr><td><strong>Sandbox</strong></td><td>The separate no-egress Cloud Run service that produces patch/test truth; the only source of "tests passed."</td></tr>
+          <tr><td><strong>Actuator</strong></td><td>The single private service allowed to import mutation connectors and touch production, by stored action ID only.</td></tr>
+          <tr><td><strong>Verifier</strong></td><td>The independent service computing recovery verdicts from fresh telemetry and synthetic probes; shares nothing with producers.</td></tr>
+          <tr><td><strong>Cell</strong></td><td>The placement and capacity boundary holding one tenant population's runtime and data (spec 19; target).</td></tr>
+          <tr><td><strong>Placement grant</strong></td><td>The signed decision binding an organization to its one writable home cell and epoch.</td></tr>
+          <tr><td><strong>Adoption profile</strong></td><td>A workload-specific contract (signals, topology, journeys) that never alters the domain or grants permissions implicitly.</td></tr>
+        </table>
+      </div>
+    </div>
+    <p class="small">
+      Related reading: <code>README.md</code> (product entry point), <code>ARCHITECTURE.md</code>
+      (concise map), <code>specs/</code> (normative contracts),
+      <code>Solvan_Competition_Architecture.html</code> (illustrated competition reference).
+    </p>
+  </section>
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+# Customer-owned Cloud Run Job template. This is a Job, not a Cloud Run service:
+# it exposes no HTTP ingress and makes one outbound Relay cycle before exiting.
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: solvant-relay
+  annotations:
+    run.googleapis.com/launch-stage: BETA
+spec:
+  template:
+    metadata:
+      annotations:
+        run.googleapis.com/execution-environment: gen2
+        run.googleapis.com/vpc-access-egress: private-ranges-only
+    spec:
+      template:
+        spec:
+          serviceAccountName: CUSTOMER_RELAY_WORKLOAD_IDENTITY
+          maxRetries: 0
+          timeoutSeconds: 120
+          containers:
+            - image: CUSTOMER_REGISTRY/solvant-relay@sha256:REPLACE
+              resources:
+                limits:
+                  cpu: "1"
+                  memory: 512Mi
+              env:
+                - {name: SOLVAN_RELAY_CONTROL_AUDIENCE, value: "https://RELAY_CONTROL"}
+                - {name: SOLVANT_RELAY_VERSION, value: "1.0.0"}
+                - {name: SOLVANT_RELAY_IMAGE_DIGEST, value: "sha256:REPLACE"}
+                - {name: SOLVANT_RELAY_IMAGE_ATTESTATION_DIGEST, value: "sha256:REPLACE"}
+                - {name: SOLVANT_RELAY_RUNTIME_PROOF_KEY_ID, value: "CUSTOMER_RUNTIME_KEY"}
+                - {name: SOLVANT_RELAY_PROCESS_BOOT_ID, value: "cloud-run-job"}
+                # Mount all policy/key material from the customer's own secret
+                # delivery mechanism; this template never names secret values.
+                - {name: SOLVANT_RELAY_POLICY_PATH, value: "/var/run/solvant/policy.json"}
+                - {name: SOLVANT_RELAY_POLICY_PUBLIC_KEY_PATH, value: "/var/run/solvant/policy.pem"}
+                - {name: SOLVANT_RELAY_CONTROL_PUBLIC_KEY_PATH, value: "/var/run/solvant/control.pem"}
+                - {name: SOLVANT_RELAY_RUNTIME_PROOF_PRIVATE_KEY_PATH, value: "/var/run/solvant/runtime.key"}
+                - {name: SOLVANT_RELAY_LEDGER_KEY_PATH, value: "/var/run/solvant/ledger.key"}
+                - {name: SOLVANT_RELAY_LEDGER_DIR, value: "/var/lib/solvant-ledger"}
+                - {name: SOLVANT_RELAY_KILL_SWITCH_PATH, value: "/var/run/solvant-kill-switch/state"}

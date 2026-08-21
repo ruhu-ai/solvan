@@ -1,0 +1,2724 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Solvan Architecture</title>
+  <style>
+    @page { size: A3 portrait; margin: 14mm 18mm; }
+
+    :root {
+      --ink: #171a20;
+      --muted: #565d68;
+      --line: #d5dae2;
+      --soft-line: #e6eaef;
+      --paper: #fdfdfe;
+      --cool: #f7f9fb;
+      --band: #eef2f6;
+      --primary: #1f5c9e;
+      --primary-dark: #143e6d;
+      --green: #147a5c;
+      --amber: #a8781f;
+      --violet: #6e55a8;
+      --red: #b3372a;
+      --charcoal: #22262c;
+      --code: #f1f4f7;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--cool); color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 12px; line-height: 1.48;
+    }
+
+    body { counter-reset: section; }
+
+    h1, h2, h3, p, ul, ol, table, figure { margin-top: 0; }
+
+    h1 { font-size: 34px; line-height: 1.08; margin-bottom: 12px; }
+
+    h2 {
+      break-after: avoid; font-size: 20px; line-height: 1.18;
+      margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid var(--line);
+    }
+    h2::before {
+      counter-increment: section;
+      content: counter(section, decimal-leading-zero) " ";
+      color: var(--primary); font-weight: 800;
+    }
+
+    h3 { break-after: avoid; font-size: 14px; margin: 0 0 8px; }
+    p { margin-bottom: 8px; }
+    ul, ol { padding-left: 18px; margin-bottom: 10px; }
+    li { margin-bottom: 4px; }
+
+    code {
+      font-family: "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.9em; background: var(--code);
+      border: 1px solid var(--soft-line); border-radius: 4px;
+      padding: 1px 4px; white-space: nowrap;
+    }
+
+    table {
+      width: 100%; border-collapse: collapse; font-size: 10.4px;
+      margin-bottom: 12px; background: var(--paper);
+    }
+    th, td { text-align: left; vertical-align: top; border: 1px solid var(--line); padding: 6px 7px; }
+    th { background: var(--band); color: var(--charcoal); font-weight: 800; }
+
+    .page { min-height: calc(420mm - 28mm); padding: 0; break-after: page; }
+    .page:last-child { break-after: auto; }
+
+    .hero {
+      min-height: calc(420mm - 28mm);
+      display: flex; flex-direction: column; justify-content: space-between;
+      background: linear-gradient(135deg, rgba(31, 92, 158, 0.10), rgba(20, 122, 92, 0.08)), var(--paper);
+      border: 1px solid var(--line); border-radius: 8px; padding: 30px 34px;
+    }
+    .hero-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 28px; align-items: start; }
+
+    .kicker {
+      color: var(--primary-dark); font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.08em; font-size: 10px; margin-bottom: 12px;
+    }
+    .lede { font-size: 15px; color: var(--muted); max-width: 720px; }
+
+    .callout {
+      background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--primary);
+      border-radius: 6px; padding: 10px 12px; margin: 12px 0; font-size: 12px;
+    }
+    .note { border-left-color: var(--green); }
+    .warning { border-left-color: var(--amber); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+
+    .card {
+      background: var(--paper); border: 1px solid var(--line);
+      border-radius: 8px; padding: 12px 14px;
+    }
+    .card h3 { color: var(--charcoal); }
+    .card ul { margin-bottom: 0; }
+
+    .metric strong { display: block; font-size: 22px; color: var(--primary-dark); }
+    .metric span { color: var(--muted); font-size: 11px; }
+
+    .stack { display: grid; gap: 12px; }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+    .pill {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
+      padding: 3px 10px; font-size: 10.5px; font-weight: 600; color: var(--charcoal);
+    }
+    .pill.ok { border-color: var(--green); color: var(--green); }
+    .pill.target { border-color: var(--amber); color: var(--amber); }
+
+    .diagram {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+      padding: 14px; margin-bottom: 12px;
+    }
+    .diagram svg { width: 100%; height: auto; display: block; }
+    .caption { color: var(--muted); font-size: 10.5px; margin: 8px 2px 0; }
+
+    .small { font-size: 10.5px; color: var(--muted); }
+    .mono { font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+
+    .status-ok { color: var(--green); font-weight: 700; }
+    .status-target { color: var(--amber); font-weight: 700; }
+
+    .footer-meta {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      border-top: 1px solid var(--line); padding-top: 14px; margin-top: 22px;
+      font-size: 10.5px; color: var(--muted);
+    }
+    .footer-meta strong { color: var(--charcoal); }
+
+    pre.shell {
+      background: var(--charcoal); color: #e8ecf1; border-radius: 8px;
+      padding: 12px 14px; font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+      font-size: 10.5px; line-height: 1.6; overflow-x: auto; margin: 0 0 12px;
+    }
+
+    /* ================= Shared SVG idiom system =================
+       Reused by every figure: ground panel, tinted zones, product cards,
+       tool chips, label tags, numbered badges, speech bubbles, journey
+       paths, runtime bars, chevron arrows, gates. */
+    svg text { font-family: Inter, ui-sans-serif, sans-serif; }
+
+    svg .ground   { fill: #e9f0f7; }
+    svg .band     { fill: #1f5c9e; }
+    svg .band-t   { font: 800 15px Inter, sans-serif; fill: #ffffff; letter-spacing: 0.02em; }
+    svg .band-s   { font: 600 10.5px Inter, sans-serif; fill: #cfe0f2; }
+
+    svg .zone-trig { fill: #eef1f5; stroke: #ccd5df; stroke-width: 1.4; }
+    svg .zone-core { fill: #e2ecf7; stroke: #b9cfe6; stroke-width: 1.4; }
+    svg .zone-ai   { fill: #efeaf8; stroke: #d4c7e9; stroke-width: 1.4; }
+    svg .zone-gov  { fill: #f8f0dc; stroke: #e4d4a9; stroke-width: 1.4; }
+    svg .zone-data { fill: #e5f2ea; stroke: #bcdccc; stroke-width: 1.4; }
+    svg .zone-op   { fill: #fdeeea; stroke: #eccabf; stroke-width: 1.4; }
+    svg .zlab     { font: 800 10px Inter, sans-serif; fill: #55637a; letter-spacing: 0.09em; }
+
+    svg .card     { fill: #ffffff; stroke: #c7d1dc; stroke-width: 1.4; }
+    svg .card-hi  { fill: #f4fadf; stroke: #a9c86a; stroke-width: 1.6; }
+    svg .card-t   { font: 700 11.5px Inter, sans-serif; fill: #171a20; }
+    svg .card-s   { font: 500 9.5px Inter, sans-serif; fill: #565d68; }
+    svg .card-div { stroke: #dde3ea; stroke-width: 1.2; }
+    svg .plat-t   { font: 600 9.5px Inter, sans-serif; fill: #8a93a1; }
+    svg .icon     { font-size: 17px; }
+    svg .icon-lg  { font-size: 24px; }
+
+    svg .chip     { fill: #eaf4cd; stroke: #c2d494; stroke-width: 1.3; }
+    svg .chip-t   { font: 600 10px "JetBrains Mono", ui-monospace, monospace; fill: #33421c; }
+
+    svg .tag      { fill: #ffffff; stroke: #a9b5c2; stroke-width: 1.4; }
+    svg .tag-t    { font: 700 10.5px Inter, sans-serif; fill: #22262c; }
+
+    svg .badge    { fill: #4f9d4a; stroke: #ffffff; stroke-width: 2; }
+    svg .badge-t  { font: 800 12px Inter, sans-serif; fill: #ffffff; text-anchor: middle; }
+    svg .badge-red{ fill: #b3372a; stroke: #ffffff; stroke-width: 2; }
+
+    svg .bubble   { fill: #f0f2f5; stroke: #98a2ae; stroke-width: 1.4; }
+    svg .bubble-t { font: 600 10.5px Inter, sans-serif; fill: #22262c; }
+
+    svg .journey  { fill: none; stroke: #3c5a78; stroke-width: 2.6; stroke-dasharray: 0.5 7.5; stroke-linecap: round; }
+    svg .way      { fill: #3c5a78; stroke: #ffffff; stroke-width: 1.6; }
+
+    svg .bar      { fill: #e3e6ea; stroke: #c2c8cf; stroke-width: 1.3; }
+    svg .bar-t    { font: 600 10.5px "JetBrains Mono", ui-monospace, monospace; fill: #343a42; }
+
+    svg .chev    { fill: #2f6cb3; }
+    svg .chev-t  { font: 800 10.5px Inter, sans-serif; fill: #ffffff; }
+    svg .chev-amb{ fill: #a8781f; }
+
+    svg .flow     { stroke: #565d68; stroke-width: 1.8; fill: none; }
+    svg .flow-b   { stroke: #1f5c9e; stroke-width: 2.2; fill: none; }
+    svg .flow-r   { stroke: #b3372a; stroke-width: 2.2; fill: none; }
+    svg .flow-dash{ stroke: #8a93a1; stroke-width: 1.5; fill: none; stroke-dasharray: 4 3; }
+
+    svg .code-bl  { fill: #22262c; }
+    svg .code-t   { font: 500 9.8px "JetBrains Mono", ui-monospace, monospace; fill: #dfe6ee; }
+    svg .code-hl  { font: 700 9.8px "JetBrains Mono", ui-monospace, monospace; fill: #9fd08c; }
+
+    svg .fence    { stroke: #b3372a; stroke-width: 2.6; fill: none; }
+    svg .fence-t  { font: 700 10px Inter, sans-serif; fill: #b3372a; }
+
+    svg .gate     { fill: #f8f0dc; stroke: #a8781f; stroke-width: 2.2; }
+    svg .wall     { fill: #b3372a; }
+
+    svg .mono-t   { font: 600 9.5px "JetBrains Mono", ui-monospace, monospace; fill: #147a5c; }
+    svg .status-i { font: 700 9.5px Inter, sans-serif; fill: #147a5c; }
+    svg .status-g { font: 700 9.5px Inter, sans-serif; fill: #a8781f; }
+  </style>
+</head>
+<body>
+
+  <!-- Document-wide SVG defs: markers and drawn glyphs reused by every figure. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#565d68"></path>
+      </marker>
+      <marker id="ar-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#1f5c9e"></path>
+      </marker>
+      <marker id="ar-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#b3372a"></path>
+      </marker>
+      <marker id="ar-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#147a5c"></path>
+      </marker>
+      <!-- persona: drawn operator figure -->
+      <g id="persona">
+        <circle cx="0" cy="-14" r="7.5" fill="none" stroke="#22262c" stroke-width="2.6"></circle>
+        <path d="M -11 8 Q -11 -4 0 -4 Q 11 -4 11 8" fill="none" stroke="#22262c" stroke-width="2.6"></path>
+      </g>
+      <!-- agent mascot: robot head -->
+      <g id="mascot">
+        <circle cx="0" cy="0" r="10" fill="#dceafc" stroke="#2f5d96" stroke-width="2"></circle>
+        <rect x="-6" y="-3.4" width="12" height="6.2" rx="3" fill="#f7c948" stroke="#2f5d96" stroke-width="1.4"></rect>
+        <circle cx="-3" cy="-0.4" r="1.2" fill="#22262c"></circle>
+        <circle cx="3" cy="-0.4" r="1.2" fill="#22262c"></circle>
+        <path d="M -2.4 3.4 Q 0 5 2.4 3.4" fill="none" stroke="#22262c" stroke-width="1.1"></path>
+        <line x1="0" y1="-10" x2="0" y2="-13.4" stroke="#2f5d96" stroke-width="1.6"></line>
+        <circle cx="0" cy="-14.6" r="1.6" fill="#b3372a"></circle>
+      </g>
+      <!-- wrench glyph for tool chips -->
+      <g id="wrench">
+        <path d="M 1.5 -5.5 A 4 4 0 1 0 5.5 -1.5 L 3.2 -1.5 L 1.5 -3.2 Z M 3.5 -0.5 L 9 5 L 6.6 7.4 L 1.2 1.9"
+              fill="#c9527a" stroke="#8e3355" stroke-width="1" transform="rotate(15)"></path>
+      </g>
+      <!-- brain + toolbox glyphs for agent cards -->
+      <g id="brain">
+        <path d="M -4 2 Q -6 -1 -3.4 -3 Q -3.6 -5.4 -1 -5.4 Q 0 -6.6 1.6 -5.8 Q 4 -6 4.2 -3.6 Q 6.4 -2 5 0.6 Q 5.6 3 3 3.4 Q 2 5 0 4.4 Q -2.6 5.4 -4 2 Z"
+              fill="#e6d6f5" stroke="#6e55a8" stroke-width="1.4"></path>
+      </g>
+      <g id="toolbox">
+        <rect x="-5.6" y="-2.6" width="11.2" height="7" rx="1.4" fill="#f2c7dd" stroke="#8e3355" stroke-width="1.3"></rect>
+        <path d="M -2.4 -2.6 V -4 Q -2.4 -5 -1.4 -5 H 1.4 Q 2.4 -5 2.4 -4 V -2.6" fill="none" stroke="#8e3355" stroke-width="1.3"></path>
+        <line x1="-5.6" y1="0.4" x2="5.6" y2="0.4" stroke="#8e3355" stroke-width="1"></line>
+      </g>
+    </defs>
+  </svg>
+
+  <!-- ================================ HERO ================================ -->
+  <section class="page hero">
+    <div>
+      <div class="kicker">Solvan Architecture Reference · Fortified Enterprise Fleet</div>
+      <div class="hero-grid">
+        <div>
+          <h1>Autonomous Production Engineer</h1>
+          <p class="lede">
+            Solvan is a governed fleet of institutional agents that detects production
+            degradation from events, investigates live evidence, executes bounded
+            policy-authorized recovery, verifies the outcome independently, and owns a
+            multi-day permanent-repair case — with every step durable, fenced, and receipted
+            in Cloud SQL.
+          </p>
+          <div class="callout">
+            <strong>Architecture stance.</strong> Two planes with a hard boundary: the
+            <em>probabilistic plane</em> (Gemini agents on Agent Runtime) investigates, ranks,
+            and proposes; the <em>deterministic plane</em> (typed services over Cloud SQL) owns
+            permissions, state transitions, budgets, approvals, idempotency, mutations, and
+            verification. Model output can become a proposal — never authority.
+          </div>
+          <div class="callout note">
+            <strong>Competition alignment.</strong> Sections 14–15 assess Solvan through the lens of
+            Google's own training lab for this challenge — <em>Build Long-Running Agents with
+            ADK 2</em> (adk2003), "the ADK lab" throughout — mapping every mandated technology and
+            every taught pattern to the enforcing mechanism and its named test. The lens demonstration runs on the
+            release-gated payments slice; the submitted codebase goes further — most of the
+            enterprise expansion is already implemented and locally verified beyond the lens, and
+            the remainder is held as reviewed target contracts, each labelled as exactly what it
+            is. Solvan is built for this competition and engineered to outlive it as Ruhu Inc.'s
+            production reliability platform.
+          </div>
+          <div class="pill-row">
+            <span class="pill">Python 3.12</span>
+            <span class="pill">Google ADK 2</span>
+            <span class="pill">Gemini on Vertex AI</span>
+            <span class="pill">Agent Runtime</span>
+            <span class="pill">PostgreSQL 16 · Cloud SQL</span>
+            <span class="pill">Cloud Run</span>
+            <span class="pill">Pub/Sub · Cloud Scheduler</span>
+            <span class="pill">FastAPI</span>
+            <span class="pill">React · TypeScript</span>
+            <span class="pill">OpenTelemetry · Cloud Trace</span>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card metric">
+            <strong>23</strong>
+            <span>Deployable applications: coordinator, actuator, verifier, detector, trigger scheduler, evidence broker, five channel liaisons, relay control, workspace services, console, and fixtures.</span>
+          </div>
+          <div class="card metric">
+            <strong>260</strong>
+            <span>PostgreSQL tables: the 61-table release schema plus eight implemented-or-specified target schemas — liaison, operability, alert triage, outcome quality, production graph, connection scope, relay, SaaS scale.</span>
+          </div>
+          <div class="card metric">
+            <strong>953</strong>
+            <span>Test functions behind a ten-stage merge gate with PR-001..050 requirement-to-test traceability enforced in CI.</span>
+          </div>
+          <div class="card metric">
+            <strong>22</strong>
+            <span>Normative specifications (17,218 lines) with executable artifacts: DDL, concurrency SQL, state-machine YAML, and release fixtures.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-meta">
+      <div><strong>Revision</strong><br />14 August 2026 · repo <span class="mono">fba2365</span></div>
+      <div><strong>Source</strong><br />Local repository audit; claims link to tests, DDL, or specs</div>
+      <div><strong>Print setup</strong><br />A3 portrait, 14mm top/bottom, 18mm left/right</div>
+      <div><strong>Scope</strong><br />Runtime, agents, action safety, data, competition proof, deployment</div>
+    </div>
+  </section>
+
+  <!-- ====================== 01 THE SOLVAN POSTER ====================== -->
+  <section class="page">
+    <h2>The Solvan Poster: Executive Architecture</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 912" role="img" aria-label="Solvan poster: one incident journey across every subsystem">
+        <g id="poster-g">
+        <!-- Title band -->
+        <rect class="band" x="16" y="14" width="1108" height="42" rx="6"></rect>
+        <text class="band-t" x="36" y="41">Solvan — The Autonomous Production Engineer</text>
+        <text class="band-s" x="1104" y="41" text-anchor="end">Fortified Enterprise Fleet · one journey: alert → verified close</text>
+
+        <!-- Ground -->
+        <rect class="ground" x="16" y="64" width="1108" height="832" rx="8"></rect>
+
+        <!-- ======== Zone: external triggers ======== -->
+        <rect class="zone-trig" x="30" y="78" width="206" height="254" rx="10"></rect>
+        <text class="zlab" x="44" y="98">TRIGGERS</text>
+        <text class="card-s" x="44" y="112">nothing wakes itself</text>
+
+        <g><!-- Cloud Monitoring product card -->
+          <rect class="card" x="44" y="122" width="178" height="60" rx="8"></rect>
+          <text class="icon" x="56" y="146">📈</text>
+          <text class="card-t" x="82" y="144">Cloud Monitoring</text>
+          <line class="card-div" x1="56" y1="156" x2="210" y2="156"></line>
+          <text class="plat-t" x="56" y="172">alert webhook → Pub/Sub push</text>
+        </g>
+        <g><!-- Scheduler card -->
+          <rect class="card" x="44" y="190" width="178" height="60" rx="8"></rect>
+          <text class="icon" x="56" y="214">⏰</text>
+          <text class="card-t" x="82" y="212">Cloud Scheduler</text>
+          <line class="card-div" x1="56" y1="224" x2="210" y2="224"></line>
+          <text class="plat-t" x="56" y="240">tick each minute · drives all work</text>
+        </g>
+        <g><!-- Pub/Sub card -->
+          <rect class="card" x="44" y="258" width="178" height="60" rx="8"></rect>
+          <text class="icon" x="56" y="282">📨</text>
+          <text class="card-t" x="82" y="280">Pub/Sub</text>
+          <line class="card-div" x1="56" y1="292" x2="210" y2="292"></line>
+          <text class="plat-t" x="56" y="308">verified push identity · retries</text>
+        </g>
+
+        <!-- ======== Zone: operator ======== -->
+        <rect class="zone-op" x="30" y="346" width="206" height="342" rx="10"></rect>
+        <text class="zlab" x="44" y="366">OPERATOR</text>
+        <g><!-- console card -->
+          <rect class="card" x="44" y="378" width="178" height="60" rx="8"></rect>
+          <text class="icon" x="56" y="402">🖥️</text>
+          <text class="card-t" x="82" y="400">Console</text>
+          <line class="card-div" x1="56" y1="412" x2="210" y2="412"></line>
+          <text class="plat-t" x="56" y="428">Cloud Run · never an authz boundary</text>
+        </g>
+        <g><!-- approval panel -->
+          <rect class="card" x="44" y="446" width="178" height="106" rx="8"></rect>
+          <text class="card-t" x="58" y="468">Approval panel</text>
+          <text class="card-s" x="58" y="486">target · environment · digest</text>
+          <text class="card-s" x="58" y="500">expected version · risk · expiry</text>
+          <line class="card-div" x1="58" y1="510" x2="208" y2="510"></line>
+          <text class="plat-t" x="58" y="526">proposer ≠ approver · in code + SQL</text>
+          <text class="plat-t" x="58" y="540">grant binds the exact digest only</text>
+        </g>
+        <use href="#persona" transform="translate(100,610)"></use>
+        <g><!-- HITL tag -->
+          <rect class="tag" x="128" y="586" width="102" height="40" rx="6"></rect>
+          <text class="tag-t" x="140" y="602">Human in</text>
+          <text class="tag-t" x="140" y="616">the Loop</text>
+        </g>
+        <text class="card-s" x="44" y="662">Slack · email · Discord · MCP liaisons</text>
+        <text class="plat-t" x="44" y="676">read projections; can never mint facts</text>
+
+        <!-- ======== Zone: durable core ======== -->
+        <rect class="zone-core" x="252" y="78" width="412" height="446" rx="10"></rect>
+        <text class="zlab" x="266" y="98">DURABLE CORE — OWNS EVERY AUTHORITY</text>
+
+        <g><!-- inbox card -->
+          <rect class="card" x="270" y="110" width="180" height="62" rx="8"></rect>
+          <text class="icon" x="282" y="134">📥</text>
+          <text class="card-t" x="308" y="132">Fenced inbox</text>
+          <line class="card-div" x1="282" y1="144" x2="436" y2="144"></line>
+          <text class="plat-t" x="282" y="160">Cloud SQL · idempotent ingress</text>
+        </g>
+        <g><!-- state machines card -->
+          <rect class="card" x="466" y="110" width="180" height="62" rx="8"></rect>
+          <text class="icon" x="478" y="134">🔁</text>
+          <text class="card-t" x="504" y="132">State machines</text>
+          <line class="card-div" x1="478" y1="144" x2="632" y2="144"></line>
+          <text class="plat-t" x="478" y="160">14 incident + 15 case states</text>
+        </g>
+
+        <!-- coordinator runtime bar -->
+        <rect class="bar" x="270" y="192" width="376" height="38" rx="7"></rect>
+        <text class="bar-t" x="286" y="216">coordinator · CAS + fenced leases · rows resume</text>
+
+        <g><!-- plan validation card -->
+          <rect class="card" x="270" y="250" width="180" height="62" rx="8"></rect>
+          <text class="card-t" x="284" y="272">Plan validator</text>
+          <text class="card-s" x="284" y="288">DAG · budgets · closed options</text>
+          <text class="plat-t" x="284" y="303">a model cannot widen its scope</text>
+        </g>
+        <g><!-- approvals card -->
+          <rect class="card" x="466" y="250" width="180" height="62" rx="8"></rect>
+          <text class="card-t" x="480" y="272">Exact approvals</text>
+          <text class="card-s" x="480" y="288">digest-bound · expiring</text>
+          <text class="plat-t" x="480" y="303">stale approval rejected</text>
+        </g>
+        <g><!-- actuator card -->
+          <rect class="card" x="270" y="332" width="180" height="74" rx="8"></rect>
+          <text class="icon" x="282" y="356">🔒</text>
+          <text class="card-t" x="308" y="354">Action Actuator</text>
+          <text class="card-s" x="284" y="374">reserve → dry-run → act → receipt</text>
+          <line class="card-div" x1="282" y1="384" x2="436" y2="384"></line>
+          <text class="plat-t" x="282" y="399">Cloud Run · private · TOCTOU recheck</text>
+        </g>
+        <g><!-- verifier card -->
+          <rect class="card" x="466" y="332" width="180" height="74" rx="8"></rect>
+          <text class="icon" x="478" y="356">✅</text>
+          <text class="card-t" x="504" y="354">Independent Verifier</text>
+          <text class="card-s" x="480" y="374">fresh metrics + synthetic probe</text>
+          <line class="card-div" x1="478" y1="384" x2="632" y2="384"></line>
+          <text class="plat-t" x="478" y="399">shares nothing with the producer</text>
+        </g>
+        <g><!-- verify tag -->
+          <rect class="tag" x="560" y="416" width="86" height="40" rx="6"></rect>
+          <text class="tag-t" x="572" y="432">Independent</text>
+          <text class="tag-t" x="572" y="446">Verify</text>
+        </g>
+        <!-- deterministic guarantees chips -->
+        <g>
+          <rect class="chip" x="270" y="470" width="112" height="26" rx="6"></rect>
+          <text class="chip-t" x="282" y="487">idempotency</text>
+          <rect class="chip" x="392" y="470" width="128" height="26" rx="6"></rect>
+          <text class="chip-t" x="404" y="487">action budgets</text>
+          <rect class="chip" x="530" y="470" width="116" height="26" rx="6"></rect>
+          <text class="chip-t" x="542" y="487">poison park</text>
+        </g>
+
+        <!-- ======== Zone: probabilistic plane ======== -->
+        <rect class="zone-ai" x="684" y="78" width="212" height="446" rx="10"></rect>
+        <text class="zlab" x="698" y="98">PROBABILISTIC PLANE</text>
+        <text class="card-s" x="698" y="112">proposes and cites — never owns</text>
+
+        <g><!-- Gemini card -->
+          <rect class="card" x="698" y="122" width="184" height="54" rx="8"></rect>
+          <text class="icon" x="710" y="146">✨</text>
+          <text class="card-t" x="736" y="140">Gemini 3.6 Flash</text>
+          <line class="card-div" x1="710" y1="152" x2="870" y2="152"></line>
+          <text class="plat-t" x="710" y="168">Vertex AI · eu regional endpoint</text>
+        </g>
+        <g><!-- ADK + Runtime card -->
+          <rect class="card" x="698" y="184" width="184" height="54" rx="8"></rect>
+          <text class="icon" x="710" y="208">🧰</text>
+          <text class="card-t" x="736" y="202">Google ADK 2</text>
+          <line class="card-div" x1="710" y1="214" x2="870" y2="214"></line>
+          <text class="plat-t" x="710" y="230">Agent Runtime · bounded jobs</text>
+        </g>
+        <!-- agent mini-cards -->
+        <g>
+          <rect class="card" x="698" y="248" width="184" height="40" rx="8"></rect>
+          <use href="#mascot" transform="translate(716,270) scale(0.82)"></use>
+          <text class="card-t" x="734" y="266">Incident Supervisor</text>
+          <text class="plat-t" x="734" y="280">plans only · zero tools</text>
+        </g>
+        <g>
+          <rect class="card" x="698" y="294" width="184" height="40" rx="8"></rect>
+          <use href="#mascot" transform="translate(716,316) scale(0.82)"></use>
+          <text class="card-t" x="734" y="312">Evidence Agent</text>
+          <text class="plat-t" x="734" y="326">bounded cited reads</text>
+        </g>
+        <g>
+          <rect class="card" x="698" y="340" width="184" height="40" rx="8"></rect>
+          <use href="#mascot" transform="translate(716,362) scale(0.82)"></use>
+          <text class="card-t" x="734" y="358">Infrastructure Agent</text>
+          <text class="plat-t" x="734" y="372">read-only topology</text>
+        </g>
+        <g>
+          <rect class="card" x="698" y="386" width="184" height="40" rx="8"></rect>
+          <use href="#mascot" transform="translate(716,408) scale(0.82)"></use>
+          <text class="card-t" x="734" y="404">Execution Agent</text>
+          <text class="plat-t" x="734" y="418">stored action IDs only</text>
+        </g>
+        <g>
+          <rect class="card" x="698" y="432" width="184" height="40" rx="8"></rect>
+          <use href="#mascot" transform="translate(716,454) scale(0.82)"></use>
+          <text class="card-t" x="734" y="450">Verification Agent</text>
+          <text class="plat-t" x="734" y="464">narrates the verdict</text>
+        </g>
+        <g>
+          <rect class="card" x="698" y="478" width="184" height="40" rx="8"></rect>
+          <use href="#mascot" transform="translate(716,500) scale(0.82)"></use>
+          <text class="card-t" x="734" y="496">Workspace Agent</text>
+          <text class="plat-t" x="734" y="510">repairs · cannot self-approve</text>
+        </g>
+
+        <!-- ======== Zone: governance ======== -->
+        <rect class="zone-gov" x="916" y="78" width="194" height="446" rx="10"></rect>
+        <text class="zlab" x="930" y="98">GOVERNANCE</text>
+        <text class="card-s" x="930" y="112">every call, fail closed</text>
+        <g>
+          <rect class="card" x="930" y="122" width="166" height="60" rx="8"></rect>
+          <text class="icon" x="942" y="146">🪪</text>
+          <text class="card-t" x="968" y="144">Agent Identity</text>
+          <line class="card-div" x1="942" y1="156" x2="1084" y2="156"></line>
+          <text class="plat-t" x="942" y="172">SPIFFE principal per agent</text>
+        </g>
+        <g>
+          <rect class="card" x="930" y="190" width="166" height="60" rx="8"></rect>
+          <text class="icon" x="942" y="214">🚪</text>
+          <text class="card-t" x="968" y="212">Agent Gateway</text>
+          <line class="card-div" x1="942" y1="224" x2="1084" y2="224"></line>
+          <text class="plat-t" x="942" y="240">fail-closed · bypass denied</text>
+        </g>
+        <g>
+          <rect class="card" x="930" y="258" width="166" height="60" rx="8"></rect>
+          <text class="icon" x="942" y="282">🛡️</text>
+          <text class="card-t" x="968" y="280">Model Armor</text>
+          <line class="card-div" x1="942" y1="292" x2="1084" y2="292"></line>
+          <text class="plat-t" x="942" y="308">durable verdicts on evidence</text>
+        </g>
+        <g>
+          <rect class="card" x="930" y="326" width="166" height="60" rx="8"></rect>
+          <text class="icon" x="942" y="350">📇</text>
+          <text class="card-t" x="968" y="348">Agent Registry</text>
+          <line class="card-div" x1="942" y1="360" x2="1084" y2="360"></line>
+          <text class="plat-t" x="942" y="376">agents · tools · MCP · endpoints</text>
+        </g>
+        <g>
+          <rect class="tag" x="930" y="398" width="166" height="42" rx="6"></rect>
+          <text class="tag-t" x="942" y="415">no generic mutation route</text>
+          <text class="plat-t" x="942" y="431">SEC-GATEWAY-BYPASS-001</text>
+        </g>
+        <text class="card-s" x="930" y="466">Identity → Gateway → Armor:</text>
+        <text class="card-s" x="930" y="480">the gauntlet every tool call</text>
+        <text class="card-s" x="930" y="494">crosses (governance gauntlet)</text>
+
+        <!-- ======== Zone: storage & memory ======== -->
+        <rect class="zone-data" x="252" y="538" width="858" height="152" rx="10"></rect>
+        <text class="zlab" x="266" y="558">STORAGE &amp; MEMORY — CLOUD SQL IS THE ONLY WORKFLOW AUTHORITY</text>
+        <g>
+          <rect class="card" x="270" y="572" width="192" height="66" rx="8"></rect>
+          <text class="icon" x="282" y="596">🐘</text>
+          <text class="card-t" x="308" y="594">Cloud SQL</text>
+          <line class="card-div" x1="282" y1="606" x2="448" y2="606"></line>
+          <text class="plat-t" x="282" y="621">authoritative ledger · 61 release tables</text>
+          <text class="plat-t" x="282" y="633">immutable histories · superseding rows</text>
+        </g>
+        <g>
+          <rect class="card" x="482" y="572" width="192" height="66" rx="8"></rect>
+          <text class="icon" x="494" y="596">🪣</text>
+          <text class="card-t" x="520" y="594">Cloud Storage</text>
+          <line class="card-div" x1="494" y1="606" x2="660" y2="606"></line>
+          <text class="plat-t" x="494" y="621">evidence objects · ref + sha256</text>
+          <text class="plat-t" x="494" y="633">prompts carry references, not payloads</text>
+        </g>
+        <g>
+          <rect class="card" x="694" y="572" width="192" height="66" rx="8"></rect>
+          <text class="icon" x="706" y="596">🧠</text>
+          <text class="card-t" x="732" y="594">Memory Bank</text>
+          <line class="card-div" x1="706" y1="606" x2="872" y2="606"></line>
+          <text class="plat-t" x="706" y="621">exact-scope recall · advisory only</text>
+          <text class="plat-t" x="706" y="633">promotion gated on armor verdicts</text>
+        </g>
+        <g>
+          <rect class="card" x="906" y="572" width="188" height="66" rx="8"></rect>
+          <text class="icon" x="918" y="596">🔭</text>
+          <text class="card-t" x="944" y="594">Agent Observability</text>
+          <line class="card-div" x1="918" y1="606" x2="1080" y2="606"></line>
+          <text class="plat-t" x="918" y="621">OTel → Cloud Trace · trace_id on rows</text>
+          <text class="plat-t" x="918" y="633">decisions, never chain-of-thought</text>
+        </g>
+        <text class="card-s" x="290" y="678">Sessions and Memory Bank are never workflow authority; every prompt is rebuilt from these records — never from a transcript.</text>
+
+        <!-- ======== Bottom strip: the multi-day continuation ======== -->
+        <text class="zlab" x="44" y="722">THE SAME JOURNEY, HELD FOR A WEEK — ZERO RESIDENT PROCESSES</text>
+        <line class="flow" x1="60" y1="790" x2="330" y2="790" stroke-width="2.6"></line>
+        <line class="flow-dash" x1="330" y1="790" x2="520" y2="790" stroke-width="2.6"></line>
+        <line class="flow" x1="520" y1="790" x2="700" y2="790" stroke-width="2.6"></line>
+        <line class="flow-dash" x1="700" y1="790" x2="880" y2="790" stroke-width="2.6"></line>
+        <line class="flow" x1="880" y1="790" x2="1080" y2="790" stroke-width="2.6"></line>
+        <circle class="way" cx="80" cy="790" r="7"></circle>
+        <circle class="way" cx="300" cy="790" r="7"></circle>
+        <circle class="way" cx="560" cy="790" r="7"></circle>
+        <circle class="way" cx="840" cy="790" r="7"></circle>
+        <circle class="way" cx="1050" cy="790" r="7"></circle>
+        <g>
+          <rect class="tag" x="360" y="742" width="82" height="26" rx="6"></rect>
+          <text class="tag-t" x="374" y="759">Long Wait</text>
+        </g>
+        <g>
+          <rect class="tag" x="736" y="742" width="70" height="26" rx="6"></rect>
+          <text class="tag-t" x="750" y="759">Resume</text>
+        </g>
+        <text class="card-t" x="48" y="822">Day 0 · MITIGATED</text>
+        <text class="card-s" x="48" y="838">Reliability Case opens;</text>
+        <text class="card-s" x="48" y="852">wakeup row scheduled</text>
+        <text class="card-t" x="252" y="822">Day 1 · tick claims wakeup</text>
+        <text class="card-s" x="252" y="838">fenced claim; case advances;</text>
+        <text class="card-s" x="252" y="852">bounded workspace run</text>
+        <text class="card-t" x="516" y="822">Day 3 · rehydrate checkpoint</text>
+        <text class="card-s" x="516" y="838">exact revision + boot proof;</text>
+        <text class="card-s" x="516" y="852">repair → patch → review</text>
+        <text class="card-t" x="800" y="822">Day 7 · verified close</text>
+        <text class="card-s" x="800" y="838">canary + rollout receipts;</text>
+        <text class="card-s" x="800" y="852">CLOSED_VERIFIED</text>
+        <text class="card-s" x="360" y="782">nothing runs</text>
+        <text class="card-s" x="742" y="782">nothing runs</text>
+
+        <!-- ======== The incident journey path ======== -->
+        <!-- alert → inbox → along the coordinator bar → supervisor → plan
+             validator → operator approval → actuator → verifier → day 0 -->
+        <path class="journey" d="M 222 152
+                                 C 252 152, 262 141, 296 141"></path>
+        <path class="journey" d="M 300 145
+                                 C 300 176, 300 186, 316 208
+                                 C 330 226, 480 232, 560 236
+                                 C 630 240, 650 252, 694 264"></path>
+        <path class="journey" d="M 694 276
+                                 C 636 328, 556 324, 462 300"></path>
+        <path class="journey" d="M 400 314
+                                 C 330 332, 252 330, 244 366
+                                 C 240 396, 236 430, 232 470"></path>
+        <path class="journey" d="M 230 490
+                                 C 246 444, 252 402, 266 384"></path>
+        <path class="journey" d="M 450 386 C 456 380, 458 376, 464 372"></path>
+        <path class="journey" d="M 556 408
+                                 C 530 470, 480 520, 472 566"></path>
+        <path class="journey" d="M 472 574
+                                 C 472 636, 440 654, 350 656
+                                 C 280 658, 258 672, 252 696
+                                 C 240 744, 130 760, 88 786"></path>
+        <circle class="way" cx="222" cy="152" r="6.5"></circle>
+        <circle class="way" cx="300" cy="141" r="6.5"></circle>
+        <circle class="way" cx="316" cy="208" r="6.5"></circle>
+        <circle class="way" cx="694" cy="268" r="6.5"></circle>
+        <circle class="way" cx="456" cy="296" r="6.5"></circle>
+        <circle class="way" cx="230" cy="482" r="6.5"></circle>
+        <circle class="way" cx="266" cy="384" r="6.5"></circle>
+        <circle class="way" cx="556" cy="406" r="6.5"></circle>
+        <circle class="way" cx="472" cy="570" r="6.5"></circle>
+
+        <g><!-- event driven tag pinned at alert -->
+          <rect class="tag" x="128" y="84" width="94" height="26" rx="6"></rect>
+          <text class="tag-t" x="141" y="101">Event Driven</text>
+        </g>
+        </g>
+      </svg>
+      <p class="caption">
+        The poster: one incident's journey (dotted path) crossing every subsystem — Event Driven at
+        ingress, planned by the Supervisor, evidenced through governed tools, paused for a Human in
+        the Loop, executed by the private actuator, Independently Verified, then held open for a week
+        of Long Waits and Resumes with zero resident processes. Every product card is a mandated
+        platform pillar; every guarantee chip is a named test in the durability and idempotency tables (Sections 04 and 10).
+      </p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Runtime Contract</h3>
+        <ul>
+          <li>Incidents begin from events, not prompts; chat reads projections and requests work but never defines the lifecycle.</li>
+          <li>The coordinator creates every durable <code>agent_run</code> before dispatch; no agent invokes another agent directly.</li>
+          <li>Every transition uses expected-state + workflow-version CAS under a token-fenced lease; terminal histories are immutable.</li>
+          <li>Gemini investigates, ranks, plans, summarizes, drafts; typed application services own permissions, risk, budgets, and mutations.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Enterprise Control Points</h3>
+        <ul>
+          <li>Tenant/project/environment scope on every row; classification, purpose, and residency filtered before retrieval and again before prompts.</li>
+          <li>Operator-facing claims instantiate from a digest-pinned template registry; a failed predicate is withheld, never softened into prose.</li>
+          <li>Immutable histories with superseding records; dual-written receipts; independent verification shares nothing with the producer it judges.</li>
+          <li>Preview platform features carry tested degradation paths and are never the sole control on a consequential action.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 02 ONE TURN THROUGH THE SYSTEM ================= -->
+  <section class="page">
+    <h2>One Turn Through The System</h2>
+    <p class="small">
+      Google's ADK lab draws one message moving through the Runner. This is the same drawing for
+      Solvan: one alert becoming one dispatched, validated, human-approved, verified turn. The
+      durable write is drawn where it happens — <strong>before</strong> dispatch, not after.
+    </p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 620" role="img" aria-label="One turn: alert to mitigated, step by step">
+        <rect class="ground" x="16" y="10" width="1108" height="596" rx="8"></rect>
+
+        <!-- 1 · the alert speaks -->
+        <circle class="badge" cx="48" cy="44" r="13"></circle><text class="badge-t" x="48" y="48">1</text>
+        <g>
+          <path class="bubble" d="M 70 30 H 268 Q 276 30 276 38 V 76 Q 276 84 268 84 H 118 L 96 102 L 102 84 H 70 Q 62 84 62 76 V 38 Q 62 30 70 30 Z"></path>
+          <text class="bubble-t" x="80" y="50">payments checkout p95 latency</text>
+          <text class="bubble-t" x="80" y="66">is breaching its SLO</text>
+        </g>
+        <text class="icon-lg" x="70" y="136">🚨</text>
+        <text class="card-s" x="100" y="122">Cloud Monitoring fires;</text>
+        <text class="card-s" x="100" y="136">no human typed anything</text>
+
+        <!-- chevron arrows into the coordinator -->
+        <g>
+          <polygon class="chev" points="60,168 200,168 200,158 236,180 200,202 200,192 60,192"></polygon>
+          <text class="chev-t" x="88" y="184">Pub/Sub push</text>
+        </g>
+        <g>
+          <polygon class="chev chev-amb" points="60,224 200,224 200,214 236,236 200,258 200,248 60,248"></polygon>
+          <text class="chev-t" x="80" y="240">Scheduler tick</text>
+        </g>
+        <text class="card-s" x="62" y="278">two triggers, one rule: being</text>
+        <text class="card-s" x="62" y="292">callable ≠ being called</text>
+
+        <!-- the coordinator "runner" -->
+        <g>
+          <rect x="268" y="140" width="130" height="88" rx="8" fill="#ffffff" stroke="#2f5d96" stroke-width="2.2"></rect>
+          <rect x="282" y="154" width="70" height="60" rx="4" fill="#dceafc" stroke="#2f5d96" stroke-width="1.6"></rect>
+          <line x1="290" y1="168" x2="344" y2="168" stroke="#2f5d96" stroke-width="2"></line>
+          <line x1="290" y1="182" x2="344" y2="182" stroke="#2f5d96" stroke-width="2"></line>
+          <line x1="290" y1="196" x2="330" y2="196" stroke="#2f5d96" stroke-width="2"></line>
+          <circle cx="374" cy="184" r="10" fill="none" stroke="#2f5d96" stroke-width="2"></circle>
+          <circle cx="374" cy="184" r="3.4" fill="#2f5d96"></circle>
+        </g>
+        <rect class="bar" x="252" y="240" width="240" height="34" rx="7"></rect>
+        <text class="bar-t" x="266" y="262">coordinator · rows resume</text>
+
+        <!-- 2 · durable first -->
+        <circle class="badge" cx="266" cy="316" r="13"></circle><text class="badge-t" x="266" y="320">2</text>
+        <g>
+          <rect class="card" x="290" y="296" width="220" height="74" rx="8"></rect>
+          <text class="icon" x="302" y="322">🐘</text>
+          <text class="card-t" x="328" y="318">agent_run · CREATED</text>
+          <line class="card-div" x1="302" y1="330" x2="496" y2="330"></line>
+          <text class="plat-t" x="302" y="346">Cloud SQL · committed before any</text>
+          <text class="plat-t" x="302" y="359">network call — a crash here loses nothing</text>
+        </g>
+        <path class="flow-b" d="M 372 274 L 372 296" marker-end="url(#ar-b)"></path>
+        <g>
+          <rect class="tag" x="524" y="306" width="150" height="26" rx="6"></rect>
+          <text class="tag-t" x="536" y="323">write before dispatch</text>
+          <path class="flow-dash" d="M 524 320 L 512 326"></path>
+        </g>
+
+        <!-- 3 · the bounded invocation -->
+        <circle class="badge" cx="560" cy="44" r="13"></circle><text class="badge-t" x="560" y="48">3</text>
+        <text class="card-t" x="582" y="48">Dispatch = one bounded invocation</text>
+        <text class="card-s" x="582" y="64">the JSON is the complete authority ceiling — agents/contracts.py</text>
+        <rect class="code-bl" x="560" y="76" width="330" height="196" rx="8"></rect>
+        <text class="code-t" x="576" y="98">AgentInvocation(</text>
+        <text class="code-t" x="592" y="114">invocation_id, logical_step_key,</text>
+        <text class="code-t" x="592" y="130">organization·project·environment,</text>
+        <text class="code-t" x="592" y="146">incident_id, workflow_version,</text>
+        <text class="code-hl" x="592" y="162">deadline, budget=InvocationBudget(</text>
+        <text class="code-t" x="608" y="178">max_runtime_seconds, max_model_calls,</text>
+        <text class="code-t" x="608" y="194">max_tool_calls, max_output_bytes),</text>
+        <text class="code-hl" x="592" y="210">allowed_tool_names=(…exact list…),</text>
+        <text class="code-t" x="592" y="226">evidence_refs=(ref+sha256…),</text>
+        <text class="code-t" x="592" y="242">input_payload={…}, trace_context=…)</text>
+        <text class="code-t" x="576" y="262"># extra="forbid" · frozen · validated</text>
+        <path class="flow-b" d="M 492 257 C 520 257, 530 240, 552 180" marker-end="url(#ar-b)"></path>
+
+        <!-- 4 · supervisor card -->
+        <circle class="badge" cx="922" cy="44" r="13"></circle><text class="badge-t" x="922" y="48">4</text>
+        <text class="card-t" x="944" y="48">Supervisor proposes</text>
+        <g>
+          <rect class="card" x="912" y="60" width="200" height="128" rx="10"></rect>
+          <use href="#mascot" transform="translate(936,90)"></use>
+          <text class="card-t" x="958" y="88">incident_supervisor</text>
+          <text class="plat-t" x="958" y="102">Gemini · Agent Runtime</text>
+          <line class="card-div" x1="926" y1="112" x2="1098" y2="112"></line>
+          <use href="#brain" transform="translate(940,130)"></use>
+          <text class="card-s" x="956" y="133">single turn · contents none</text>
+          <use href="#toolbox" transform="translate(940,156)"></use>
+          <text class="card-s" x="956" y="158">tools: — (planners get none)</text>
+          <text class="plat-t" x="926" y="180">returns SupervisorPlanOutput</text>
+        </g>
+        <path class="flow" d="M 890 174 L 912 174" marker-end="url(#ar)"></path>
+
+        <!-- typed plan returns to the coordinator -->
+        <path class="journey" d="M 1012 188 C 990 250, 850 292, 706 308"></path>
+        <path class="flow" d="M 706 308 L 682 310" marker-end="url(#ar)"></path>
+        <text class="card-s" x="700" y="330">typed plan → the coordinator validates it in code</text>
+
+        <!-- 5 · evidence fan-out -->
+        <circle class="badge" cx="48" cy="356" r="13"></circle><text class="badge-t" x="48" y="360">5</text>
+        <text class="card-t" x="70" y="360">Plan validated → evidence fanned out</text>
+        <text class="card-s" x="70" y="376">DAG, budgets, and agent options checked in code first</text>
+        <g>
+          <rect class="card" x="40" y="388" width="200" height="112" rx="10"></rect>
+          <use href="#mascot" transform="translate(64,418)"></use>
+          <text class="card-t" x="86" y="416">evidence_agent</text>
+          <text class="plat-t" x="86" y="430">Gemini · Agent Runtime</text>
+          <line class="card-div" x1="54" y1="440" x2="226" y2="440"></line>
+          <text class="card-s" x="54" y="458">answers one bounded question;</text>
+          <text class="card-s" x="54" y="472">cites durable evidence refs</text>
+          <text class="plat-t" x="54" y="490">parallel, fenced, per-step attempts</text>
+        </g>
+        <!-- tool chips with wrench glyphs -->
+        <g>
+          <rect class="chip" x="268" y="392" width="196" height="28" rx="6"></rect>
+          <use href="#wrench" transform="translate(282,406) scale(0.9)"></use>
+          <text class="chip-t" x="296" y="410">run_monitoring_query</text>
+          <rect class="chip" x="268" y="430" width="196" height="28" rx="6"></rect>
+          <use href="#wrench" transform="translate(282,444) scale(0.9)"></use>
+          <text class="chip-t" x="296" y="448">read_error_logs</text>
+          <rect class="chip" x="268" y="468" width="196" height="28" rx="6"></rect>
+          <use href="#wrench" transform="translate(282,482) scale(0.9)"></use>
+          <text class="chip-t" x="296" y="486">read_service_topology</text>
+        </g>
+        <path class="flow-dash" d="M 240 412 L 268 406" marker-end="url(#ar)"></path>
+        <path class="flow-dash" d="M 240 444 L 268 444" marker-end="url(#ar)"></path>
+        <path class="flow-dash" d="M 240 476 L 268 482" marker-end="url(#ar)"></path>
+        <text class="plat-t" x="268" y="516">every call: broker allow-list, fingerprint,</text>
+        <text class="plat-t" x="268" y="529">budget → one tool_calls row</text>
+
+        <!-- 6 · human approval -->
+        <circle class="badge" cx="518" cy="356" r="13"></circle><text class="badge-t" x="518" y="360">6</text>
+        <text class="card-t" x="540" y="360">Exact approval</text>
+        <g>
+          <rect class="card" x="510" y="388" width="196" height="112" rx="10"></rect>
+          <text class="card-s" x="524" y="410">typed rollback proposal →</text>
+          <text class="card-t" x="524" y="428">AWAITING_APPROVAL</text>
+          <text class="card-s" x="524" y="446">digest over target · versions ·</text>
+          <text class="card-s" x="524" y="460">epoch · evidence · payload</text>
+          <line class="card-div" x1="524" y1="470" x2="692" y2="470"></line>
+          <text class="plat-t" x="524" y="486">proposer ≠ approver · expiry-bound</text>
+        </g>
+        <use href="#persona" transform="translate(560,548)"></use>
+        <g>
+          <rect class="tag" x="588" y="524" width="104" height="40" rx="6"></rect>
+          <text class="tag-t" x="600" y="540">Human in</text>
+          <text class="tag-t" x="600" y="554">the Loop</text>
+        </g>
+
+        <!-- chevron: execute by ID -->
+        <g>
+          <polygon class="chev" points="716,428 830,428 830,418 866,440 830,462 830,452 716,452"></polygon>
+          <text class="chev-t" x="726" y="444">action ID only</text>
+        </g>
+
+        <!-- 7 · actuate + verify -->
+        <circle class="badge" cx="890" cy="356" r="13"></circle><text class="badge-t" x="890" y="360">7</text>
+        <text class="card-t" x="912" y="360">Actuate, then verify independently</text>
+        <g>
+          <rect class="card" x="880" y="376" width="232" height="60" rx="8"></rect>
+          <text class="icon" x="892" y="400">🔒</text>
+          <text class="card-t" x="918" y="396">Action Actuator</text>
+          <text class="plat-t" x="918" y="412">reserve → TOCTOU recheck → dry-run</text>
+          <text class="plat-t" x="918" y="425">→ actuate → receipt</text>
+        </g>
+        <g>
+          <rect class="card" x="880" y="446" width="232" height="60" rx="8"></rect>
+          <text class="icon" x="892" y="470">✅</text>
+          <text class="card-t" x="918" y="466">Independent Verifier</text>
+          <text class="plat-t" x="918" y="482">fresh metrics + synthetic probe;</text>
+          <text class="plat-t" x="918" y="495">connector success is not recovery</text>
+        </g>
+        <path class="flow" d="M 996 436 L 996 446" marker-end="url(#ar)"></path>
+
+        <!-- closing bubble -->
+        <g>
+          <path class="bubble" d="M 736 496 H 850 Q 858 496 858 504 V 546 Q 858 554 850 554 H 790 L 768 572 L 774 554 H 736 Q 728 554 728 546 V 504 Q 728 496 736 496 Z" fill="#e7f3ec" stroke="#147a5c"></path>
+          <text class="bubble-t" x="746" y="516">MITIGATED ·</text>
+          <text class="bubble-t" x="746" y="532">case REL-101 opens</text>
+        </g>
+        <path class="flow-dash" d="M 880 500 C 872 500, 868 506, 858 512"></path>
+      </svg>
+      <p class="caption">
+        Solvan running the ADK lab's Runner loop at production discipline: the alert speaks (1), the durable row
+        exists before any network call (2), the invocation JSON is the whole authority ceiling (3),
+        the planner plans with zero tools (4), evidence tools run behind the broker (5), the pause is
+        cryptographic (6), and execution is verified by a stranger (7). Evidence:
+        <code>test_coordinator_commits_incident_and_inbox_completion_atomically</code>, the contracts in
+        <code>src/solvan/agents/contracts.py</code>, and the swimlane + tables on the following pages.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ SIGNAL: ALERT TO VERIFIED RECOVERY (SWIMLANE) ============ -->
+  <section class="page">
+    <h2>Signal Flow: Alert To Verified Recovery</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1120 700" role="img" aria-label="End-to-end signal flow from alert to verified recovery">
+        <defs>
+          <marker id="arrowS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#565d68"></path>
+          </marker>
+          <style>
+            .lane { stroke: #d5dae2; stroke-width: 1.6; stroke-dasharray: 5 5; }
+            .laneh { fill: #ffffff; stroke: #aab6c4; stroke-width: 1.6; rx: 8; }
+            .lanet { font: 700 13px Inter, sans-serif; fill: #171a20; }
+            .msg { stroke: #565d68; stroke-width: 1.8; fill: none; marker-end: url(#arrowS); }
+            .msgb { stroke: #1f5c9e; stroke-width: 2.2; fill: none; marker-end: url(#arrowS); }
+            .lbl { font: 600 10.5px Inter, sans-serif; fill: #22262c; }
+            .sub { font: 500 9.5px Inter, sans-serif; fill: #565d68; }
+            .numc { fill: #4f9d4a; stroke: #ffffff; stroke-width: 2; }
+            .numt { font: 800 11px Inter, sans-serif; fill: #ffffff; }
+            .gap { fill: #fbf7ef; stroke: #a8781f; stroke-width: 1.6; stroke-dasharray: 6 4; rx: 6; }
+          </style>
+        </defs>
+
+        <rect class="ground" x="8" y="4" width="1104" height="692" rx="8"></rect>
+        <!-- Lane headers -->
+        <rect class="laneh" x="20"  y="16" width="160" height="34"></rect><text class="lanet" x="42"  y="38">Triggers</text>
+        <rect class="laneh" x="230" y="16" width="180" height="34"></rect><text class="lanet" x="252" y="38">Coordinator</text>
+        <rect class="laneh" x="470" y="16" width="180" height="34"></rect><text class="lanet" x="492" y="38">Cloud SQL</text>
+        <rect class="laneh" x="710" y="16" width="180" height="34"></rect><text class="lanet" x="732" y="38">Agent Runtime</text>
+        <rect class="laneh" x="930" y="16" width="170" height="34"></rect><text class="lanet" x="948" y="38">Actuator · Verifier</text>
+
+        <!-- Lane lines -->
+        <line class="lane" x1="100"  y1="50" x2="100"  y2="676"></line>
+        <line class="lane" x1="320"  y1="50" x2="320"  y2="676"></line>
+        <line class="lane" x1="560"  y1="50" x2="560"  y2="676"></line>
+        <line class="lane" x1="800"  y1="50" x2="800"  y2="676"></line>
+        <line class="lane" x1="1015" y1="50" x2="1015" y2="676"></line>
+
+        <!-- 1 alert push -->
+        <circle class="numc" cx="82" cy="86" r="11"></circle><text class="numt" x="78" y="90">1</text>
+        <text class="icon" x="26" y="92">🚨</text>
+        <path class="msgb" d="M 100 86 L 320 86"></path>
+        <text class="lbl" x="120" y="78">Monitoring breach → Pub/Sub push</text>
+        <text class="sub" x="120" y="100">POST /internal/pubsub/workflow · verified push identity</text>
+
+        <!-- 2 ingest -->
+        <circle class="numc" cx="302" cy="128" r="11"></circle><text class="numt" x="298" y="132">2</text>
+        <path class="msg" d="M 320 128 L 560 128"></path>
+        <text class="lbl" x="340" y="120">ingest_event — idempotent on (source, event_id)</text>
+        <text class="sub" x="340" y="142">duplicate delivery returns the original durable row</text>
+
+        <!-- 3 tick -->
+        <circle class="numc" cx="82" cy="170" r="11"></circle><text class="numt" x="78" y="174">3</text>
+        <path class="msgb" d="M 100 170 L 320 170"></path>
+        <text class="lbl" x="120" y="162">Cloud Scheduler tick</text>
+        <text class="sub" x="120" y="184">the only thing that drives work — nothing self-wakes</text>
+
+        <!-- 4 claim + incident -->
+        <circle class="numc" cx="302" cy="212" r="11"></circle><text class="numt" x="298" y="216">4</text>
+        <path class="msg" d="M 320 212 L 560 212"></path>
+        <text class="lbl" x="340" y="204">claim inbox (token-fenced) → create incident atomically</text>
+        <text class="sub" x="340" y="226">dedup key: one active incident; CAS + workflow_version from birth</text>
+
+        <!-- 5 durable run -->
+        <circle class="numc" cx="302" cy="254" r="11"></circle><text class="numt" x="298" y="258">5</text>
+        <path class="msg" d="M 320 254 L 560 254"></path>
+        <text class="lbl" x="340" y="246">create agent_run CREATED — durable before any network call</text>
+        <text class="sub" x="340" y="268">the transaction exits before dispatch; crash here loses nothing</text>
+
+        <!-- 6 dispatch supervisor -->
+        <circle class="numc" cx="302" cy="296" r="11"></circle><text class="numt" x="298" y="300">6</text>
+        <path class="msgb" d="M 320 296 L 800 296"></path>
+        <text class="lbl" x="340" y="288">dispatch supervisor — long-running query job</text>
+        <text class="sub" x="340" y="310">bounded invocation JSON is the complete authority ceiling</text>
+
+        <!-- 7 poll plan -->
+        <circle class="numc" cx="782" cy="338" r="11"></circle><text class="numt" x="778" y="342">7</text>
+        <path class="msg" d="M 800 338 L 320 338"></path>
+        <text class="lbl" x="380" y="330">poll → typed plan proposal</text>
+        <text class="sub" x="380" y="352">accepted once: operation name, hashes, and revision must validate</text>
+
+        <!-- 8 validate persist -->
+        <circle class="numc" cx="302" cy="380" r="11"></circle><text class="numt" x="298" y="384">8</text>
+        <path class="msg" d="M 320 380 L 560 380"></path>
+        <text class="lbl" x="340" y="372">validate DAG + budgets → persist plan → create evidence runs</text>
+        <text class="sub" x="340" y="394">a model cannot add agents, tools, or scope the options didn't offer</text>
+
+        <!-- 9 fan out -->
+        <circle class="numc" cx="302" cy="422" r="11"></circle><text class="numt" x="298" y="426">9</text>
+        <path class="msgb" d="M 320 422 L 800 422"></path>
+        <text class="lbl" x="340" y="414">dispatch evidence + infrastructure agents (parallel, fenced)</text>
+
+        <!-- 10 findings -->
+        <circle class="numc" cx="782" cy="464" r="11"></circle><text class="numt" x="776" y="468">10</text>
+        <path class="msg" d="M 800 464 L 320 464"></path>
+        <text class="lbl" x="380" y="456">typed findings — every claim cites durable evidence refs</text>
+        <text class="sub" x="380" y="478">tool calls ran through the broker: allow-list, budget, fingerprint</text>
+
+        <!-- 11 proposal + approval -->
+        <circle class="numc" cx="302" cy="506" r="11"></circle><text class="numt" x="296" y="510">11</text>
+        <path class="msg" d="M 320 506 L 560 506"></path>
+        <text class="lbl" x="340" y="498">hypothesis → typed action proposal → policy decision</text>
+        <rect class="gap" x="470" y="518" width="340" height="30"></rect>
+        <text class="sub" x="506" y="537">AWAITING_APPROVAL (durable pause) — or an exact standing preauthorization</text>
+        <text x="482" y="539" style="font-size:13px">⏳</text>
+
+        <!-- 12 execute -->
+        <circle class="numc" cx="302" cy="576" r="11"></circle><text class="numt" x="296" y="580">12</text>
+        <path class="msgb" d="M 320 576 L 1015 576"></path>
+        <text class="lbl" x="340" y="568">execute stored action by ID — reserve → dry-run → actuate → receipt</text>
+        <text class="sub" x="340" y="590">TOCTOU recheck first: any drift releases the reservation, no mutation</text>
+
+        <!-- 13 verify -->
+        <circle class="numc" cx="997" cy="618" r="11"></circle><text class="numt" x="991" y="622">13</text>
+        <path class="msg" d="M 1015 618 L 560 618"></path>
+        <text class="lbl" x="600" y="610">independent verification — fresh metrics + synthetic probe</text>
+        <text class="sub" x="600" y="632">connector success is not recovery; the verifier shares nothing with the producer</text>
+
+        <!-- 14 close -->
+        <circle class="numc" cx="542" cy="660" r="11"></circle><text class="numt" x="536" y="664">14</text>
+        <text class="lbl" x="580" y="656">MITIGATED → Reliability Case opened → wakeup scheduled</text>
+        <text class="sub" x="580" y="676">ownership continues; permanent repair is a separate verified outcome</text>
+      </svg>
+      <p class="caption">
+        The canonical release scenario as a signal flow. Blue arrows cross a process boundary; every
+        numbered step leaves a durable record before the next can happen, which is why any process can
+        die at any number and a fresh one continues from rows.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= 02 INCIDENT LIFECYCLE AND DURABILITY ================= -->
+  <section class="page">
+    <h2>Incident Lifecycle And Durable State</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1120 300" role="img" aria-label="Incident and case state machines">
+        <defs>
+          <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#565d68"></path>
+          </marker>
+          <style>
+            .st { fill: #f3f7fc; stroke: #1f5c9e; stroke-width: 2; rx: 8; }
+            .hu { fill: #fbf7ef; stroke: #a8781f; stroke-width: 2; rx: 8; }
+            .tm { fill: #f5faf8; stroke: #147a5c; stroke-width: 2; rx: 8; }
+            .t2 { font: 700 13px Inter, sans-serif; fill: #171a20; }
+            .s2 { font: 500 10.5px Inter, sans-serif; fill: #565d68; }
+            .ln { stroke: #565d68; stroke-width: 2; fill: none; marker-end: url(#arrow2); }
+          </style>
+        </defs>
+        <rect class="ground" x="8" y="4" width="1104" height="292" rx="8"></rect>
+        <rect class="st" x="20" y="40" width="118" height="46"></rect><text class="t2" x="34" y="68">DETECTED</text>
+        <rect class="st" x="168" y="40" width="140" height="46"></rect><text class="t2" x="182" y="68">INVESTIGATING</text>
+        <rect class="st" x="338" y="40" width="200" height="46"></rect><text class="t2" x="352" y="68">MITIGATION_PROPOSED</text>
+        <rect class="hu" x="568" y="40" width="190" height="46"></rect><text class="t2" x="582" y="68">AWAITING_APPROVAL</text>
+        <rect class="st" x="788" y="40" width="128" height="46"></rect><text class="t2" x="802" y="68">MITIGATING</text>
+        <rect class="tm" x="946" y="40" width="150" height="46"></rect><text class="t2" x="960" y="68">MITIGATED</text>
+        <path class="ln" d="M 138 63 L 168 63"></path>
+        <path class="ln" d="M 308 63 L 338 63"></path>
+        <path class="ln" d="M 538 63 L 568 63"></path>
+        <path class="ln" d="M 758 63 L 788 63"></path>
+        <path class="ln" d="M 916 63 L 946 63"></path>
+        <text class="s2" x="345" y="110">preauthorized path skips approval under an exact standing grant</text>
+        <text class="s2" x="580" y="30">durable human pause · PT2H stale escalation</text>
+
+        <rect class="tm" x="168" y="180" width="330" height="46"></rect>
+        <text class="t2" x="182" y="208">RELIABILITY CASE · 15 states, multi-day</text>
+        <rect class="hu" x="548" y="180" width="270" height="46"></rect>
+        <text class="t2" x="562" y="208">scheduled_wakeups · durable timers</text>
+        <rect class="st" x="858" y="180" width="238" height="46"></rect>
+        <text class="t2" x="872" y="208">verification · independent close</text>
+        <path class="ln" d="M 1010 86 C 1010 150, 600 130, 490 180"></path>
+        <path class="ln" d="M 498 203 L 548 203"></path>
+        <path class="ln" d="M 818 203 L 858 203"></path>
+        <text class="s2" x="182" y="250">Liveness policy: every operational state must hold a next action and an active wakeup — a case cannot go silently dormant.</text>
+        <text class="s2" x="182" y="268">Nothing runs between steps. An external trigger wakes the coordinator; rows in Cloud SQL are the resumed agent.</text>
+      </svg>
+      <p class="caption">
+        Fourteen incident states and fifteen case states, loaded from drift-checked YAML artifacts and
+        enforced by guarded CAS transitions — an explicit machine, never prompt-implicit state.
+      </p>
+    </div>
+
+    <h3>Durability mechanics — each proven by a named test</h3>
+    <table>
+      <tr><th>Mechanism</th><th>Guarantee</th><th>Verify</th></tr>
+      <tr>
+        <td>Token-fenced claims (inbox, outbox, wakeups)</td>
+        <td>A crashed worker's claim expires and is recovered; the stale token can no longer complete the work.</td>
+        <td><code>test_expired_inbox_claim_is_recovered_and_old_token_is_fenced</code></td>
+      </tr>
+      <tr>
+        <td>Restart recovery without sessions</td>
+        <td>A fresh process resumes a dispatched runtime operation from rows alone — no session, no memory of the dead process.</td>
+        <td><code>test_dispatched_runtime_operation_is_recovered_by_fresh_process_without_session_state</code></td>
+      </tr>
+      <tr>
+        <td>Poison-event quarantine</td>
+        <td>An event that crash-loops its handler is parked durably after a bounded claim budget (5 inbox / 25 outbox); it can never occupy a worker again.</td>
+        <td><code>test_crash_looping_inbox_event_is_quarantined_after_bounded_claims</code></td>
+      </tr>
+      <tr>
+        <td>Durable retry backoff</td>
+        <td>A failed dispatch defers its single declared fallback behind <code>retry_not_before</code>; a transient fault cannot burn the final attempt instantly, across restarts.</td>
+        <td><code>test_declared_agent_fallback_is_attempted_once_after_dispatch_failure</code></td>
+      </tr>
+      <tr>
+        <td>Concurrency at scale</td>
+        <td>Twenty-five simultaneous incidents are neither lost nor duplicated under contention.</td>
+        <td><code>test_twenty_five_simultaneous_incidents_are_not_lost_or_duplicated</code></td>
+      </tr>
+      <tr>
+        <td>Atomic coordination</td>
+        <td>Incident creation and inbox completion commit together or not at all; duplicate ingress returns the original durable event.</td>
+        <td><code>test_coordinator_commits_incident_and_inbox_completion_atomically</code></td>
+      </tr>
+    </table>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Why rows, not resumed conversations</h3>
+        <p class="small">
+          The ADK lab's own <code>ResumabilityConfig</code> note warns: <em>"any temporary /
+          in-memory state will be lost upon resumption."</em> Solvan takes the warning to its
+          conclusion: a half-finished model invocation is never trustworthy state. The unit of
+          recovery is the durable <code>agent_run</code>; recovery is a fresh, fenced attempt rebuilt
+          from authoritative rows, and idempotency constraints make repeated effects impossible
+          rather than unlikely.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Suspension is a state, not a parked process</h3>
+        <p class="small">
+          <code>AWAITING_APPROVAL</code> and <code>scheduled_wakeups</code> are Cloud SQL states with
+          fenced claims and expiry — an 18-hour human pause or a 7-day case costs zero compute and
+          survives any deployment. The stale-progress policy escalates abandoned work instead of
+          letting it rot; case liveness rules make silent dormancy a schema violation.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== SIGNAL: KILL THE PROCESS, KEEP THE INCIDENT ============== -->
+  <section class="page">
+    <h2>Signal Flow: Kill The Process, Keep The Incident</h2>
+    <p class="small">
+      Each row kills the process at a different point in the pipeline. The left box is the failure;
+      the right box is the deterministic mechanism that recovers it — no operator action, no lost or
+      duplicated work. Every row is a named test in the merge gate.
+    </p>
+    <div class="diagram">
+      <svg viewBox="0 0 1120 560" role="img" aria-label="Crash and recovery signal diagram">
+        <defs>
+          <marker id="arrowK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#565d68"></path>
+          </marker>
+          <style>
+            .die { fill: #fdf3f1; stroke: #b3372a; stroke-width: 2; rx: 8; }
+            .rec { fill: #f5faf8; stroke: #147a5c; stroke-width: 2; rx: 8; }
+            .tk { font: 700 12px Inter, sans-serif; fill: #171a20; }
+            .sk { font: 500 10px Inter, sans-serif; fill: #565d68; }
+            .xk { font: 800 12px Inter, sans-serif; fill: #b3372a; }
+            .mk { font: 600 9.5px "JetBrains Mono", monospace; fill: #147a5c; }
+            .lk { stroke: #565d68; stroke-width: 2; fill: none; marker-end: url(#arrowK); }
+          </style>
+        </defs>
+
+        <rect class="ground" x="8" y="4" width="1104" height="548" rx="8"></rect>
+        <!-- Row 1 -->
+        <rect class="die" x="20" y="24" width="480" height="76"></rect>
+        <text class="xk" x="36" y="48">✕ killed while holding an inbox claim</text>
+        <text class="sk" x="36" y="68">The worker claimed an event, then died mid-handling.</text>
+        <text class="sk" x="36" y="86">Nothing was committed; the claim token is now orphaned.</text>
+        <path class="lk" d="M 500 62 L 560 62"></path>
+        <rect class="rec" x="560" y="24" width="540" height="76"></rect>
+        <text class="tk" x="576" y="48">Claim expiry + token fencing</text>
+        <text class="sk" x="576" y="68">claim_expires_at passes → another worker re-claims; the dead worker's token can no longer complete.</text>
+        <text class="mk" x="576" y="88">test_expired_inbox_claim_is_recovered_and_old_token_is_fenced</text>
+
+        <!-- Row 2 -->
+        <rect class="die" x="20" y="130" width="480" height="76"></rect>
+        <text class="xk" x="36" y="154">✕ killed after CREATED, before dispatch</text>
+        <text class="sk" x="36" y="174">The agent_run row exists; the Runtime call never happened.</text>
+        <text class="sk" x="36" y="192">Half-started work with no provider operation behind it.</text>
+        <path class="lk" d="M 500 168 L 560 168"></path>
+        <rect class="rec" x="560" y="130" width="540" height="76"></rect>
+        <text class="tk" x="576" y="154">Deadline expiry of CREATED attempts</text>
+        <text class="sk" x="576" y="174">The tick sweeps expired CREATED runs → fail + declared fallback path; nothing is silently stuck.</text>
+        <text class="mk" x="576" y="194">_recover_expired_created_runs · reserve/expire logic</text>
+
+        <!-- Row 3 -->
+        <rect class="die" x="20" y="236" width="480" height="76"></rect>
+        <text class="xk" x="36" y="260">✕ killed after dispatch, before the result</text>
+        <text class="sk" x="36" y="280">The Runtime job runs; the process that started it is gone.</text>
+        <text class="sk" x="36" y="298">The ADK lab's forty-minute-queue scenario.</text>
+        <path class="lk" d="M 500 274 L 560 274"></path>
+        <rect class="rec" x="560" y="236" width="540" height="76"></rect>
+        <text class="tk" x="576" y="260">Any process polls from rows alone</text>
+        <text class="sk" x="576" y="280">runtime_operation_name is durable; a fresh process polls, validates, and accepts the result exactly once.</text>
+        <text class="mk" x="576" y="300">test_dispatched_runtime_operation_is_recovered_by_fresh_process…</text>
+
+        <!-- Row 4 -->
+        <rect class="die" x="20" y="342" width="480" height="76"></rect>
+        <text class="xk" x="36" y="366">✕ crash-loops on one poison event</text>
+        <text class="sk" x="36" y="386">A malformed event kills its handler on every attempt.</text>
+        <text class="sk" x="36" y="404">Naive retry would burn a worker forever.</text>
+        <path class="lk" d="M 500 380 L 560 380"></path>
+        <rect class="rec" x="560" y="342" width="540" height="76"></rect>
+        <text class="tk" x="576" y="366">Bounded claim budget → durable quarantine</text>
+        <text class="sk" x="576" y="386">After 5 claims (25 for outbox publishes) the event parks as FAILED/quarantined — visible, audited, inert.</text>
+        <text class="mk" x="576" y="406">test_crash_looping_inbox_event_is_quarantined_after_bounded_claims</text>
+
+        <!-- Row 5 -->
+        <rect class="die" x="20" y="448" width="480" height="76"></rect>
+        <text class="xk" x="36" y="472">✕ transient Runtime fault on dispatch</text>
+        <text class="sk" x="36" y="492">A 429 or brief outage fails the attempt instantly.</text>
+        <text class="sk" x="36" y="510">Immediate retry would burn the single fallback into the same outage.</text>
+        <path class="lk" d="M 500 486 L 560 486"></path>
+        <rect class="rec" x="560" y="448" width="540" height="76"></rect>
+        <text class="tk" x="576" y="472">Durable retry backoff + tick sweep</text>
+        <text class="sk" x="576" y="492">retry_not_before defers the declared fallback; the deferral is a column, so it holds across restarts and workers.</text>
+        <text class="mk" x="576" y="512">test_declared_agent_fallback_is_attempted_once_after_dispatch_failure</text>
+        <circle cx="24" cy="28" r="12" fill="#4f9d4a" stroke="#fff" stroke-width="2"></circle>
+        <text x="24" y="32" text-anchor="middle" style="font:800 12px Inter, sans-serif" fill="#fff">1</text>
+        <circle cx="24" cy="134" r="12" fill="#4f9d4a" stroke="#fff" stroke-width="2"></circle>
+        <text x="24" y="138" text-anchor="middle" style="font:800 12px Inter, sans-serif" fill="#fff">2</text>
+        <circle cx="24" cy="240" r="12" fill="#4f9d4a" stroke="#fff" stroke-width="2"></circle>
+        <text x="24" y="244" text-anchor="middle" style="font:800 12px Inter, sans-serif" fill="#fff">3</text>
+        <circle cx="24" cy="346" r="12" fill="#4f9d4a" stroke="#fff" stroke-width="2"></circle>
+        <text x="24" y="350" text-anchor="middle" style="font:800 12px Inter, sans-serif" fill="#fff">4</text>
+        <circle cx="24" cy="452" r="12" fill="#4f9d4a" stroke="#fff" stroke-width="2"></circle>
+        <text x="24" y="456" text-anchor="middle" style="font:800 12px Inter, sans-serif" fill="#fff">5</text>
+      </svg>
+      <p class="caption">
+        The demo version of this diagram is live: kill the coordinator on camera at step 6 of the
+        signal flow and watch a fresh process finish the incident. Recovery is not a feature bolted on —
+        it is what "rows are the workflow" means.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= AGENT ANATOMY ================= -->
+  <section class="page">
+    <h2>Agent Anatomy: One Bounded Institutional Agent</h2>
+    <p class="small">
+      The ADK lab teaches that an agent "does not run itself — it is a description: a name, a model, an
+      instruction, a list of tools." Here is one real Solvan description — the Evidence Agent as
+      built in <code>src/solvan/agents/adk_agents.py</code> — with the instruction it actually
+      carries and the fence around everything it cannot do.
+    </p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 560" role="img" aria-label="Anatomy of the evidence agent: card, instruction, tools, and fence">
+        <rect class="ground" x="16" y="10" width="1108" height="536" rx="8"></rect>
+
+        <!-- instruction speech bubble (quotes the real prompt) -->
+        <g>
+          <path class="bubble" d="M 46 40 H 320 Q 330 40 330 50 V 218 Q 330 228 320 228 H 366 L 366 228 L 330 228 H 46 Q 36 228 36 218 V 50 Q 36 40 46 40 Z"></path>
+          <path class="bubble" d="M 330 116 L 368 130 L 330 148 Z" stroke="none" fill="#f0f2f5"></path>
+          <path d="M 330 116 L 368 130 L 330 148" fill="none" stroke="#98a2ae" stroke-width="1.4"></path>
+          <text class="bubble-t" x="54" y="64">“Answer only the supplied bounded evidence</text>
+          <text class="bubble-t" x="54" y="80">question. Call only tool names listed in</text>
+          <text class="bubble-t" x="54" y="96">allowed_tool_names … Pass the invocation's</text>
+          <text class="bubble-t" x="54" y="112">exact invocation_id to every tool call; the</text>
+          <text class="bubble-t" x="54" y="128">broker derives scope and budget from that</text>
+          <text class="bubble-t" x="54" y="144">durable run. … cite every finding with durable</text>
+          <text class="bubble-t" x="54" y="160">evidence references. … do not choose or</text>
+          <text class="bubble-t" x="54" y="176">invent a query. Never emit a production</text>
+          <text class="bubble-t" x="54" y="192">action.”</text>
+          <text class="plat-t" x="54" y="216">the real instruction, verbatim excerpts · adk_agents.py</text>
+        </g>
+
+        <!-- the LlmAgent config, verbatim shape -->
+        <rect class="code-bl" x="36" y="252" width="294" height="150" rx="8"></rect>
+        <text class="code-t" x="52" y="274">LlmAgent(</text>
+        <text class="code-t" x="66" y="290">name="evidence_agent",</text>
+        <text class="code-t" x="66" y="306">output_schema=AgentOutput,</text>
+        <text class="code-hl" x="66" y="322">include_contents="none",</text>
+        <text class="code-hl" x="66" y="338">mode="single_turn",</text>
+        <text class="code-t" x="66" y="354">disallow_transfer_to_parent=True,</text>
+        <text class="code-t" x="66" y="370">disallow_transfer_to_peers=True,</text>
+        <text class="code-t" x="66" y="386">temperature=0, timeout=…)</text>
+
+        <!-- the agent card -->
+        <g>
+          <rect class="card" x="386" y="40" width="300" height="272" rx="12"></rect>
+          <use href="#mascot" transform="translate(416,74)"></use>
+          <text class="card-t" x="442" y="72" style="font-size:14px">Evidence Agent</text>
+          <text class="plat-t" x="442" y="88">catalogued in the Agent Registry</text>
+          <line class="card-div" x1="400" y1="100" x2="672" y2="100"></line>
+
+          <rect x="404" y="112" width="264" height="34" rx="6" fill="#fffdf6" stroke="#d9a441" stroke-width="1.5"></rect>
+          <text class="plat-t" x="416" y="126">Name</text>
+          <text class="chip-t" x="416" y="140">evidence_agent</text>
+
+          <rect x="404" y="154" width="264" height="34" rx="6" fill="#fffdf6" stroke="#d9a441" stroke-width="1.5"></rect>
+          <text class="plat-t" x="416" y="168">Model</text>
+          <text class="chip-t" x="416" y="182">Gemini 3.6 Flash · Vertex AI (eu)</text>
+
+          <rect x="404" y="196" width="264" height="34" rx="6" fill="#fffdf6" stroke="#d9a441" stroke-width="1.5"></rect>
+          <text class="plat-t" x="416" y="210">Instruction</text>
+          <text class="chip-t" x="416" y="224">bounded evidence question ◀ bubble</text>
+
+          <rect x="404" y="238" width="264" height="34" rx="6" fill="#fffdf6" stroke="#d9a441" stroke-width="1.5"></rect>
+          <text class="plat-t" x="416" y="252">Tools</text>
+          <text class="chip-t" x="416" y="266">allowed_tool_names · exact list ▶</text>
+
+          <use href="#brain" transform="translate(416,296)"></use>
+          <text class="card-s" x="432" y="299">proposes + cites</text>
+          <use href="#toolbox" transform="translate(560,296)"></use>
+          <text class="card-s" x="576" y="299">asks, never executes</text>
+        </g>
+        <path class="flow" d="M 330 388 C 360 380, 370 340, 386 300" marker-end="url(#ar)"></path>
+
+        <!-- tool chips fanning to surfaces -->
+        <g>
+          <rect class="chip" x="740" y="52" width="196" height="28" rx="6"></rect>
+          <use href="#wrench" transform="translate(754,66) scale(0.9)"></use>
+          <text class="chip-t" x="768" y="70">run_monitoring_query</text>
+          <rect class="chip" x="740" y="94" width="196" height="28" rx="6"></rect>
+          <use href="#wrench" transform="translate(754,108) scale(0.9)"></use>
+          <text class="chip-t" x="768" y="112">read_error_logs</text>
+          <rect class="chip" x="740" y="136" width="196" height="28" rx="6"></rect>
+          <use href="#wrench" transform="translate(754,150) scale(0.9)"></use>
+          <text class="chip-t" x="768" y="154">read_service_topology</text>
+          <rect class="chip" x="740" y="178" width="196" height="28" rx="6"></rect>
+          <use href="#wrench" transform="translate(754,192) scale(0.9)"></use>
+          <text class="chip-t" x="768" y="196">recall_memory</text>
+        </g>
+        <path class="flow-dash" d="M 686 258 C 716 240, 716 90, 740 68" marker-end="url(#ar)"></path>
+        <path class="flow-dash" d="M 686 262 C 716 250, 716 120, 740 110" marker-end="url(#ar)"></path>
+        <path class="flow-dash" d="M 686 266 C 716 260, 716 160, 740 152" marker-end="url(#ar)"></path>
+        <path class="flow-dash" d="M 686 270 C 716 268, 716 196, 740 194" marker-end="url(#ar)"></path>
+
+        <!-- external surfaces the chips reach -->
+        <g>
+          <rect class="card" x="960" y="44" width="150" height="108" rx="8"></rect>
+          <text class="icon" x="972" y="70">📈</text>
+          <text class="card-t" x="998" y="66">Evidence Broker</text>
+          <line class="card-div" x1="972" y1="80" x2="1096" y2="80"></line>
+          <text class="plat-t" x="972" y="96">approved query</text>
+          <text class="plat-t" x="972" y="109">signatures only ·</text>
+          <text class="plat-t" x="972" y="122">Monitoring · Logging</text>
+          <text class="plat-t" x="972" y="135">· Trace · topology</text>
+        </g>
+        <path class="flow" d="M 936 66 L 960 70" marker-end="url(#ar)"></path>
+        <path class="flow" d="M 936 108 L 960 100" marker-end="url(#ar)"></path>
+        <path class="flow" d="M 936 150 L 960 130" marker-end="url(#ar)"></path>
+        <g><!-- memory as a physical card -->
+          <rect class="card" x="960" y="170" width="150" height="76" rx="8"></rect>
+          <text class="icon" x="972" y="196">🧠</text>
+          <text class="card-t" x="998" y="192">Memory Bank</text>
+          <line class="card-div" x1="972" y1="204" x2="1096" y2="204"></line>
+          <text class="plat-t" x="972" y="220">exact-scope recall ·</text>
+          <text class="plat-t" x="972" y="233">advisory, never authority</text>
+        </g>
+        <path class="flow" d="M 936 194 L 960 200" marker-end="url(#ar)"></path>
+
+        <!-- what the same anatomy looks like armed -->
+        <g>
+          <rect class="tag" x="740" y="258" width="370" height="84" rx="8"></rect>
+          <text class="card-t" x="754" y="280">Same anatomy, different ceilings</text>
+          <text class="card-s" x="754" y="298">execution_agent's only chip is execute_authorized_action(action_id) —</text>
+          <text class="card-s" x="754" y="312">it reaches the 🔒 private actuator, which reloads all authority itself.</text>
+          <text class="card-s" x="754" y="326">verification_agent's only chip is run_bound_verification(action_id).</text>
+        </g>
+
+        <!-- the CANNOT fence -->
+        <text class="fence-t" x="386" y="352" style="font-size:12px">THE FENCE — what this agent structurally cannot do</text>
+        <g>
+          <line class="fence" x1="386" y1="374" x2="1110" y2="374"></line>
+          <line class="fence" x1="386" y1="418" x2="1110" y2="418"></line>
+          <line class="fence" x1="392" y1="362" x2="392" y2="430"></line>
+          <line class="fence" x1="512" y1="362" x2="512" y2="430"></line>
+          <line class="fence" x1="632" y1="362" x2="632" y2="430"></line>
+          <line class="fence" x1="752" y1="362" x2="752" y2="430"></line>
+          <line class="fence" x1="872" y1="362" x2="872" y2="430"></line>
+          <line class="fence" x1="992" y1="362" x2="992" y2="430"></line>
+          <line class="fence" x1="1104" y1="362" x2="1104" y2="430"></line>
+          <text class="fence-t" x="402" y="392">widen its own</text>
+          <text class="fence-t" x="402" y="404">invocation scope</text>
+          <text class="fence-t" x="522" y="392">choose or invent</text>
+          <text class="fence-t" x="522" y="404">a query</text>
+          <text class="fence-t" x="642" y="392">emit a production</text>
+          <text class="fence-t" x="642" y="404">action</text>
+          <text class="fence-t" x="762" y="392">obey text found</text>
+          <text class="fence-t" x="762" y="404">in tool output</text>
+          <text class="fence-t" x="882" y="392">call another</text>
+          <text class="fence-t" x="882" y="404">agent</text>
+          <text class="fence-t" x="1002" y="392">approve or verify</text>
+          <text class="fence-t" x="1002" y="404">anything</text>
+        </g>
+        <text class="card-s" x="386" y="452">The fence is not the prompt: scope, allow-lists, budgets, single-turn mode, and transfer bans are enforced by the</text>
+        <text class="card-s" x="386" y="466">application and the broker (<tspan class="mono-t">test_adk_agents_are_single_turn_and_do_not_delegate</tspan>).</text>
+
+        <!-- bottom summary chips -->
+        <g>
+          <rect class="chip" x="36" y="428" width="130" height="26" rx="6"></rect>
+          <text class="chip-t" x="48" y="445">single turn</text>
+          <rect class="chip" x="176" y="428" width="176" height="26" rx="6"></rect>
+          <text class="chip-t" x="188" y="445">include_contents=none</text>
+          <rect class="chip" x="36" y="464" width="130" height="26" rx="6"></rect>
+          <text class="chip-t" x="48" y="481">temperature=0</text>
+          <rect class="chip" x="176" y="464" width="176" height="26" rx="6"></rect>
+          <text class="chip-t" x="188" y="481">typed output only</text>
+        </g>
+        <text class="plat-t" x="36" y="516">the prompt asks politely; the config and the broker make refusal structural</text>
+      </svg>
+      <p class="caption">
+        One real Solvan agent in the ADK lab's anatomy frame: the instruction bubble quotes the
+        deployed prompt verbatim, tools fan to the broker — never to raw connectors — and the red
+        fence lists what no prompt injection can change, because each rail is application code, a
+        schema constraint, or a named test rather than a sentence.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= 03 AGENT PLANE AND MODEL GOVERNANCE ================= -->
+  <section class="page">
+    <h2>Agent Plane And Model Governance</h2>
+
+    <table>
+      <tr><th>Agent</th><th>Authority ceiling</th><th>Cannot</th></tr>
+      <tr><td><code>incident-supervisor</code></td><td>Propose an investigation plan from application-supplied agent and scope options.</td><td>Call tools, call agents, propose actions or transitions.</td></tr>
+      <tr><td><code>evidence-agent</code></td><td>Answer one bounded evidence question via allow-listed read tools; cite durable references.</td><td>Choose queries outside the plan, emit actions, touch production.</td></tr>
+      <tr><td><code>infrastructure-agent</code></td><td>Inspect registered read-only deployment/topology/capacity tools against the frozen snapshot.</td><td>Deploy, restart, roll back, scale, or open data sessions.</td></tr>
+      <tr><td><code>execution-agent</code></td><td>Request the stored, approved action by ID through the private actuator.</td><td>Author payloads, select targets, approve, or verify itself.</td></tr>
+      <tr><td><code>verification-agent</code></td><td>Narrate the application-computed verdict from fresh telemetry and probes.</td><td>Choose the profile, weaken criteria, or share context with the producer.</td></tr>
+      <tr><td><code>workspace-agent</code></td><td>Lead investigation and implement repair inside a governed workspace.</td><td>Self-confirm, approve, merge, deploy, verify, resolve, or promote its own output.</td></tr>
+    </table>
+
+    <div class="grid-3">
+      <div class="card">
+        <h3>Bounded invocation</h3>
+        <ul class="small">
+          <li>Invocation JSON is the complete authority ceiling: scope, tools, deadline, budget, evidence refs.</li>
+          <li>Pinned <code>input_hash</code>/<code>output_hash</code>; single-turn; <code>include_contents="none"</code> isolation.</li>
+          <li>Deterministic loop enforcement outside the model: fingerprinted calls, progress checks, budget stops.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Untrusted by default</h3>
+        <ul class="small">
+          <li>Logs, traces, repos, tickets, tool responses, model output, and Memory Bank content are data, never instructions.</li>
+          <li>Model Armor screens supported paths inline; verdicts persist on evidence and gate memory promotion (<code>armor_verdict_ref NOT NULL</code>).</li>
+          <li>Injection demo: a malicious log line stays evidence and cannot become instruction or memory.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Claims, not prose authority</h3>
+        <ul class="small">
+          <li>Operator-facing factual claims instantiate from an enumerated, digest-pinned template registry.</li>
+          <li>The application derives kind, polarity, and sentence, and verifies the predicate in code against cited records.</li>
+          <li>A failed predicate is withheld or replaced by its holding form — never softened into fluent text.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 1120 330" role="img" aria-label="Agent fleet and tool surfaces graph">
+        <defs>
+          <marker id="arrowG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#565d68"></path>
+          </marker>
+          <style>
+            .ag { fill: #f7f5fb; stroke: #6e55a8; stroke-width: 2; rx: 8; }
+            .tl { fill: #fdfdfe; stroke: #d5dae2; stroke-width: 1.8; rx: 8; stroke-dasharray: 4 3; }
+            .tx { font: 700 12px Inter, sans-serif; fill: #171a20; }
+            .sx { font: 500 9.5px Inter, sans-serif; fill: #565d68; }
+            .gx { stroke: #8a93a1; stroke-width: 1.6; fill: none; stroke-dasharray: 4 3; marker-end: url(#arrowG); }
+            .gateband { fill: #fbf7ef; stroke: #a8781f; stroke-width: 2; rx: 8; }
+          </style>
+        </defs>
+
+        <rect class="ag" x="20" y="24" width="168" height="58"></rect>
+        <text class="tx" x="34" y="47">incident-supervisor</text><text class="sx" x="34" y="66">no tools · plans only</text>
+        <rect class="ag" x="208" y="24" width="168" height="58"></rect>
+        <text class="tx" x="222" y="47">evidence-agent</text><text class="sx" x="222" y="66">bounded reads via broker</text>
+        <rect class="ag" x="396" y="24" width="168" height="58"></rect>
+        <text class="tx" x="410" y="47">infrastructure-agent</text><text class="sx" x="410" y="66">read-only deploy/topology</text>
+        <rect class="ag" x="584" y="24" width="168" height="58"></rect>
+        <text class="tx" x="598" y="47">execution-agent</text><text class="sx" x="598" y="66">stored action IDs only</text>
+        <rect class="ag" x="772" y="24" width="168" height="58"></rect>
+        <text class="tx" x="786" y="47">verification-agent</text><text class="sx" x="786" y="66">narrates computed verdict</text>
+        <rect class="ag" x="952" y="24" width="148" height="58"></rect>
+        <text class="tx" x="964" y="47">workspace-agent</text><text class="sx" x="964" y="66">investigate + repair</text>
+
+        <rect class="gateband" x="20" y="122" width="1080" height="52"></rect>
+        <text class="tx" x="40" y="145">Every tool call crosses the same gate</text>
+        <text class="sx" x="40" y="164">verified agent identity → registry-governed Gateway route → Model Armor where supported → broker: allow-list, argument fingerprint, immutable budget, classification and residency filters → bounded receipt</text>
+
+        <rect class="tl" x="60" y="214" width="200" height="74"></rect>
+        <text class="tx" x="74" y="237">Read tools</text>
+        <text class="sx" x="74" y="256">Cloud Monitoring · Logging · Trace</text>
+        <text class="sx" x="74" y="272">deployments · topology · change history</text>
+        <rect class="tl" x="300" y="214" width="200" height="74"></rect>
+        <text class="tx" x="314" y="237">Evidence broker</text>
+        <text class="sx" x="314" y="256">approved query signatures only</text>
+        <text class="sx" x="314" y="272">every call → one tool_calls row</text>
+        <rect class="tl" x="540" y="214" width="200" height="74"></rect>
+        <text class="tx" x="554" y="237">Private actuator</text>
+        <text class="sx" x="554" y="256">loads payloads by stored action ID</text>
+        <text class="sx" x="554" y="272">agents never see credentials</text>
+        <rect class="tl" x="780" y="214" width="200" height="74"></rect>
+        <text class="tx" x="794" y="237">Fresh telemetry + probes</text>
+        <text class="sx" x="794" y="256">verification profile is service-owned</text>
+        <text class="sx" x="794" y="272">caller cannot substitute it</text>
+
+        <path class="gx" d="M 292 82 L 340 214"></path>
+        <path class="gx" d="M 480 82 L 400 214"></path>
+        <path class="gx" d="M 480 82 L 180 214"></path>
+        <path class="gx" d="M 668 82 L 640 214"></path>
+        <path class="gx" d="M 856 82 L 880 214"></path>
+        <path class="gx" d="M 1026 82 L 900 214"></path>
+      </svg>
+      <p class="caption">
+        The fleet graph, Solvan-style: agents on top, tool surfaces below, and one amber gate every call
+        must cross. The supervisor deliberately has no edge to any tool — a planner that cannot touch
+        the world cannot be prompt-injected into touching it.
+      </p>
+    </div>
+
+    <div class="callout">
+      <strong>Memory is earned, not accumulated.</strong> Memory Bank recall is exact-scope and
+      non-authoritative. Promotion into durable memory requires type-specific confirmation rules
+      plus a recorded armor verdict; unconfirmed or poisoned candidates are quarantined
+      (<code>test_unconfirmed_or_poisoned_candidate_is_quarantined</code>,
+      <code>test_memory_candidate_promotes_once_and_retry_returns_durable_receipt</code>).
+    </div>
+  </section>
+
+  <!-- ================== SIGNAL: THE BOUNDED INVOCATION LOOP ================== -->
+  <section class="page">
+    <h2>Signal Flow: The Bounded Invocation Loop</h2>
+    <p class="small">
+      The ADK lab teaches that "the model never runs your code — it asks." Solvan keeps that loop and
+      wraps every side of it in deterministic enforcement. One invocation, numbered:
+    </p>
+    <div class="diagram">
+      <svg viewBox="0 0 1120 430" role="img" aria-label="Bounded invocation loop">
+        <defs>
+          <marker id="arrowL" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#565d68"></path>
+          </marker>
+          <style>
+            .c1 { fill: #f3f7fc; stroke: #1f5c9e; stroke-width: 2.2; rx: 10; }
+            .c2 { fill: #f7f5fb; stroke: #6e55a8; stroke-width: 2.2; rx: 10; }
+            .c3 { fill: #fbf7ef; stroke: #a8781f; stroke-width: 2.2; rx: 10; }
+            .tt { font: 700 13px Inter, sans-serif; fill: #171a20; }
+            .ss { font: 500 10px Inter, sans-serif; fill: #565d68; }
+            .ll { stroke: #565d68; stroke-width: 2; fill: none; marker-end: url(#arrowL); }
+            .nc { fill: #4f9d4a; stroke: #ffffff; stroke-width: 2; }
+            .nt { font: 800 11px Inter, sans-serif; fill: #fff; }
+          </style>
+        </defs>
+
+        <rect class="ground" x="8" y="6" width="1104" height="416" rx="8"></rect>
+        <rect class="c1" x="20" y="30" width="330" height="88"></rect>
+        <circle class="nc" cx="44" cy="54" r="11"></circle><text class="nt" x="40" y="58">1</text>
+        <text class="tt" x="64" y="58">Coordinator builds the invocation</text>
+        <text class="ss" x="36" y="80">JSON is the complete authority ceiling: scope, owner,</text>
+        <text class="ss" x="36" y="96">allowed tools, deadline, budget, evidence refs · input_hash pinned</text>
+
+        <rect class="c2" x="410" y="30" width="330" height="88"></rect>
+        <circle class="nc" cx="434" cy="54" r="11"></circle><text class="nt" x="430" y="58">2</text>
+        <text class="tt" x="454" y="58">Model decides — and asks</text>
+        <text class="ss" x="426" y="80">Gemini on Agent Runtime reasons over the invocation and</text>
+        <text class="ss" x="426" y="96">requests a tool call; it can never execute anything itself</text>
+
+        <rect class="c3" x="410" y="168" width="330" height="106"></rect>
+        <circle class="nc" cx="434" cy="192" r="11"></circle><text class="nt" x="430" y="196">3</text>
+        <text class="tt" x="454" y="196">Broker enforces before executing</text>
+        <text class="ss" x="426" y="218">allow-listed name + approved signature · normalized-argument</text>
+        <text class="ss" x="426" y="234">fingerprint (repeats return the prior receipt) · immutable call</text>
+        <text class="ss" x="426" y="250">budget · classification/residency filters · armor where supported</text>
+        <text class="ss" x="426" y="268">every request = one tool_calls row, cache hits included</text>
+
+        <rect class="c2" x="790" y="168" width="310" height="106"></rect>
+        <circle class="nc" cx="814" cy="192" r="11"></circle><text class="nt" x="810" y="196">4</text>
+        <text class="tt" x="834" y="196">Bounded receipt returns</text>
+        <text class="ss" x="806" y="218">typed, size-bounded, citation-bearing result — never raw</text>
+        <text class="ss" x="806" y="234">payloads into context; loop continues until typed output</text>
+        <text class="ss" x="806" y="252">or a deterministic stop: budget, deadline, no-progress,</text>
+        <text class="ss" x="806" y="268">alternating-signature detection</text>
+
+        <rect class="c1" x="20" y="168" width="330" height="106"></rect>
+        <circle class="nc" cx="44" cy="192" r="11"></circle><text class="nt" x="40" y="196">5</text>
+        <text class="tt" x="64" y="196">Typed output — accepted once</text>
+        <text class="ss" x="36" y="218">parse against the declared schema; validate operation name,</text>
+        <text class="ss" x="36" y="234">hashes, and revision; commit evidence/findings/proposals in</text>
+        <text class="ss" x="36" y="250">one transaction — or fail closed to the declared fallback.</text>
+        <text class="ss" x="36" y="268">Free text is never workflow state.</text>
+
+        <rect class="c3" x="20" y="316" width="1080" height="80"></rect>
+        <circle class="nc" cx="44" cy="340" r="11"></circle><text class="nt" x="40" y="344">6</text>
+        <text class="tt" x="64" y="344">Deterministic loop enforcement — outside the model</text>
+        <text class="ss" x="36" y="366">Progress is computed from newly committed evidence IDs and resolved predicates, never from prose. Two no-progress intervals force the one</text>
+        <text class="ss" x="36" y="382">permitted re-plan; exhaustion ends the attempt as a typed failure. Stops record reason codes and budgets — never chain-of-thought.</text>
+
+        <path class="ll" d="M 350 74 L 410 74"></path>
+        <path class="ll" d="M 575 118 L 575 168"></path>
+        <path class="ll" d="M 740 221 L 790 221"></path>
+        <path class="ll" d="M 945 168 C 945 120, 800 90, 740 80"></path>
+        <path class="ll" d="M 410 221 L 350 221"></path>
+        <path class="ll" d="M 185 274 L 185 316"></path>
+      </svg>
+      <p class="caption">
+        Steps 2–4 loop; step 6 watches the loop from outside it. The model asks, the broker enforces,
+        the application accepts once — the ADK lab's invocation diagram with every trust boundary hardened.
+      </p>
+    </div>
+  </section>
+
+  <!-- =================== THE GOVERNANCE GAUNTLET =================== -->
+  <section class="page">
+    <h2>The Governance Gauntlet: One Tool Call, Four Gates</h2>
+    <p class="small">
+      Step 3 of the invocation loop, magnified. Every tool call any agent makes walks the same four
+      physical checkpoints — and the only other road ends at a wall with a test name on it.
+    </p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 560" role="img" aria-label="A tool call passing identity, gateway, armor, and broker gates; the bypass path ends at a wall">
+        <rect class="ground" x="16" y="10" width="1108" height="536" rx="8"></rect>
+
+        <!-- the caller -->
+        <use href="#mascot" transform="translate(66,140) scale(1.3)"></use>
+        <text class="card-t" x="40" y="180">evidence_agent</text>
+        <text class="plat-t" x="40" y="194">asks — never executes</text>
+        <g>
+          <rect class="chip" x="36" y="210" width="212" height="40" rx="7"></rect>
+          <use href="#wrench" transform="translate(52,230) scale(1.0)"></use>
+          <text class="chip-t" x="68" y="228">run_monitoring_query(</text>
+          <text class="chip-t" x="68" y="242">  invocation_id, window=30m)</text>
+        </g>
+
+        <!-- journey through the gates -->
+        <path class="journey" d="M 248 230 L 1010 230"></path>
+
+        <!-- gate template: posts + lintel -->
+        <!-- Gate 1: Identity -->
+        <g>
+          <rect class="gate" x="304" y="118" width="132" height="30" rx="4"></rect>
+          <text class="tag-t" x="320" y="138">Agent Identity</text>
+          <rect class="gate" x="304" y="148" width="14" height="140"></rect>
+          <rect class="gate" x="422" y="148" width="14" height="140"></rect>
+          <circle class="way" cx="370" cy="230" r="6.5"></circle>
+          <text class="card-s" x="308" y="308">who is calling?</text>
+          <text class="plat-t" x="308" y="324">SPIFFE principal per agent;</text>
+          <text class="plat-t" x="308" y="337">verified cryptographic claims,</text>
+          <text class="plat-t" x="308" y="350">never a header or body</text>
+          <text class="mono-t" x="308" y="368">SEC-IAM-READONLY-001</text>
+        </g>
+
+        <!-- Gate 2: Gateway -->
+        <g>
+          <rect class="gate" x="484" y="118" width="138" height="30" rx="4"></rect>
+          <text class="tag-t" x="498" y="138">Agent Gateway</text>
+          <rect class="gate" x="484" y="148" width="14" height="140"></rect>
+          <rect class="gate" x="608" y="148" width="14" height="140"></rect>
+          <circle class="way" cx="553" cy="230" r="6.5"></circle>
+          <text class="card-s" x="488" y="308">is this route registered?</text>
+          <text class="plat-t" x="488" y="324">registry-governed routes only;</text>
+          <text class="plat-t" x="488" y="337">fail-closed; no generic</text>
+          <text class="plat-t" x="488" y="350">mutation route exists</text>
+          <text class="mono-t" x="488" y="368">SEC-GATEWAY-001</text>
+        </g>
+
+        <!-- Gate 3: Model Armor -->
+        <g>
+          <rect class="gate" x="670" y="118" width="126" height="30" rx="4"></rect>
+          <text class="tag-t" x="686" y="138">Model Armor</text>
+          <rect class="gate" x="670" y="148" width="14" height="140"></rect>
+          <rect class="gate" x="782" y="148" width="14" height="140"></rect>
+          <circle class="way" cx="733" cy="230" r="6.5"></circle>
+          <text class="card-s" x="674" y="308">is the content poisoned?</text>
+          <text class="plat-t" x="674" y="324">inline screening on supported</text>
+          <text class="plat-t" x="674" y="337">paths; verdict persisted on the</text>
+          <text class="plat-t" x="674" y="350">evidence, gates memory later</text>
+          <text class="mono-t" x="674" y="368">armor_verdict_ref NOT NULL</text>
+        </g>
+
+        <!-- Gate 4: Broker -->
+        <g>
+          <rect class="gate" x="844" y="118" width="146" height="30" rx="4"></rect>
+          <text class="tag-t" x="854" y="138">Evidence Broker</text>
+          <rect class="gate" x="844" y="148" width="14" height="140"></rect>
+          <rect class="gate" x="976" y="148" width="14" height="140"></rect>
+          <circle class="way" cx="917" cy="230" r="6.5"></circle>
+          <text class="card-s" x="848" y="308">is this exact call allowed?</text>
+          <text class="plat-t" x="848" y="324">allow-list + approved signature ·</text>
+          <text class="plat-t" x="848" y="337">argument fingerprint · immutable</text>
+          <text class="plat-t" x="848" y="350">budget · classification + residency</text>
+          <text class="mono-t" x="848" y="368">one tool_calls row per request</text>
+        </g>
+
+        <!-- the receipt -->
+        <g>
+          <rect class="card" x="1010" y="190" width="100" height="80" rx="8" style="stroke:#147a5c;stroke-width:2"></rect>
+          <text class="icon" x="1022" y="216">🧾</text>
+          <text class="card-t" x="1022" y="236">bounded</text>
+          <text class="card-t" x="1022" y="250">receipt</text>
+        </g>
+        <path class="flow" d="M 990 230 L 1010 230" marker-end="url(#ar)"></path>
+
+        <!-- the bypass path -->
+        <path class="flow-r" d="M 150 260 C 150 420, 400 440, 806 440" stroke-dasharray="7 5" marker-end="url(#ar-r)"></path>
+        <text class="fence-t" x="356" y="404">“just call the connector directly” — no registered route, no identity match</text>
+
+        <!-- the wall -->
+        <g>
+          <rect x="820" y="386" width="34" height="110" fill="#a8452f" stroke="#7c2f1e" stroke-width="2"></rect>
+          <line x1="820" y1="408" x2="854" y2="408" stroke="#7c2f1e" stroke-width="1.6"></line>
+          <line x1="820" y1="430" x2="854" y2="430" stroke="#7c2f1e" stroke-width="1.6"></line>
+          <line x1="820" y1="452" x2="854" y2="452" stroke="#7c2f1e" stroke-width="1.6"></line>
+          <line x1="820" y1="474" x2="854" y2="474" stroke="#7c2f1e" stroke-width="1.6"></line>
+          <line x1="837" y1="386" x2="837" y2="408" stroke="#7c2f1e" stroke-width="1.6"></line>
+          <line x1="828" y1="408" x2="828" y2="430" stroke="#7c2f1e" stroke-width="1.6"></line>
+          <line x1="846" y1="408" x2="846" y2="430" stroke="#7c2f1e" stroke-width="1.6"></line>
+          <line x1="837" y1="430" x2="837" y2="452" stroke="#7c2f1e" stroke-width="1.6"></line>
+          <line x1="828" y1="452" x2="828" y2="474" stroke="#7c2f1e" stroke-width="1.6"></line>
+          <line x1="846" y1="452" x2="846" y2="474" stroke="#7c2f1e" stroke-width="1.6"></line>
+        </g>
+        <text class="fence-t" x="870" y="420" style="font-size:11px">DENIED</text>
+        <text class="mono-t" x="870" y="438" fill="#b3372a">SEC-GATEWAY-BYPASS-001</text>
+        <text class="plat-t" x="870" y="454">deployment preflight re-proves</text>
+        <text class="plat-t" x="870" y="467">gateway_bypass_denied before</text>
+        <text class="plat-t" x="870" y="480">any release exists</text>
+
+        <!-- summary strip -->
+        <rect class="bar" x="36" y="508" width="954" height="30" rx="6"></rect>
+        <text class="bar-t" x="52" y="528">verified identity → registered route → armor verdict → allow-list + fingerprint + budget → typed receipt</text>
+      </svg>
+      <p class="caption">
+        Proves the mandated governance trio is load-bearing, not decorative: the four checkpoints are
+        the only road to any tool, read or write, and the bypass is a tested denial — not a policy
+        hope. Gate evidence: <code>SEC-IAM-READONLY-001</code>, <code>SEC-GATEWAY-001</code>,
+        <code>SEC-GATEWAY-BYPASS-001</code>, durable armor verdicts, and the broker's per-request
+        <code>tool_calls</code> ledger.
+      </p>
+    </div>
+  </section>
+
+  <!-- =================== 04 ACTION SAFETY AND VERIFICATION =================== -->
+  <section class="page">
+    <h2>Action Safety And Verification</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1120 250" role="img" aria-label="Action safety path">
+        <defs>
+          <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#565d68"></path>
+          </marker>
+          <style>
+            .p1 { fill: #f7f5fb; stroke: #6e55a8; stroke-width: 2; rx: 8; }
+            .p2 { fill: #f3f7fc; stroke: #1f5c9e; stroke-width: 2; rx: 8; }
+            .p3 { fill: #fbf7ef; stroke: #a8781f; stroke-width: 2; rx: 8; }
+            .p4 { fill: #f5faf8; stroke: #147a5c; stroke-width: 2; rx: 8; }
+            .t3 { font: 700 12.5px Inter, sans-serif; fill: #171a20; }
+            .s3 { font: 500 10px Inter, sans-serif; fill: #565d68; }
+            .l3 { stroke: #565d68; stroke-width: 2; fill: none; marker-end: url(#arrow3); }
+          </style>
+        </defs>
+        <rect class="p1" x="20" y="30" width="150" height="60"></rect>
+        <text class="t3" x="32" y="55">Typed proposal</text><text class="s3" x="32" y="74">agent output, validated</text>
+        <rect class="p2" x="200" y="30" width="150" height="60"></rect>
+        <text class="t3" x="212" y="55">Policy decision</text><text class="s3" x="212" y="74">risk class · budgets</text>
+        <rect class="p3" x="380" y="30" width="170" height="60"></rect>
+        <text class="t3" x="392" y="55">Exact approval</text><text class="s3" x="392" y="74">digest · expiry · separation</text>
+        <rect class="p2" x="580" y="30" width="160" height="60"></rect>
+        <text class="t3" x="592" y="55">Target reservation</text><text class="s3" x="592" y="74">epoch + version bound</text>
+        <rect class="p2" x="770" y="30" width="150" height="60"></rect>
+        <text class="t3" x="782" y="55">TOCTOU recheck</text><text class="s3" x="782" y="74">drift releases, no act</text>
+        <rect class="p4" x="950" y="30" width="150" height="60"></rect>
+        <text class="t3" x="962" y="55">Actuate + receipt</text><text class="s3" x="962" y="74">idempotent on dispatch</text>
+        <path class="l3" d="M 170 60 L 200 60"></path>
+        <path class="l3" d="M 350 60 L 380 60"></path>
+        <path class="l3" d="M 550 60 L 580 60"></path>
+        <path class="l3" d="M 740 60 L 770 60"></path>
+        <path class="l3" d="M 920 60 L 950 60"></path>
+        <rect class="p4" x="380" y="150" width="560" height="60"></rect>
+        <text class="t3" x="392" y="175">Independent verification</text>
+        <text class="s3" x="392" y="194">service-owned profile · fresh metrics + synthetic probe · connector success is not recovery</text>
+        <path class="l3" d="M 1025 90 C 1025 135, 990 165, 945 178"></path>
+      </svg>
+      <p class="caption">
+        Every production mutation crosses six deterministic gates. The approval binds an exact digest over
+        target, versions, epoch, evidence, and payload — anything drifting after approval releases the
+        reservation without mutating.
+      </p>
+    </div>
+
+    <h3>Idempotency and staleness — layered, schema-enforced</h3>
+    <table>
+      <tr><th>Layer</th><th>Constraint</th><th>Verify</th></tr>
+      <tr><td>Alert ingress</td><td>Unique <code>(source, source_event_id)</code>; duplicates return the original event.</td><td><code>test_duplicate_ingress_returns_the_same_durable_event</code></td></tr>
+      <tr><td>Agent attempts</td><td>Partial unique index: one active attempt per logical step; unique <code>invocation_id</code> and <code>provider_request_id</code>.</td><td><code>agent_runs_one_active_attempt</code> (DDL)</td></tr>
+      <tr><td>Approvals</td><td>Exact digest over reviewable material; proposer ≠ approver in code and SQL; expiry; stale approval rejected.</td><td><code>test_every_approval_binding_change_invalidates_digest</code></td></tr>
+      <tr><td>Execution</td><td>Re-check state/version/policy at execution; changed target releases without mutation.</td><td><code>test_execution_recheck_rejects_toctou_changes</code>, <code>test_changed_connector_target_releases_without_mutation</code></td></tr>
+      <tr><td>Receipts</td><td>Unique per dispatch (INV-T-08); effect-compared before reconcile; undo derived from observed pre-state.</td><td>actuator DDL checks</td></tr>
+      <tr><td>Repetition</td><td>Action budgets, repeated-action limits, cooldown — flapping is structurally bounded.</td><td><code>test_action_budget_enforces_every_deterministic_boundary</code></td></tr>
+    </table>
+
+    <div class="callout note">
+      <strong>Verification independence.</strong> The verifier never shares identity, provider process,
+      conversation, or mutable artifacts with the producer it adjudicates; the remediation planner cannot
+      choose a weaker success criterion; a caller cannot substitute the verification profile
+      (<code>test_caller_cannot_substitute_verification_profile</code>).
+    </div>
+  </section>
+
+  <!-- ============ SIGNAL: A HUMAN PAUSE THAT COSTS NOTHING ============ -->
+  <section class="page">
+    <h2>Signal Flow: A Human Pause That Costs Nothing</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1120 300" role="img" aria-label="Human-in-the-loop approval sequence with time gap">
+        <defs>
+          <marker id="arrowH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#565d68"></path>
+          </marker>
+          <style>
+            .h1c { fill: #f3f7fc; stroke: #1f5c9e; stroke-width: 2; rx: 8; }
+            .h2c { fill: #fbf7ef; stroke: #a8781f; stroke-width: 2; rx: 8; }
+            .h3c { fill: #f5faf8; stroke: #147a5c; stroke-width: 2; rx: 8; }
+            .hgap { fill: #f7f9fb; stroke: #8a93a1; stroke-width: 1.6; stroke-dasharray: 7 5; rx: 8; }
+            .ht { font: 700 12px Inter, sans-serif; fill: #171a20; }
+            .hs { font: 500 9.5px Inter, sans-serif; fill: #565d68; }
+            .hl { stroke: #565d68; stroke-width: 2; fill: none; marker-end: url(#arrowH); }
+            .hbig { font: 800 15px Inter, sans-serif; fill: #8a93a1; }
+          </style>
+        </defs>
+
+        <rect class="ground" x="8" y="6" width="1104" height="288" rx="8"></rect>
+        <rect class="h1c" x="20" y="40" width="200" height="76"></rect>
+        <text class="ht" x="34" y="64">Rollback proposed</text>
+        <text class="hs" x="34" y="84">typed action: exact digest over target,</text>
+        <text class="hs" x="34" y="99">versions, epoch, evidence, payload</text>
+
+        <rect class="h2c" x="256" y="40" width="200" height="76"></rect>
+        <text class="ht" x="270" y="64">AWAITING_APPROVAL</text>
+        <text class="hs" x="270" y="84">a durable state, not a parked process</text>
+        <text class="hs" x="270" y="99">stale escalation guards abandonment</text>
+
+        <rect class="hgap" x="492" y="40" width="176" height="76"></rect>
+        <text class="hbig" x="516" y="72">⏳ 18 hours</text>
+        <text class="hs" x="508" y="94">zero compute · survives any</text>
+        <text class="hs" x="508" y="108">deployment or restart</text>
+
+        <rect class="h2c" x="704" y="40" width="200" height="76"></rect>
+        <text class="ht" x="748" y="64">Operator approves</text>
+        <text class="hs" x="748" y="84">verified identity · APPROVER</text>
+        <text class="hs" x="748" y="99">proposer ≠ approver · expiry</text>
+        <use href="#persona" transform="translate(728,84) scale(0.9)"></use>
+        <rect class="tag" x="596" y="124" width="120" height="26" rx="6"></rect>
+        <text class="tag-t" x="608" y="141">Human in the Loop</text>
+
+        <rect class="h3c" x="940" y="40" width="160" height="76"></rect>
+        <text class="ht" x="954" y="64">Execution gates</text>
+        <text class="hs" x="954" y="84">TOCTOU recheck first;</text>
+        <text class="hs" x="954" y="99">drift releases, no act</text>
+
+        <path class="hl" d="M 220 78 L 256 78"></path>
+        <path class="hl" d="M 456 78 L 492 78"></path>
+        <path class="hl" d="M 668 78 L 704 78"></path>
+        <path class="hl" d="M 904 78 L 940 78"></path>
+
+        <rect class="h1c" x="256" y="170" width="648" height="92"></rect>
+        <text class="ht" x="272" y="194">What the approval actually binds</text>
+        <text class="hs" x="272" y="216">The console panel shows target, environment, digest, expected version, risk, and expiry — approval is offered only over that exact</text>
+        <text class="hs" x="272" y="232">digest. Any change to the bound material invalidates it (test_every_approval_binding_change_invalidates_digest). The grant then</text>
+        <text class="hs" x="272" y="248">emits a durable outbox wake event, so execution starts on the event, not on a polling coincidence.</text>
+        <path class="hl" d="M 804 116 L 730 170"></path>
+      </svg>
+      <p class="caption">
+        Solvan makes the ADK lab's "pause for a spending limit" pattern cryptographic: the pause is a state machine
+        row, the wait is free, and the resume is an exact re-validation — not trust in a remembered yes.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============== MANAGING STATE, SOLVAN EDITION ============== -->
+  <section class="page">
+    <h2>Managing State, Solvan Edition</h2>
+    <p class="small">
+      The ADK lab's "Managing Context" figure asks one question of every fact: where does it live, and how
+      long does that place last? Here is one real incident's event stream, with a red arrow from each
+      event to the tier where that fact durably lands — and the authority diagonal that makes the
+      whole security argument.
+    </p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 620" role="img" aria-label="Where each fact of an incident lands, tier by tier">
+        <rect class="ground" x="16" y="10" width="1108" height="596" rx="8"></rect>
+
+        <!-- event ribbon strip: one real incident -->
+        <text class="zlab" x="36" y="36">ONE INCIDENT'S EVENT STREAM — payments connection exhaustion</text>
+        <g>
+          <rect x="36" y="48" width="140" height="40" rx="5" fill="#2f6cb3"></rect>
+          <text x="46" y="65" style="font:700 9.5px Inter, sans-serif" fill="#ffffff">#1 alert ingested</text>
+          <text x="46" y="79" style="font:500 9px Inter, sans-serif" fill="#d7e6f7">p95 breach · Pub/Sub</text>
+
+          <rect x="184" y="48" width="140" height="40" rx="5" fill="#6e55a8"></rect>
+          <text x="194" y="65" style="font:700 9.5px Inter, sans-serif" fill="#ffffff">#2 plan proposed</text>
+          <text x="194" y="79" style="font:500 9px Inter, sans-serif" fill="#e6ddf5">supervisor · typed DAG</text>
+
+          <rect x="332" y="48" width="140" height="40" rx="5" fill="#147a5c"></rect>
+          <text x="342" y="65" style="font:700 9.5px Inter, sans-serif" fill="#ffffff">#3 tool receipt</text>
+          <text x="342" y="79" style="font:500 9px Inter, sans-serif" fill="#d2ebe2">run_monitoring_query ✓</text>
+
+          <rect x="480" y="48" width="140" height="40" rx="5" fill="#147a5c"></rect>
+          <text x="490" y="65" style="font:700 9.5px Inter, sans-serif" fill="#ffffff">#4 finding cited</text>
+          <text x="490" y="79" style="font:500 9px Inter, sans-serif" fill="#d2ebe2">pool exhausted · refs</text>
+
+          <rect x="628" y="48" width="140" height="40" rx="5" fill="#a8781f"></rect>
+          <text x="638" y="65" style="font:700 9.5px Inter, sans-serif" fill="#ffffff">#5 approval granted</text>
+          <text x="638" y="79" style="font:500 9px Inter, sans-serif" fill="#f3e6cb">digest-bound · expiry</text>
+
+          <rect x="776" y="48" width="140" height="40" rx="5" fill="#2f6cb3"></rect>
+          <text x="786" y="65" style="font:700 9.5px Inter, sans-serif" fill="#ffffff">#6 action receipt</text>
+          <text x="786" y="79" style="font:500 9px Inter, sans-serif" fill="#d7e6f7">rollback · idempotent</text>
+
+          <rect x="924" y="48" width="150" height="40" rx="5" fill="#147a5c"></rect>
+          <text x="934" y="65" style="font:700 9.5px Inter, sans-serif" fill="#ffffff">#7 verified recovered</text>
+          <text x="934" y="79" style="font:500 9px Inter, sans-serif" fill="#d2ebe2">fresh metrics · probe</text>
+        </g>
+
+        <!-- red landing arrows -->
+        <path class="flow-r" d="M 106 88 L 106 208" marker-end="url(#ar-r)"></path>
+        <path class="flow-r" d="M 254 88 L 254 208" marker-end="url(#ar-r)"></path>
+        <path class="flow-r" d="M 402 88 C 402 150, 402 250, 402 308" marker-end="url(#ar-r)"></path>
+        <path class="flow-r" d="M 550 88 L 550 208" marker-end="url(#ar-r)"></path>
+        <path class="flow-r" d="M 698 88 L 698 208" marker-end="url(#ar-r)"></path>
+        <path class="flow-r" d="M 846 88 L 846 208" marker-end="url(#ar-r)"></path>
+        <path class="flow-r" d="M 999 88 L 999 208" marker-end="url(#ar-r)"></path>
+        <text class="card-s" x="410" y="130">payload → GCS</text>
+        <text class="card-s" x="410" y="143">receipt row → SQL</text>
+
+        <!-- tier rows -->
+        <!-- tier 0: invocation context -->
+        <g>
+          <rect x="36" y="118" width="330" height="72" rx="8" fill="#fdf3f1" stroke="#b3372a" stroke-width="1.6"></rect>
+          <text class="card-t" x="50" y="140">invocation context</text>
+          <rect class="chip" x="50" y="150" width="70" height="22" rx="5" style="fill:#f8dcd6;stroke:#cf9a8f"></rect>
+          <text class="chip-t" x="58" y="165">prompt</text>
+          <rect class="chip" x="128" y="150" width="102" height="22" rx="5" style="fill:#f8dcd6;stroke:#cf9a8f"></rect>
+          <text class="chip-t" x="136" y="165">tool receipts</text>
+          <rect x="240" y="152" width="112" height="10" rx="5" fill="#e8ebee"></rect>
+          <rect x="240" y="152" width="14" height="10" rx="5" fill="#b3372a"></rect>
+          <text style="font:700 8.5px Inter, sans-serif" fill="#b3372a" x="240" y="180">one invocation — stripped at end</text>
+        </g>
+        <text class="card-s" x="380" y="172">rebuilt fresh from rows for every</text>
+        <text class="card-s" x="380" y="185">attempt; never resumed, never trusted</text>
+
+        <!-- tier 1: workflow ledger -->
+        <g>
+          <rect x="36" y="208" width="1074" height="86" rx="8" fill="#eaf1f9" stroke="#1f5c9e" stroke-width="2"></rect>
+          <text class="card-t" x="50" y="232">workflow ledger · Cloud SQL</text>
+          <text style="font:800 10px Inter, sans-serif" fill="#143e6d" x="290" y="232">THE ONLY AUTHORITY</text>
+          <rect class="chip" x="50" y="244" width="86" height="22" rx="5" style="fill:#d9e6f4;stroke:#9db8d6"></rect>
+          <text class="chip-t" x="58" y="259" fill="#143e6d">incidents</text>
+          <rect class="chip" x="144" y="244" width="94" height="22" rx="5" style="fill:#d9e6f4;stroke:#9db8d6"></rect>
+          <text class="chip-t" x="152" y="259" fill="#143e6d">agent_runs</text>
+          <rect class="chip" x="246" y="244" width="86" height="22" rx="5" style="fill:#d9e6f4;stroke:#9db8d6"></rect>
+          <text class="chip-t" x="254" y="259" fill="#143e6d">approvals</text>
+          <rect class="chip" x="340" y="244" width="80" height="22" rx="5" style="fill:#d9e6f4;stroke:#9db8d6"></rect>
+          <text class="chip-t" x="348" y="259" fill="#143e6d">receipts</text>
+          <rect class="chip" x="428" y="244" width="94" height="22" rx="5" style="fill:#d9e6f4;stroke:#9db8d6"></rect>
+          <text class="chip-t" x="436" y="259" fill="#143e6d">transitions</text>
+          <rect class="chip" x="530" y="244" width="76" height="22" rx="5" style="fill:#d9e6f4;stroke:#9db8d6"></rect>
+          <text class="chip-t" x="538" y="259" fill="#143e6d">wakeups</text>
+          <text class="card-s" x="50" y="284">state machines, versions, digests — every decision reads only this tier</text>
+          <rect x="820" y="248" width="180" height="10" rx="5" fill="#e8ebee"></rect>
+          <rect x="820" y="248" width="160" height="10" rx="5" fill="#1f5c9e"></rect>
+          <text style="font:700 8.5px Inter, sans-serif" fill="#143e6d" x="820" y="276">immutable — superseded, never rewritten</text>
+        </g>
+
+        <!-- tier 2: evidence objects -->
+        <g>
+          <rect x="36" y="312" width="640" height="72" rx="8" fill="#eaf4ee" stroke="#147a5c" stroke-width="1.6"></rect>
+          <text class="card-t" x="50" y="336">evidence objects · GCS</text>
+          <rect class="chip" x="50" y="346" width="110" height="22" rx="5" style="fill:#d6eadf;stroke:#a4cdbb"></rect>
+          <text class="chip-t" x="58" y="361" fill="#0f5c45">ref + sha256</text>
+          <rect class="chip" x="168" y="346" width="120" height="22" rx="5" style="fill:#d6eadf;stroke:#a4cdbb"></rect>
+          <text class="chip-t" x="176" y="361" fill="#0f5c45">classification</text>
+          <rect class="chip" x="296" y="346" width="96" height="22" rx="5" style="fill:#d6eadf;stroke:#a4cdbb"></rect>
+          <text class="chip-t" x="304" y="361" fill="#0f5c45">residency</text>
+          <text class="card-s" x="404" y="340">prompts carry references,</text>
+          <text class="card-s" x="404" y="353">never 6 KB of payload</text>
+          <rect x="404" y="362" width="140" height="10" rx="5" fill="#e8ebee"></rect>
+          <rect x="404" y="362" width="98" height="10" rx="5" fill="#147a5c"></rect>
+          <text style="font:700 8.5px Inter, sans-serif" fill="#0f5c45" x="556" y="371">retention policy</text>
+        </g>
+
+        <!-- tier 3: memory bank with promotion gate -->
+        <g>
+          <rect x="36" y="402" width="640" height="72" rx="8" fill="#f0ebf8" stroke="#6e55a8" stroke-width="1.6"></rect>
+          <text class="card-t" x="50" y="426">Memory Bank · promoted recall</text>
+          <rect class="chip" x="50" y="436" width="128" height="22" rx="5" style="fill:#e3daf2;stroke:#b7a6d8"></rect>
+          <text class="chip-t" x="58" y="451" fill="#4a3676">promoted facts</text>
+          <rect class="chip" x="186" y="436" width="112" height="22" rx="5" style="fill:#e3daf2;stroke:#b7a6d8"></rect>
+          <text class="chip-t" x="194" y="451" fill="#4a3676">exact scope</text>
+          <text class="card-s" x="310" y="440">advisory recall only —</text>
+          <text class="card-s" x="310" y="453">gated in, never authority out</text>
+          <rect x="470" y="452" width="140" height="10" rx="5" fill="#e8ebee"></rect>
+          <rect x="470" y="452" width="112" height="10" rx="5" fill="#6e55a8"></rect>
+          <text style="font:700 8.5px Inter, sans-serif" fill="#4a3676" x="470" y="440">cross-incident, revocable</text>
+        </g>
+        <!-- promotion gate between ledger and memory -->
+        <g>
+          <path class="flow" d="M 700 294 L 700 430 L 684 438" marker-end="url(#ar)"></path>
+          <rect class="gate" x="692" y="342" width="16" height="34" rx="3"></rect>
+          <text class="status-g" x="60" y="397">promotion gate: confirmation rules + armor verdict (armor_verdict_ref NOT NULL)</text>
+        </g>
+
+        <!-- tier 4: conversation ledger -->
+        <g>
+          <rect x="36" y="492" width="640" height="72" rx="8" fill="#f8f2e3" stroke="#a8781f" stroke-width="1.6"></rect>
+          <text class="card-t" x="50" y="516">conversation ledger · liaison threads</text>
+          <rect class="chip" x="50" y="526" width="102" height="22" rx="5" style="fill:#f0e4c5;stroke:#d0ba86"></rect>
+          <text class="chip-t" x="58" y="541" fill="#6d4e12">threads</text>
+          <rect class="chip" x="160" y="526" width="120" height="22" rx="5" style="fill:#f0e4c5;stroke:#d0ba86"></rect>
+          <text class="chip-t" x="168" y="541" fill="#6d4e12">compaction</text>
+          <text class="card-s" x="292" y="530">summaries may compress talk, but can never</text>
+          <text class="card-s" x="292" y="543">rewrite plans, approvals, receipts, or state</text>
+          <rect x="560" y="532" width="100" height="10" rx="5" fill="#e8ebee"></rect>
+          <rect x="560" y="532" width="56" height="10" rx="5" fill="#a8781f"></rect>
+          <text style="font:700 8.5px Inter, sans-serif" fill="#6d4e12" x="560" y="556">durable projection</text>
+        </g>
+
+        <!-- the authority diagonal -->
+        <path class="flow-dash" d="M 1050 130 C 950 260, 820 420, 720 560" stroke="#b3372a" stroke-width="2" marker-end="url(#ar-r)"></path>
+        <g>
+          <rect class="tag" x="760" y="330" width="330" height="118" rx="8" stroke="#b3372a"></rect>
+          <text class="card-t" x="774" y="352" fill="#b3372a">The authority diagonal</text>
+          <text class="card-s" x="774" y="372">Every tier survives a crash except the one that</text>
+          <text class="card-s" x="774" y="386">talks to the model — and the one that talks to the</text>
+          <text class="card-s" x="774" y="400">model is the only tier that can never authorize</text>
+          <text class="card-s" x="774" y="414">anything. Conversations sit at the bottom of the</text>
+          <text class="card-s" x="774" y="428">trust order: prompts are rebuilt from the ledger,</text>
+          <text class="card-s" x="774" y="442">never the other way around.</text>
+        </g>
+        <text class="plat-t" x="760" y="472">compaction discipline: spec 03 §14.1 · liaison_compaction.py</text>
+        <text class="plat-t" x="760" y="486">memory gate: test_unconfirmed_or_poisoned_candidate_is_quarantined</text>
+        <text class="plat-t" x="760" y="500">recall scope: test_memory_candidate_promotes_once_and_retry_returns…</text>
+      </svg>
+      <p class="caption">
+        Solvan's tiers in the ADK lab's tiered-state frame: each event of the payments incident lands
+        (red arrows) in exactly one durable home; key chips show what each tier holds; bars show how
+        long it lives. The table below is the same claim, column by column, with the named tests.
+      </p>
+    </div>
+    <table>
+      <tr>
+        <th style="width:26%">Tier</th>
+        <th style="width:34%">Lifetime</th>
+        <th>Survives crash?</th>
+        <th>Survives deploy?</th>
+        <th>Survives incident close?</th>
+        <th>Can carry authority?</th>
+      </tr>
+      <tr>
+        <td><code>invocation context</code><br /><span class="small">prompt + tool receipts in one bounded run</span></td>
+        <td><div style="background:#b3372a22;border:1px solid #b3372a;border-radius:4px;height:12px;width:12%"></div><span class="small">one invocation</span></td>
+        <td>no</td><td>no</td><td>no</td><td><strong>never</strong></td>
+      </tr>
+      <tr>
+        <td><code>agent_runs</code> + steps<br /><span class="small">attempts, hashes, budgets, traces</span></td>
+        <td><div style="background:#1f5c9e22;border:1px solid #1f5c9e;border-radius:4px;height:12px;width:45%"></div><span class="small">incident lifetime + audit</span></td>
+        <td><strong>yes</strong></td><td><strong>yes</strong></td><td>retained</td><td>no — records of work, not authority</td>
+      </tr>
+      <tr>
+        <td>evidence objects (GCS)<br /><span class="small">hash-pinned, classified, redacted</span></td>
+        <td><div style="background:#147a5c22;border:1px solid #147a5c;border-radius:4px;height:12px;width:62%"></div><span class="small">retention policy</span></td>
+        <td><strong>yes</strong></td><td><strong>yes</strong></td><td><strong>yes</strong></td><td>citable, never instructions</td>
+      </tr>
+      <tr>
+        <td>workflow ledger<br /><span class="small">incidents, cases, actions, approvals, receipts, transitions</span></td>
+        <td><div style="background:#1f5c9e33;border:1px solid #143e6d;border-radius:4px;height:12px;width:88%"></div><span class="small">immutable — superseded, never rewritten</span></td>
+        <td><strong>yes</strong></td><td><strong>yes</strong></td><td><strong>yes</strong></td><td><strong>the only authority</strong></td>
+      </tr>
+      <tr>
+        <td>Memory Bank<br /><span class="small">promoted, scoped recall</span></td>
+        <td><div style="background:#6e55a822;border:1px solid #6e55a8;border-radius:4px;height:12px;width:75%"></div><span class="small">cross-incident, revocable</span></td>
+        <td><strong>yes</strong></td><td><strong>yes</strong></td><td><strong>yes</strong></td><td>no — gated in, advisory out</td>
+      </tr>
+      <tr>
+        <td>conversation ledger<br /><span class="small">liaison threads, compaction summaries</span></td>
+        <td><div style="background:#a8781f22;border:1px solid #a8781f;border-radius:4px;height:12px;width:55%"></div><span class="small">durable projection</span></td>
+        <td><strong>yes</strong></td><td><strong>yes</strong></td><td><strong>yes</strong></td><td>no — reads state, never mints it</td>
+      </tr>
+    </table>
+
+  </section>
+
+  <!-- ============ SIGNAL: SEVEN DAYS, ZERO RESIDENT PROCESSES ============ -->
+  <section class="page">
+    <h2>Signal Flow: Seven Days, Zero Resident Processes</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1120 330" role="img" aria-label="Multi-day reliability case timeline">
+        <defs>
+          <marker id="arrowT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#565d68"></path>
+          </marker>
+          <style>
+            .ev { fill: #f3f7fc; stroke: #1f5c9e; stroke-width: 2; rx: 8; }
+            .evg { fill: #f5faf8; stroke: #147a5c; stroke-width: 2; rx: 8; }
+            .evw { fill: #f7f5fb; stroke: #6e55a8; stroke-width: 2; rx: 8; }
+            .tl2 { stroke: #22262c; stroke-width: 2.4; }
+            .tgap { stroke: #8a93a1; stroke-width: 2.4; stroke-dasharray: 3 6; }
+            .tt2 { font: 700 11.5px Inter, sans-serif; fill: #171a20; }
+            .ts2 { font: 500 9.5px Inter, sans-serif; fill: #565d68; }
+            .day { font: 800 11px Inter, sans-serif; fill: #143e6d; }
+            .dot { fill: #143e6d; }
+          </style>
+        </defs>
+
+        <rect class="ground" x="8" y="6" width="1104" height="318" rx="8"></rect>
+        <rect class="tag" x="256" y="132" width="82" height="26" rx="6"></rect>
+        <text class="tag-t" x="269" y="149">Long Wait</text>
+        <rect class="tag" x="722" y="132" width="70" height="26" rx="6"></rect>
+        <text class="tag-t" x="735" y="149">Resume</text>
+        <!-- timeline -->
+        <line class="tl2" x1="30" y1="170" x2="240" y2="170"></line>
+        <line class="tgap" x1="240" y1="170" x2="360" y2="170"></line>
+        <line class="tl2" x1="360" y1="170" x2="600" y2="170"></line>
+        <line class="tgap" x1="600" y1="170" x2="720" y2="170"></line>
+        <line class="tl2" x1="720" y1="170" x2="1100" y2="170"></line>
+
+        <circle class="dot" cx="60"  cy="170" r="6"></circle>
+        <circle class="dot" cx="200" cy="170" r="6"></circle>
+        <circle class="dot" cx="420" cy="170" r="6"></circle>
+        <circle class="dot" cx="560" cy="170" r="6"></circle>
+        <circle class="dot" cx="800" cy="170" r="6"></circle>
+        <circle class="dot" cx="1020" cy="170" r="6"></circle>
+
+        <text class="day" x="44"  y="196">Day 0</text>
+        <text class="day" x="184" y="196">Day 0 +1h</text>
+        <text class="day" x="404" y="196">Day 1</text>
+        <text class="day" x="544" y="196">Day 1</text>
+        <text class="day" x="784" y="196">Day 3</text>
+        <text class="day" x="996" y="196">Day 7</text>
+
+        <text class="ts2" x="344" y="150">nothing runs</text>
+        <text class="ts2" x="632" y="150">nothing runs</text>
+
+        <!-- events above -->
+        <rect class="evg" x="20" y="40" width="180" height="76"></rect>
+        <text class="tt2" x="34" y="63">Incident MITIGATED</text>
+        <text class="ts2" x="34" y="82">case REL-101 opens atomically;</text>
+        <text class="ts2" x="34" y="97">wakeup wak_… scheduled</text>
+        <line class="tl2" x1="60" y1="116" x2="60" y2="164"></line>
+
+        <rect class="ev" x="130" y="228" width="200" height="76"></rect>
+        <text class="tt2" x="144" y="251">Liveness enforced</text>
+        <text class="ts2" x="144" y="270">every operational state must hold a</text>
+        <text class="ts2" x="144" y="285">next action + an active wakeup</text>
+        <line class="tl2" x1="200" y1="176" x2="200" y2="228"></line>
+
+        <rect class="ev" x="330" y="40" width="180" height="76"></rect>
+        <text class="tt2" x="344" y="63">Tick claims due wakeup</text>
+        <text class="ts2" x="344" y="82">fenced claim; case advances</text>
+        <text class="ts2" x="344" y="97">OPEN → ROOT_CAUSE_ANALYSIS</text>
+        <line class="tl2" x1="420" y1="116" x2="420" y2="164"></line>
+
+        <rect class="evw" x="470" y="228" width="220" height="76"></rect>
+        <text class="tt2" x="484" y="251">Workspace task runs bounded</text>
+        <text class="ts2" x="484" y="270">provider request persisted before dispatch;</text>
+        <text class="ts2" x="484" y="285">checkpoint written, then hibernate</text>
+        <line class="tl2" x1="560" y1="176" x2="560" y2="228"></line>
+
+        <rect class="evw" x="710" y="40" width="180" height="76"></rect>
+        <text class="tt2" x="724" y="63">Rehydrate checkpoint</text>
+        <text class="ts2" x="724" y="82">exact provider revision + boot proof</text>
+        <text class="ts2" x="724" y="97">validate; repair → patch → review</text>
+        <line class="tl2" x1="800" y1="116" x2="800" y2="164"></line>
+
+        <rect class="evg" x="930" y="40" width="170" height="76"></rect>
+        <text class="tt2" x="944" y="63">Verified close</text>
+        <text class="ts2" x="944" y="82">canary + rollout receipts;</text>
+        <text class="ts2" x="944" y="97">independent CLOSED_VERIFIED</text>
+        <line class="tl2" x1="1020" y1="116" x2="1020" y2="164"></line>
+      </svg>
+      <p class="caption">
+        One 7-day agent run in which the LLM was invoked for minutes and no process outlived its step.
+        The dashed gaps are the product: the workflow is alive the whole week; the compute is not.
+        This is the competition's "weeks / asynchronous context" requirement as a picture.
+      </p>
+    </div>
+    <div class="callout note">
+      <strong>Where the ADK lab ends and Solvan begins.</strong> The ADK lab parks one invocation in one queue
+      and resumes it. Solvan holds an open-ended case across many bounded runs, two state machines, a
+      workspace with hibernated checkpoints, and a liveness policy that makes silent dormancy a schema
+      violation — the same doctrine at institutional scale.
+    </div>
+  </section>
+
+  <!-- ================= REQUIREMENTS SCOREBOARD ================= -->
+  <section class="page">
+    <h2>Requirements Scoreboard: Solvan Through The Lens Of The ADK Lab</h2>
+    <p class="small">
+      Every mandated technology, and every pattern taught by the ADK lab (adk2003), as a scoreboard:
+      green check = implemented and proven by the named pointer; amber ▲ = Solvan goes measurably
+      beyond the lab baseline there. The two tables on the next page carry the full evidence rows.
+    </p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 660" role="img" aria-label="Scoreboard of the twelve mandated proofs and the lab patterns">
+        <rect class="ground" x="16" y="10" width="1108" height="640" rx="8"></rect>
+        <text class="zlab" x="36" y="38">THE TWELVE MANDATED PROOFS</text>
+        <g>
+          <circle cx="962" cy="32" r="9" fill="#a8781f"></circle>
+          <text x="962" y="36" text-anchor="middle" style="font:800 10px Inter, sans-serif" fill="#fff">▲</text>
+          <text class="card-s" x="978" y="36">= beyond the lab baseline</text>
+        </g>
+
+        <g id="pillar-strip">
+        <!-- row 1 -->
+        <g>
+          <rect class="card" x="36" y="50" width="262" height="124" rx="9"></rect>
+          <text class="icon" x="48" y="74">✨</text><text class="card-t" x="74" y="72">Gemini 3.5+</text>
+          <circle cx="278" cy="68" r="10" fill="#147a5c"></circle><text x="278" y="72" text-anchor="middle" style="font:800 11px Inter, sans-serif" fill="#fff">✓</text>
+          <text class="card-s" x="48" y="94">Gemini 3.6 Flash pinned in every Runtime</text>
+          <text class="card-s" x="48" y="108">deployment; visible in traces + README</text>
+          <text class="mono-t" x="48" y="130">model resource · eu endpoint</text>
+          <text class="plat-t" x="48" y="160">optional 3.1 Pro Preview deep workspace is an</text>
+          <text class="plat-t" x="48" y="172">explicit global-location exception</text>
+        </g>
+        <g>
+          <rect class="card" x="314" y="50" width="262" height="124" rx="9"></rect>
+          <text class="icon" x="326" y="74">🧰</text><text class="card-t" x="352" y="72">Google ADK</text>
+          <circle cx="556" cy="68" r="10" fill="#147a5c"></circle><text x="556" y="72" text-anchor="middle" style="font:800 11px Inter, sans-serif" fill="#fff">✓</text>
+          <text class="card-s" x="326" y="94">ADK 2 agent source and manifests,</text>
+          <text class="card-s" x="326" y="108">checked in CI; single-turn, schema-bound</text>
+          <text class="mono-t" x="326" y="130">src/solvan/agents/adk_agents.py</text>
+        </g>
+        <g>
+          <rect class="card" x="592" y="50" width="262" height="124" rx="9"></rect>
+          <text class="icon" x="604" y="74">☁️</text><text class="card-t" x="630" y="72">Google Cloud infra</text>
+          <circle cx="834" cy="68" r="10" fill="#147a5c"></circle><text x="834" y="72" text-anchor="middle" style="font:800 11px Inter, sans-serif" fill="#fff">✓</text>
+          <text class="card-s" x="604" y="94">Cloud Run · Cloud SQL · Pub/Sub ·</text>
+          <text class="card-s" x="604" y="108">Scheduler · GCS — load-bearing, never décor</text>
+          <text class="mono-t" x="604" y="130">tools/deploy_release.py</text>
+        </g>
+        <g>
+          <rect class="card" x="870" y="50" width="240" height="124" rx="9"></rect>
+          <text class="icon" x="882" y="74">📇</text><text class="card-t" x="908" y="72">Agent Registry</text>
+          <circle cx="1090" cy="68" r="10" fill="#147a5c"></circle><text x="1090" y="72" text-anchor="middle" style="font:800 11px Inter, sans-serif" fill="#fff">✓</text>
+          <text class="card-s" x="882" y="94">live catalog: versions, capabilities,</text>
+          <text class="card-s" x="882" y="108">departments; drives the Gateway</text>
+          <text class="mono-t" x="882" y="130">console Fleet tab</text>
+        </g>
+        <!-- row 2 -->
+        <g>
+          <rect class="card" x="36" y="188" width="262" height="124" rx="9"></rect>
+          <text class="icon" x="48" y="212">⚙️</text><text class="card-t" x="74" y="210">Agent Runtime</text>
+          <circle cx="252" cy="206" r="10" fill="#147a5c"></circle><text x="252" y="210" text-anchor="middle" style="font:800 11px Inter, sans-serif" fill="#fff">✓</text>
+          <circle cx="278" cy="206" r="10" fill="#a8781f"></circle><text x="278" y="210" text-anchor="middle" style="font:800 10px Inter, sans-serif" fill="#fff">▲</text>
+          <text class="card-s" x="48" y="232">real bounded executions; the lab resumes one</text>
+          <text class="card-s" x="48" y="246">parked invocation — Solvan re-arms from rows</text>
+          <text class="mono-t" x="48" y="268">test_dispatched_runtime_operation…</text>
+        </g>
+        <g>
+          <rect class="card" x="314" y="188" width="262" height="124" rx="9"></rect>
+          <text class="icon" x="326" y="212">🧠</text><text class="card-t" x="352" y="210">Memory Bank</text>
+          <circle cx="556" cy="206" r="10" fill="#147a5c"></circle><text x="556" y="210" text-anchor="middle" style="font:800 11px Inter, sans-serif" fill="#fff">✓</text>
+          <text class="card-s" x="326" y="232">exact-scope recall; promotion and denial</text>
+          <text class="card-s" x="326" y="246">both demonstrated live, armor-gated</text>
+          <text class="mono-t" x="326" y="268">test_memory_candidate_promotes_once…</text>
+        </g>
+        <g>
+          <rect class="card" x="592" y="188" width="262" height="124" rx="9"></rect>
+          <text class="icon" x="604" y="212">🪪</text><text class="card-t" x="630" y="210">Agent Identity</text>
+          <circle cx="834" cy="206" r="10" fill="#147a5c"></circle><text x="834" y="210" text-anchor="middle" style="font:800 11px Inter, sans-serif" fill="#fff">✓</text>
+          <text class="card-s" x="604" y="232">distinct SPIFFE principal per agent;</text>
+          <text class="card-s" x="604" y="246">least-privilege IAM proven by tests</text>
+          <text class="mono-t" x="604" y="268">SEC-IAM-READONLY-001</text>
+        </g>
+        <g>
+          <rect class="card" x="870" y="188" width="240" height="124" rx="9"></rect>
+          <text class="icon" x="882" y="212">🚪</text><text class="card-t" x="908" y="210">Agent Gateway</text>
+          <circle cx="1090" cy="206" r="10" fill="#147a5c"></circle><text x="1090" y="210" text-anchor="middle" style="font:800 11px Inter, sans-serif" fill="#fff">✓</text>
+          <text class="card-s" x="882" y="232">live allowed route plus denied</text>
+          <text class="card-s" x="882" y="246">bypass; fail-closed by construction</text>
+          <text class="mono-t" x="882" y="268">SEC-GATEWAY-BYPASS-001</text>
+        </g>
+        <!-- row 3 -->
+        <g>
+          <rect class="card" x="36" y="326" width="262" height="124" rx="9"></rect>
+          <text class="icon" x="48" y="350">🛡️</text><text class="card-t" x="74" y="348">Model Armor</text>
+          <circle cx="278" cy="344" r="10" fill="#147a5c"></circle><text x="278" y="348" text-anchor="middle" style="font:800 11px Inter, sans-serif" fill="#fff">✓</text>
+          <text class="card-s" x="48" y="370">injection verdict recorded while the</text>
+          <text class="card-s" x="48" y="384">investigation continues safely</text>
+          <text class="mono-t" x="48" y="406">durable verdicts on evidence + memory</text>
+        </g>
+        <g>
+          <rect class="card" x="314" y="326" width="262" height="124" rx="9"></rect>
+          <text class="icon" x="326" y="350">🔭</text><text class="card-t" x="352" y="348">Agent Observability</text>
+          <circle cx="556" cy="344" r="10" fill="#147a5c"></circle><text x="556" y="348" text-anchor="middle" style="font:800 11px Inter, sans-serif" fill="#fff">✓</text>
+          <text class="card-s" x="326" y="370">OTel trace DAG correlated to the domain</text>
+          <text class="card-s" x="326" y="384">timeline; decisions, never chain-of-thought</text>
+          <text class="mono-t" x="326" y="406">trace_id / span_id on every run</text>
+        </g>
+        <g>
+          <rect class="card" x="592" y="326" width="262" height="124" rx="9"></rect>
+          <text class="icon" x="604" y="350">📅</text><text class="card-t" x="630" y="348">Weeks · async context</text>
+          <circle cx="808" cy="344" r="10" fill="#147a5c"></circle><text x="808" y="348" text-anchor="middle" style="font:800 11px Inter, sans-serif" fill="#fff">✓</text>
+          <circle cx="834" cy="344" r="10" fill="#a8781f"></circle><text x="834" y="348" text-anchor="middle" style="font:800 10px Inter, sans-serif" fill="#fff">▲</text>
+          <text class="card-s" x="604" y="370">a persisted multi-day case with live next-step</text>
+          <text class="card-s" x="604" y="384">resume — zero resident processes all week</text>
+          <text class="mono-t" x="604" y="406">test_mitigated_incident_opens_one_case…</text>
+        </g>
+        <g>
+          <rect class="card" x="870" y="326" width="240" height="124" rx="9"></rect>
+          <text class="icon" x="882" y="350">🔐</text><text class="card-t" x="908" y="348">Production-data safety</text>
+          <circle cx="1090" cy="344" r="10" fill="#147a5c"></circle><text x="1090" y="348" text-anchor="middle" style="font:800 11px Inter, sans-serif" fill="#fff">✓</text>
+          <text class="card-s" x="882" y="370">classification + residency policy before</text>
+          <text class="card-s" x="882" y="384">retrieval and again before prompts</text>
+          <text class="mono-t" x="882" y="406">Alpha SDK: PUBLIC + synthetic only</text>
+        </g>
+        </g>
+
+        <text class="zlab" x="36" y="486">THE ADK LAB'S TAUGHT PATTERNS (adk2003), ENFORCED AS CONSTRAINTS</text>
+        <!-- pattern chips: two rows of six -->
+        <g>
+          <rect class="card" x="36" y="500" width="172" height="46" rx="7"></rect>
+          <text style="font:800 10px Inter, sans-serif" fill="#147a5c" x="48" y="519">✓ events, not prompts</text>
+          <text class="plat-t" x="48" y="534">spec 01 §2.1</text>
+          <rect class="card" x="216" y="500" width="172" height="46" rx="7"></rect>
+          <text style="font:800 10px Inter, sans-serif" fill="#147a5c" x="228" y="519">✓ trigger / triggerer split</text>
+          <text class="plat-t" x="228" y="534">CT-INBOX-001</text>
+          <rect class="card" x="396" y="500" width="172" height="46" rx="7"></rect>
+          <text style="font:800 10px Inter, sans-serif" fill="#147a5c" x="408" y="519">✓ durable state</text>
+          <text class="plat-t" x="408" y="534">restart-recovery test</text>
+          <rect class="card" x="576" y="500" width="172" height="46" rx="7"></rect>
+          <text style="font:800 10px Inter, sans-serif" fill="#147a5c" x="588" y="519">✓ tiered memory + artifacts</text>
+          <text class="plat-t" x="588" y="534">memory gating tests</text>
+          <rect class="card" x="756" y="500" width="172" height="46" rx="7"></rect>
+          <text style="font:800 10px Inter, sans-serif" fill="#147a5c" x="768" y="519">✓ compaction distrust</text>
+          <text class="plat-t" x="768" y="534">spec 03 §14.1</text>
+          <rect class="card" x="936" y="500" width="174" height="46" rx="7"></rect>
+          <text style="font:800 10px Inter, sans-serif" fill="#147a5c" x="948" y="519">✓ sub-agent isolation ▲</text>
+          <text class="plat-t" x="948" y="534">coordinator-only dispatch</text>
+
+          <rect class="card" x="36" y="556" width="172" height="46" rx="7"></rect>
+          <text style="font:800 10px Inter, sans-serif" fill="#147a5c" x="48" y="575">✓ suspension / resume ▲</text>
+          <text class="plat-t" x="48" y="590">states, not parked processes</text>
+          <rect class="card" x="216" y="556" width="172" height="46" rx="7"></rect>
+          <text style="font:800 10px Inter, sans-serif" fill="#147a5c" x="228" y="575">✓ staleness guards</text>
+          <text class="plat-t" x="228" y="590">TOCTOU recheck tests</text>
+          <rect class="card" x="396" y="556" width="172" height="46" rx="7"></rect>
+          <text style="font:800 10px Inter, sans-serif" fill="#147a5c" x="408" y="575">✓ idempotency keys</text>
+          <text class="plat-t" x="408" y="590">six schema-enforced layers</text>
+          <rect class="card" x="576" y="556" width="172" height="46" rx="7"></rect>
+          <text style="font:800 10px Inter, sans-serif" fill="#147a5c" x="588" y="575">✓ human-in-the-loop</text>
+          <text class="plat-t" x="588" y="590">digest-bound approvals</text>
+          <rect class="card" x="756" y="556" width="172" height="46" rx="7"></rect>
+          <text style="font:800 10px Inter, sans-serif" fill="#147a5c" x="768" y="575">✓ workflow graphs</text>
+          <text class="plat-t" x="768" y="590">validate_investigation_plan</text>
+          <rect class="card" x="936" y="556" width="174" height="46" rx="7"></rect>
+          <text style="font:800 10px Inter, sans-serif" fill="#147a5c" x="948" y="575">✓ cloud deployment ▲</text>
+          <text class="plat-t" x="948" y="590">+ the governance trio on top</text>
+        </g>
+        <text class="card-s" x="36" y="628">▲ divergences are argued from the ADK lab's own caveats — no mid-invocation resume, no prompt-side orchestration, sessions never authority (next page).</text>
+      </svg>
+      <p class="caption">
+        The submission checklist's architecture-diagram requirement, scored: twelve mandated proofs
+        and twelve ADK-lab patterns, each with its enforcing mechanism and pointer. Amber ▲ marks where
+        the ADK lab's habit became a Solvan constraint that goes further than the lab asked.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= 05 COMPETITION REQUIREMENTS MAP ================= -->
+  <section class="page">
+    <h2>The Lens In Detail: Requirement, Mechanism, Proof</h2>
+
+    <h3>Mandatory technology proof (rule/track requirements)</h3>
+    <table>
+      <tr><th>Requirement</th><th>Where Solvan proves it</th></tr>
+      <tr><td>Gemini 3.5+</td><td>Model resource pinned in every Runtime deployment; visible in traces and README.</td></tr>
+      <tr><td>Google agent framework</td><td>Google ADK 2 agent source (<code>src/solvan/agents/adk_agents.py</code>) and manifests, checked in CI.</td></tr>
+      <tr><td>Google Cloud infrastructure</td><td>Agent Runtime, Cloud Run, Cloud SQL, Pub/Sub, Cloud Scheduler, GCS — all load-bearing, none decorative.</td></tr>
+      <tr><td>Agent Registry</td><td>Live catalog with versions, capabilities, departments; console Fleet tab renders it.</td></tr>
+      <tr><td>Agent Runtime</td><td>Real bounded executions via long-running query jobs; crash/resume proven by the restart-recovery test.</td></tr>
+      <tr><td>Memory Bank</td><td>Exact-scope recall; gated promotion and denial demonstrated live.</td></tr>
+      <tr><td>Agent Identity</td><td>Distinct SPIFFE principal per agent; least-privilege IAM matrix proven by <code>SEC-IAM-READONLY-001</code>, <code>SEC-ACTUATOR-IAM-001</code>.</td></tr>
+      <tr><td>Agent Gateway</td><td>Live allowed route plus denied bypass (<code>SEC-GATEWAY-001</code>, <code>SEC-GATEWAY-BYPASS-001</code>); preflight checks <code>gateway_bypass_denied</code>.</td></tr>
+      <tr><td>Model Armor</td><td>Injection verdict recorded while investigation continues safely; verdicts durable on evidence and memory.</td></tr>
+      <tr><td>Agent Observability</td><td>OTel trace DAG correlated to the domain timeline through <code>trace_id</code>/<code>span_id</code> on every run.</td></tr>
+      <tr><td>Weeks / asynchronous context</td><td>Persisted multi-day Reliability Case with live next-step resume from a durable wakeup.</td></tr>
+      <tr><td>Production-data safety</td><td>Real synthetic GCP telemetry under classification/residency policy; the Alpha SDK provider receives only attested PUBLIC + synthetic inputs.</td></tr>
+    </table>
+
+    <h3>The ADK lab's patterns (adk2003), taken to production</h3>
+    <table>
+      <tr><th>Lab lesson</th><th>Solvan enforcement</th><th>Verify</th></tr>
+      <tr><td>Prompts can't start themselves</td><td>Founding principle: incidents begin from events, not prompts.</td><td>spec 01 §2.1</td></tr>
+      <tr><td>Trigger / triggerer split</td><td>Scheduler → tick endpoints; Pub/Sub push → fenced inbox; being callable ≠ being called.</td><td><code>apps/coordinator/main.py</code></td></tr>
+      <tr><td>Durable state storage</td><td>Cloud SQL as authoritative workflow ledger — not a session cache.</td><td>restart-recovery test</td></tr>
+      <tr><td>Tiered memory + artifacts</td><td>Run context → workflow rows → gated Memory Bank; GCS artifacts by <code>ref + sha256</code>.</td><td>memory gating tests</td></tr>
+      <tr><td>Compaction distrust</td><td>Invariant: compaction can never rewrite plans, evidence, approvals, receipts, or state; prompts rebuild from records.</td><td>spec 03 §14.1</td></tr>
+      <tr><td>Sub-agent isolation</td><td><code>include_contents="none"</code> plus structural isolation: coordinator-only dispatch.</td><td><code>test_adk_agents_are_single_turn_and_do_not_delegate</code></td></tr>
+      <tr><td>Suspension / resumption</td><td>Durable pause states + fresh fenced attempts instead of resuming conversations (see 05).</td><td>wakeup + recovery tests</td></tr>
+      <tr><td>Staleness guards</td><td>Target epochs, digest-bound approvals, TOCTOU rechecks at execution.</td><td>TOCTOU tests (10)</td></tr>
+      <tr><td>Idempotency keys</td><td>Six schema-enforced layers; the double-purchase bug is impossible by constraint.</td><td>idempotency table (10)</td></tr>
+      <tr><td>Human-in-the-loop</td><td>Approval as a cryptographic act, not a stored preference.</td><td>approval tests (10, 11)</td></tr>
+      <tr><td>Workflow graphs</td><td>Model proposes the DAG; application validates; coordinator executes with fencing and one declared fallback.</td><td><code>validate_investigation_plan</code></td></tr>
+      <tr><td>Cloud deployment + Trace</td><td>The ADK lab's full deployment stack plus the governance trio on top.</td><td><code>tools/deploy_release.py</code>, preflight</td></tr>
+    </table>
+
+    <div class="callout warning">
+      <strong>Deliberate divergences — argued from the ADK lab's own caveats.</strong> No mid-invocation
+      resume (the lab: temp state "will be lost upon resumption" — so Solvan never trusts a parked
+      invocation). No prompt-side orchestration (the lab isolates its sub-agent from context; Solvan
+      makes isolation structural). Sessions are never authority (the lab spends two tasks on why
+      transcripts and summaries mislead; Solvan demotes conversations to projections). Each divergence
+      finishes an argument the lab starts.
+    </div>
+  </section>
+
+  <!-- ============== 06 DATA, MEMORY, AND CONVERSATIONAL SURFACE ============== -->
+  <section class="page">
+    <h2>Data, Memory, And Conversational Surface</h2>
+
+    <div class="grid-3">
+      <div class="card">
+        <h3>Release schema · 61 tables</h3>
+        <ul class="small">
+          <li>Incidents, cases, plans, steps, runs, tool calls, evidence, hypotheses, actions, approvals, reservations, receipts, transitions, wakeups, inbox/outbox, memory, workspaces.</li>
+          <li>Loaded from empty into PostgreSQL 16 in CI; constraint oracles assert negative cases; append-only audit triggers.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Operability schema · 54 tables</h3>
+        <ul class="small">
+          <li>Governed Tool Catalog and capability profiles; Operational Guidance revisions with registered completion predicates; trigger policies; skills interchange records.</li>
+          <li>Status: <strong>implemented and locally verified, beyond the lens</strong> (specs 16–18) — guidance selection, tool-catalog wiring, and quarantined skills import run in real coordinator paths; cloud release qualification is deliberately not yet claimed.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Conversation schema · 34 tables</h3>
+        <ul class="small">
+          <li>One canonical Liaison ledger across console and channels: read/steer grants, per-part access modes (empty set denies), durable delivery, compaction.</li>
+          <li>Identity from verified claims only; a read grant never proves write or steer authority.</li>
+          <li>Status: <strong>implemented and locally verified, beyond the lens</strong> (spec 14) — five channel liaisons with the Slack lifecycle, steer confirmation, subscriptions, and deterministic compaction.</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="small">
+      Further target schemas beyond these two — alert triage (28 tables, implemented), outcome
+      quality (17), production graph (16), connection scope (4), relay (18), SaaS scale (28) —
+      bring the platform's schema surface to 260 tables.
+    </p>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Evidence with provenance</h3>
+        <ul class="small">
+          <li>Every evidence item: source, window, query, hash, classification, residency, retrieval actor, freshness expiry, armor verdict.</li>
+          <li>Citations must resolve to stored records; an unresolvable reference renders inert and demotes the statement to inferred.</li>
+          <li>Validated vs inferred findings are visually and semantically distinct in the console.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Conversation reads, never mints</h3>
+        <ul class="small">
+          <li>Chat and channel liaisons read reader-filtered projections of durable state; asking a question can never create a fact.</li>
+          <li>Approval by conversation surfaces the same digest-bound panel — inline text never becomes an approval.</li>
+          <li>Every durable conversational part declares an access mode; visibility is never granted by omission.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Skills without surrendering authority (target contract).</strong> The open Agent Skills
+      format is adopted as a quarantined interchange profile: packages are hardened, scanned, and held
+      as inert records; a human compiles them into governed guidance through evaluation and independent
+      approval; scripts never execute; <code>allowed-tools</code> grants nothing; activation pins
+      content and never fetches origins. Four adversarial review passes; 24 acceptance tests specified.
+    </div>
+  </section>
+
+  <!-- ============== 07 ENTERPRISE PLATFORM: IMPLEMENTED VS TARGET ============== -->
+  <section class="page">
+    <h2>Enterprise Platform: Shown, Shipped, Specified</h2>
+
+    <div class="callout note">
+      <strong>The honest enterprise claim, in three levels.</strong> What the lens demo
+      <em>shows</em> is release-gated. What the submission <em>ships</em> goes further: most of the
+      enterprise expansion is implemented and locally verified in this same codebase — it simply is
+      not part of the lens demonstration, and its cloud release qualification is not yet claimed.
+      What remains is <em>specified</em>: reviewed normative contracts with acceptance tests, not
+      roadmap prose. Solvan is built for this competition and continues beyond it as Ruhu Inc.'s
+      production reliability platform.
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <h3><span class="status-ok">Shown</span> — release-gated, through the lens</h3>
+        <ul>
+          <li>Tenant/project/environment scope on every row; region-pinned deployment with release-blocking policy checks.</li>
+          <li>Per-agent SPIFFE identity; least-privilege IAM proven by tests; read-only agents cannot reach mutation endpoints.</li>
+          <li>Registry-governed, fail-closed Gateway with no generic mutation route; bypass denial tested.</li>
+          <li>Model Armor inline on supported paths with durable verdicts; memory promotion gated on them.</li>
+          <li>Immutable histories, superseding records, dual-written receipts, independent verification.</li>
+          <li>Ten-stage merge gate: lint, types, architecture ceilings, docs, executable schema contracts, 953 tests, safety evals, console build, browser critical path.</li>
+          <li>PR-001..050 requirement-to-test traceability; CI fails on a missing or skipped required test.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="status-ok">Shipped</span> — implemented beyond the lens</h3>
+        <ul>
+          <li><strong>Conversational surface</strong> (spec 14): five channel liaisons on one ledger — Slack lifecycle, steer confirmation, subscriptions, compaction; locally verified.</li>
+          <li><strong>Governed Tool Catalog</strong> (16) and <strong>Operational Guidance</strong> (17): wired into real coordinator dispatch with hash-bound selection and computed completion.</li>
+          <li><strong>Agent Skills interchange</strong> (18): quarantined import implemented; local implementation gate passed.</li>
+          <li><strong>Alert triage</strong> (21): implemented and locally verified — 28-table schema, fenced-claim runtime, console surfaces.</li>
+          <li><strong>Production environment model</strong> (20): production graph and earned-autonomy receipts substantially implemented.</li>
+          <li>All of the above ship in the submitted repository; none is used as lens evidence, and cloud release qualification is not claimed.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="status-target">Specified</span> — reviewed target contracts</h3>
+        <ul>
+          <li><strong>SaaS scale and isolation</strong> (19): cell contract, content-free routing, placement grants — implementation under way.</li>
+          <li><strong>Solvant Relay</strong> (22): customer-resident read-only evidence collection; specification complete, implementation early.</li>
+          <li><strong>Customer-deployed actuator</strong> (13): Solvan never holds a credential capable of mutating a customer estate; kill switch and rate budget customer-owned.</li>
+          <li><strong>Multi-tenant sovereignty</strong>: per-tenant CMEK across a tenant population (depends on 19).</li>
+          <li><strong>Ruhu adoption profile</strong> (11): observe-only → approval-bound rollback → bounded autonomy, each phase gated by receipts.</li>
+        </ul>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>Enterprise property</th><th>Mechanism</th><th>Status</th></tr>
+      <tr><td>Data sovereignty</td><td>Classification + residency filters before retrieval and before prompts; CMEK-bound storage for tenant material.</td><td><span class="status-ok">implemented</span> (judged scope) / <span class="status-target">target</span> (multi-tenant)</td></tr>
+      <tr><td>Credential posture</td><td>Every stored credential records posture; federated short-lived preferred; long-lived keys read-only under CMEK, surfaced in console.</td><td><span class="status-target">target</span> (spec 13)</td></tr>
+      <tr><td>Auditability</td><td>Append-only transitions and audit events; structured decisions; no chain-of-thought recorded anywhere.</td><td><span class="status-ok">implemented</span></td></tr>
+      <tr><td>Fail-closed configuration</td><td>No config value may downgrade identity, policy, or isolation; absent or unparsable policy refuses.</td><td><span class="status-ok">implemented</span> (invariant + tests)</td></tr>
+      <tr><td>Preview-feature honesty</td><td>Launch stages recorded with retrieval dates; preview features carry tested degradation paths.</td><td><span class="status-ok">implemented</span> (source register + preflight)</td></tr>
+    </table>
+  </section>
+
+  <!-- ============ 08 DEPLOYMENT, QUALITY GATE, AND SCORING ============ -->
+  <section class="page">
+    <h2>Deployment, Quality Gate, And Scoring Alignment</h2>
+
+    <div class="diagram">
+      <svg viewBox="0 0 1120 400" role="img" aria-label="Deployment topology in europe-west1">
+        <defs>
+          <marker id="arrowD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#565d68"></path>
+          </marker>
+          <style>
+            .region { fill: none; stroke: #143e6d; stroke-width: 2.4; stroke-dasharray: 10 6; rx: 14; }
+            .svc { fill: #f3f7fc; stroke: #1f5c9e; stroke-width: 2; rx: 8; }
+            .plat { fill: #f5faf8; stroke: #147a5c; stroke-width: 2; rx: 8; }
+            .trig { fill: #eef2f6; stroke: #8a93a1; stroke-width: 2; rx: 8; }
+            .govd { fill: #fbf7ef; stroke: #a8781f; stroke-width: 2; rx: 8; }
+            .td { font: 700 12px Inter, sans-serif; fill: #171a20; }
+            .sd { font: 500 9.5px Inter, sans-serif; fill: #565d68; }
+            .rg { font: 800 12px Inter, sans-serif; fill: #143e6d; }
+            .ld { stroke: #565d68; stroke-width: 1.8; fill: none; marker-end: url(#arrowD); }
+          </style>
+        </defs>
+
+        <rect class="region" x="14" y="14" width="1092" height="372"></rect>
+        <text class="rg" x="34" y="38">GCP · europe-west1 — region-pinned; a placement violation is a release-blocking policy failure</text>
+
+        <rect class="trig" x="40" y="60" width="200" height="80"></rect>
+        <text class="td" x="54" y="84">Cloud Scheduler</text>
+        <text class="sd" x="54" y="103">tick jobs: coordinator wakeups,</text>
+        <text class="sd" x="54" y="118">outbox publisher</text>
+
+        <rect class="trig" x="40" y="160" width="200" height="80"></rect>
+        <text class="td" x="54" y="184">Pub/Sub</text>
+        <text class="sd" x="54" y="203">workflow-transitions · security</text>
+        <text class="sd" x="54" y="218">push with verified identity</text>
+
+        <rect class="svc" x="290" y="60" width="300" height="180"></rect>
+        <text class="td" x="306" y="84">Cloud Run — 22 immutable images</text>
+        <text class="sd" x="306" y="104">coordinator · api · actuator · verifier · detector</text>
+        <text class="sd" x="306" y="120">evidence broker · publisher · memory promoter</text>
+        <text class="sd" x="306" y="136">slack/email/discord liaisons · github provider</text>
+        <text class="sd" x="306" y="152">antigravity workspace · workspace sandbox (no egress)</text>
+        <text class="sd" x="306" y="168">console (static) · payments fixture (judged workload)</text>
+        <text class="sd" x="306" y="190">each service: its own service account, least-privilege</text>
+        <text class="sd" x="306" y="206">IAM, and OTel instrumentation — no shared identities</text>
+
+        <rect class="plat" x="640" y="60" width="220" height="80"></rect>
+        <text class="td" x="656" y="84">Agent Runtime</text>
+        <text class="sd" x="656" y="103">pinned reasoningEngines; bounded</text>
+        <text class="sd" x="656" y="118">long-running query jobs</text>
+
+        <rect class="plat" x="640" y="160" width="220" height="80"></rect>
+        <text class="td" x="656" y="184">Cloud SQL · PostgreSQL 16</text>
+        <text class="sd" x="656" y="203">the authoritative ledger; schema</text>
+        <text class="sd" x="656" y="218">revision-pinned, contract-tested</text>
+
+        <rect class="plat" x="900" y="60" width="180" height="80"></rect>
+        <text class="td" x="914" y="84">Cloud Storage</text>
+        <text class="sd" x="914" y="103">evidence + runtime buckets,</text>
+        <text class="sd" x="914" y="118">hash-addressed objects</text>
+
+        <rect class="plat" x="900" y="160" width="180" height="80"></rect>
+        <text class="td" x="914" y="184">Cloud Trace</text>
+        <text class="sd" x="914" y="203">OTel spans joined to rows via</text>
+        <text class="sd" x="914" y="218">trace_id / span_id</text>
+
+        <rect class="govd" x="290" y="278" width="790" height="88"></rect>
+        <text class="td" x="306" y="302">Governance wrap — validated by deployment preflight before any release exists</text>
+        <text class="sd" x="306" y="322">Agent Registry (catalog) · Agent Identity (SPIFFE per agent) · Agent Gateway (registered routes allowed, bypass denied) · Model Armor</text>
+        <text class="sd" x="306" y="338">templates per region · IAM matrix · region policy — preflight receipts stored; a missing control blocks the deploy, never degrades it</text>
+
+        <path class="ld" d="M 240 100 L 290 100"></path>
+        <path class="ld" d="M 240 200 L 290 200"></path>
+        <path class="ld" d="M 590 110 L 640 100"></path>
+        <path class="ld" d="M 590 190 L 640 200"></path>
+        <path class="ld" d="M 860 100 L 900 100"></path>
+        <path class="ld" d="M 860 200 L 900 200"></path>
+        <path class="ld" d="M 440 240 L 440 278"></path>
+      </svg>
+      <p class="caption">
+        The ADK lab's step-10 topology — Cloud Run + Scheduler + Pub/Sub + Cloud SQL + GCS + Trace — with
+        Agent Runtime carrying the model work and the governance plane wrapped around all of it.
+      </p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Deployment topology</h3>
+        <ul class="small">
+          <li><strong>Cloud Run</strong>: coordinator, API, actuator, verifier, detector, evidence broker, publisher, liaisons, workspace services — each with its own service identity.</li>
+          <li><strong>Agent Runtime</strong>: bounded agent executions as long-running query jobs against pinned <code>reasoningEngines</code> resources.</li>
+          <li><strong>Cloud SQL (PostgreSQL 16)</strong>: the authoritative ledger, region-pinned to <code>europe-west1</code>.</li>
+          <li><strong>Pub/Sub + Cloud Scheduler</strong>: the only things that wake anything; push endpoints ingest, ticks drive.</li>
+          <li><strong>GCS</strong>: evidence and runtime objects, hash-addressed; <strong>Cloud Trace</strong>: OTel spans correlated to domain rows.</li>
+          <li><strong>Cloud Build</strong>: 22 immutable image outputs; deployment preflight validates agents, identities, gateway policies, and armor templates before release.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>The ten-stage merge gate (<code>scripts/check</code>)</h3>
+        <ol class="small">
+          <li>Python lint and format</li>
+          <li>Python types (mypy, 315 files)</li>
+          <li>Architecture boundaries, agent manifests, Ruhu profile, Cloud Build contract</li>
+          <li>Documentation and repository knowledge</li>
+          <li>Executable schema + transition contracts on clean PostgreSQL 16</li>
+          <li>Unit and harness tests with coverage</li>
+          <li>Agent safety and trajectory evaluation</li>
+          <li>Console types</li>
+          <li>Console production build</li>
+          <li>Browser critical path</li>
+        </ol>
+        <p class="small">Local evidence never counts as a GCP release receipt; cloud proofs are captured separately at deploy time.</p>
+      </div>
+    </div>
+
+    <h3>Scoring alignment</h3>
+    <table>
+      <tr><th>Axis</th><th>Weight</th><th>Solvan's story</th></tr>
+      <tr>
+        <td>Innovation and operational utility</td><td>40%</td>
+        <td>The two-plane authority split; verification independence; claims from digest-pinned templates; autonomy as an earned receipt; a conversational surface that cannot mint facts. Utility is the demo itself: a real induced degradation detected, mitigated, verified, and owned to permanent repair without a prompt.</td>
+      </tr>
+      <tr>
+        <td>Architectural discipline and tech stack</td><td>30%</td>
+        <td>Section 14's scoreboard and Section 15's tables are the discipline story told in the assessors' own vocabulary, with the mandated stack used as enforcement planes, not checkboxes. Every arrow in Section 01 has a test behind it.</td>
+      </tr>
+      <tr>
+        <td>Demo and production readiness</td><td>30%</td>
+        <td>Kill a process mid-incident on camera and watch rows resume it — that is a named required test, not a rehearsed trick. Judges can run the same gate we run.</td>
+      </tr>
+    </table>
+
+    <h3>Verify it yourself in ten minutes</h3>
+    <pre class="shell">scripts/bootstrap     # locked dependencies and Chromium
+scripts/start         # isolated stack: PostgreSQL, API, console, logs, traces
+scripts/check         # the full ten-stage gate, including restart-recovery,
+                      # idempotency, TOCTOU, quarantine, and approval-digest tests</pre>
+
+    <p class="small">
+      Then open the console: approvals show target, environment, digest, version, risk, and expiry;
+      evidence shows sources, freshness, classification, and armor verdicts; the fleet screen shows
+      discovery, effective policy provenance, and enforced permission. Control made visible is the
+      product thesis — and the judging interface.
+    </p>
+  </section>
+
+  <!-- ================= THE ARCHITECTURE BEAT (VIDEO REUSE) ================= -->
+  <section class="page">
+    <h2>The Architecture Beat</h2>
+    <p class="small">
+      The one screen the four-minute video holds while the narrator says what Solvan is: the poster,
+      then the scoreboard. Alert to verified close along the dotted path; every mandated pillar as a
+      product card; twelve checks and the three amber exceedances.
+    </p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 912" role="img" aria-label="The poster, reused as the video's architecture beat">
+        <use href="#poster-g"></use>
+      </svg>
+    </div>
+    <div class="diagram">
+      <svg viewBox="16 40 1124 424" role="img" aria-label="The twelve mandated proofs, reused">
+        <rect class="ground" x="16" y="40" width="1108" height="424" rx="8"></rect>
+        <use href="#pillar-strip"></use>
+      </svg>
+      <p class="caption">
+        Say it in one breath: <strong>events start it, rows resume it, gates guard it, strangers
+        verify it — and the judged slice already runs under enterprise controls.</strong>
+      </p>
+    </div>
+  </section>
+
+</body>
+</html>

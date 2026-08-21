@@ -1,0 +1,58 @@
+schema_version: 1
+machine: incident
+machine_version: 1
+initial_state: DETECTED
+terminal_states: [RESOLVED, ESCALATED, UNRESOLVABLE, FALSE_POSITIVE, CANCELLED]
+transition_defaults:
+  guard: always
+  side_effects: [append_state_transition, increment_workflow_version, append_outbox_wakeup]
+  audit_reason_from: event
+stale_policy:
+  max_nonterminal_age: PT2H
+  applies_to_states: [DETECTED, TRIAGING, INVESTIGATING, DIAGNOSING, MITIGATION_PROPOSED, AWAITING_APPROVAL, MITIGATING, VERIFYING_MITIGATION]
+  exemptions:
+    - state: MITIGATED
+      guard: linked_case_nonterminal_and_due_wakeup_present
+      on_guard_false: STALE_PROGRESS_TIMEOUT
+  event: STALE_PROGRESS_TIMEOUT
+  to_state: ESCALATED
+  guard: no_connector_request_in_flight
+transitions:
+  - {from: DETECTED, event: TRIAGE_STARTED, to: TRIAGING}
+  - {from: DETECTED, event: FALSE_POSITIVE_CONFIRMED, to: FALSE_POSITIVE, guard: detector_false_positive_rule_passed}
+  - {from: DETECTED, event: OPERATOR_CANCELLED, to: CANCELLED, guard: operator_or_admin_and_no_connector_request_in_flight}
+  - {from: TRIAGING, event: INVESTIGATION_STARTED, to: INVESTIGATING}
+  - {from: TRIAGING, event: FALSE_POSITIVE_CONFIRMED, to: FALSE_POSITIVE, guard: detector_false_positive_rule_passed}
+  - {from: TRIAGING, event: FAILURE_EXHAUSTED, to: ESCALATED, guard: retry_or_time_budget_exhausted}
+  - {from: TRIAGING, event: OPERATOR_CANCELLED, to: CANCELLED, guard: operator_or_admin_and_no_connector_request_in_flight}
+  - {from: INVESTIGATING, event: DIAGNOSIS_STARTED, to: DIAGNOSING}
+  - {from: INVESTIGATING, event: LIAISON_STEER_ACCEPTED, to: INVESTIGATING, guard: live_operator_confirmed_bounded_read_only_steer}
+  - {from: INVESTIGATING, event: FAILURE_EXHAUSTED, to: ESCALATED, guard: retry_or_time_budget_exhausted}
+  - {from: INVESTIGATING, event: OPERATOR_CANCELLED, to: CANCELLED, guard: operator_or_admin_and_no_connector_request_in_flight}
+  - {from: DIAGNOSING, event: MITIGATION_SELECTED, to: MITIGATION_PROPOSED, guard: confirmed_or_policy_supported_hypothesis}
+  - {from: DIAGNOSING, event: AUTHORITY_EXHAUSTED, to: UNRESOLVABLE, guard: no_allowlisted_action_exists}
+  - {from: DIAGNOSING, event: FAILURE_EXHAUSTED, to: ESCALATED, guard: retry_or_time_budget_exhausted}
+  - {from: DIAGNOSING, event: OPERATOR_CANCELLED, to: CANCELLED, guard: operator_or_admin_and_no_connector_request_in_flight}
+  - {from: MITIGATION_PROPOSED, event: APPROVAL_REQUIRED, to: AWAITING_APPROVAL, guard: valid_action_and_policy_requires_approval}
+  - {from: MITIGATION_PROPOSED, event: PREAUTHORIZED, to: MITIGATING, guard: exact_standing_preauthorization_matches}
+  - {from: MITIGATION_PROPOSED, event: ACTION_BUDGET_EXHAUSTED, to: ESCALATED, guard: action_budget_or_oscillation_limit_reached}
+  - {from: MITIGATION_PROPOSED, event: OPERATOR_CANCELLED, to: CANCELLED, guard: operator_or_admin_and_no_connector_request_in_flight}
+  - {from: AWAITING_APPROVAL, event: APPROVAL_GRANTED, to: MITIGATING, guard: exact_unexpired_approval_and_target_unchanged}
+  - {from: AWAITING_APPROVAL, event: APPROVAL_DENIED, to: MITIGATION_PROPOSED, guard: action_budget_remaining}
+  - {from: AWAITING_APPROVAL, event: APPROVAL_INVALIDATED, to: MITIGATION_PROPOSED, guard: action_budget_remaining}
+  - {from: AWAITING_APPROVAL, event: ACTION_BUDGET_EXHAUSTED, to: ESCALATED, guard: action_budget_or_oscillation_limit_reached}
+  - {from: AWAITING_APPROVAL, event: OPERATOR_CANCELLED, to: CANCELLED, guard: operator_or_admin_and_no_connector_request_in_flight}
+  - {from: MITIGATING, event: MUTATION_RECONCILED, to: VERIFYING_MITIGATION, guard: conclusive_execution_receipt}
+  - {from: MITIGATING, event: MUTATION_FAILED_RETRYABLE, to: MITIGATION_PROPOSED, guard: action_budget_remaining_and_no_effect}
+  - {from: MITIGATING, event: MUTATION_AMBIGUOUS, to: ESCALATED, guard: ambiguous_execution_receipt}
+  - {from: VERIFYING_MITIGATION, event: VERIFICATION_PASSED, to: MITIGATED, guard: exact_bound_profile_passed}
+  - {from: VERIFYING_MITIGATION, event: VERIFICATION_FAILED_RETRYABLE, to: MITIGATION_PROPOSED, guard: action_budget_remaining_and_cooldown_satisfied}
+  - {from: VERIFYING_MITIGATION, event: VERIFICATION_EXHAUSTED, to: ESCALATED, guard: retry_or_action_budget_exhausted}
+  - {from: VERIFYING_MITIGATION, event: OPERATOR_CANCELLED, to: CANCELLED, guard: operator_or_admin_and_no_connector_request_in_flight}
+  - {from: MITIGATED, event: CLOSURE_CRITERIA_PASSED, to: RESOLVED, guard: no_permanent_repair_required_or_linked_case_closed_verified}
+  - {from: MITIGATED, event: CASE_TERMINATED_WITHOUT_REPAIR, to: ESCALATED, guard: linked_case_cancelled_and_residual_risk_requires_owner}
+rejections:
+  - {when: terminal_state, rule: reject_all_transitions}
+  - {when: event_not_listed_for_current_state, rule: reject_illegal_transition}
+  - {when: guard_false, rule: reject_without_workflow_version_increment}
+  - {when: connector_request_in_flight_and_event_is_operator_cancelled, rule: record_cancel_request_then_reconcile_before_transition}

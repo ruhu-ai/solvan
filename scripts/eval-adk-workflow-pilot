@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${ROOT_DIR}/scripts/dev-env"
+
+exec uv run python "${ROOT_DIR}/tools/run_adk_workflow_pilot_eval.py" \
+  --output "${SOLVAN_ARTIFACT_DIR}/evals/adk-workflow-pilot.json"

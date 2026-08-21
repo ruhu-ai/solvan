@@ -1,0 +1,151 @@
+"""GitHub Tool seeds, kept beside the rest of the catalog but not inside it.
+
+Capability metadata only, exactly like `default_tool_catalog`: no connection,
+identity, Gateway route, or Runtime authority is granted here. They are a
+separate module because the GitHub surface is now the largest single provider
+in the catalog and was pushing the shared file past the repository's size
+ceiling — not because it is governed differently.
+"""
+
+from __future__ import annotations
+
+from solvan.application.tool_catalog import EvidenceKind, ImplementationKind, PermissionClass
+from solvan.application.tool_seed import ToolSeed
+
+_READ = PermissionClass.READ
+_CONNECTOR = ImplementationKind.CONNECTOR
+
+GITHUB_TOOL_SEEDS: tuple[ToolSeed, ...] = (
+    ToolSeed(
+        "github_commit_range_read",
+        "infrastructure-agent",
+        _READ,
+        _CONNECTOR,
+        "GITHUB",
+        "github.commits.read",
+        "github-provider.internal",
+        EvidenceKind.ARTIFACT,
+        "Read a bounded commit range from one bound repository.",
+        "exact_repository",
+    ),
+    ToolSeed(
+        "github_pr_diff_read",
+        "infrastructure-agent",
+        _READ,
+        _CONNECTOR,
+        "GITHUB",
+        "github.pull_requests.read",
+        "github-provider.internal",
+        EvidenceKind.ARTIFACT,
+        "Read one size-bounded pull-request diff.",
+        "exact_repository",
+    ),
+    ToolSeed(
+        "github_workflow_run_read",
+        "infrastructure-agent",
+        _READ,
+        _CONNECTOR,
+        "GITHUB",
+        "github.check_runs.read",
+        "github-provider.internal",
+        EvidenceKind.EVENTS,
+        "Read one commit-bound check run.",
+        "exact_repository",
+    ),
+    ToolSeed(
+        "github_search_read",
+        "infrastructure-agent",
+        _READ,
+        _CONNECTOR,
+        "GITHUB",
+        "github.search.read",
+        "github-provider.internal",
+        EvidenceKind.ARTIFACT,
+        "Search issues or repositories within one bound repository.",
+        "exact_repository",
+    ),
+    ToolSeed(
+        "github_issue_read",
+        "infrastructure-agent",
+        _READ,
+        _CONNECTOR,
+        "GITHUB",
+        "github.issues.read",
+        "github-provider.internal",
+        EvidenceKind.ARTIFACT,
+        "Read one issue or pull-request thread with bounded comments.",
+        "exact_repository",
+    ),
+    ToolSeed(
+        "github_commit_history_read",
+        "infrastructure-agent",
+        _READ,
+        _CONNECTOR,
+        "GITHUB",
+        "github.commits.read",
+        "github-provider.internal",
+        EvidenceKind.ARTIFACT,
+        "List bounded recent commits by author and window.",
+        "exact_repository",
+    ),
+    ToolSeed(
+        "github_repository_tree_read",
+        "infrastructure-agent",
+        _READ,
+        _CONNECTOR,
+        "GITHUB",
+        "github.contents.read",
+        "github-provider.internal",
+        EvidenceKind.ARTIFACT,
+        "Read blob-verified repository files at one pinned commit.",
+        "exact_repository",
+    ),
+    ToolSeed(
+        "github_workflow_runs_read",
+        "infrastructure-agent",
+        _READ,
+        _CONNECTOR,
+        "GITHUB",
+        "github.actions.read",
+        "github-provider.internal",
+        EvidenceKind.DEPLOYMENT_METADATA,
+        "List Actions runs for one exact commit.",
+        "exact_repository",
+    ),
+    ToolSeed(
+        "github_deployments_read",
+        "infrastructure-agent",
+        _READ,
+        _CONNECTOR,
+        "GITHUB",
+        "github.deployments.read",
+        "github-provider.internal",
+        EvidenceKind.DEPLOYMENT_METADATA,
+        "List recent deployments and their last reported state.",
+        "exact_repository",
+    ),
+    ToolSeed(
+        "github_discussions_read",
+        "infrastructure-agent",
+        _READ,
+        _CONNECTOR,
+        "GITHUB",
+        "github.discussions.read",
+        "github-provider.internal",
+        EvidenceKind.ARTIFACT,
+        "List recent repository discussions without their bodies.",
+        "exact_repository",
+    ),
+    ToolSeed(
+        "github_merge_queue_read",
+        "infrastructure-agent",
+        _READ,
+        _CONNECTOR,
+        "GITHUB",
+        "github.merge_queue.read",
+        "github-provider.internal",
+        EvidenceKind.EVENTS,
+        "List what is waiting to merge into one branch.",
+        "exact_repository",
+    ),
+)

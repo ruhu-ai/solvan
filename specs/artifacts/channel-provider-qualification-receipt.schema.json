@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solvan.dev/schemas/channel-provider-qualification-receipt.schema.json",
+  "title": "Solvan channel provider qualification receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "project_id",
+    "release_commit",
+    "deployment_id",
+    "service_revision",
+    "organization_id",
+    "scope_project_id",
+    "environment_id",
+    "channel_kind",
+    "status",
+    "safe_reason_code",
+    "next_step_code",
+    "checked_at",
+    "validity_seconds",
+    "results",
+    "content_capture"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "kind": { "const": "SOLVAN_CHANNEL_PROVIDER_QUALIFICATION" },
+    "project_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "release_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "deployment_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,62}$" },
+    "service_revision": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "organization_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "scope_project_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "environment_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "channel_kind": { "enum": ["SLACK", "DISCORD", "EMAIL"] },
+    "status": { "enum": ["AVAILABLE", "NEEDS_ATTENTION", "DISABLED"] },
+    "safe_reason_code": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,79}$" },
+    "next_step_code": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,79}$" },
+    "checked_at": { "type": "string", "format": "date-time" },
+    "validity_seconds": { "type": "integer", "minimum": 60, "maximum": 86400 },
+    "content_capture": { "const": "NO_PROVIDER_CONTENT_RECORDED" },
+    "results": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authenticated_ingress_accepted",
+        "forged_ingress_denied",
+        "provider_identity_bound",
+        "reader_filtered_delivery_succeeded",
+        "duplicate_delivery_suppressed",
+        "revocation_fenced",
+        "pii_redaction_verified"
+      ],
+      "properties": {
+        "authenticated_ingress_accepted": { "type": "boolean" },
+        "forged_ingress_denied": { "type": "boolean" },
+        "provider_identity_bound": { "type": "boolean" },
+        "reader_filtered_delivery_succeeded": { "type": "boolean" },
+        "duplicate_delivery_suppressed": { "type": "boolean" },
+        "revocation_fenced": { "type": "boolean" },
+        "pii_redaction_verified": { "type": "boolean" }
+      }
+    }
+  }
+}

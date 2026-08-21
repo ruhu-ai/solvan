@@ -1,0 +1,222 @@
+schema_version: 1
+status: implemented
+implementation:
+  workspace_adapter: apps/workspace_adapter/main.py
+  github_identity_broker: apps/github_identity_broker/main.py
+  github_provider: apps/github_provider/main.py
+  deployment_controller: apps/deployment_controller/main.py
+  release_verifier: apps/release_verifier/main.py
+qualification: pending_deployed_receipts
+description: >-
+  Adversarial acceptance matrix for the governed Code Change Request,
+  GitHub Provider, Deployment Controller, and independent Release Verifier.
+  All cases must pass with deployed receipts before production eligibility.
+cases:
+  - id: CCR-001
+    name: strict_patch_transform_refuses_non_regular_git_objects
+    proves: >-
+      The shared patch transform rejects symlinks, submodules, hard/special
+      files, mode/ownership changes, renames, copies, binary patches, Git
+      object headers, alias paths, non-NFC/non-UTF-8 paths, case-folding
+      collisions, and unsupported base modes.
+  - id: CCR-002
+    name: sandbox_and_provider_produce_the_same_frozen_tree
+    proves: >-
+      Independent adjudication and GitHub branch creation derive the same
+      result tree hash and entry modes from the same frozen base tree and
+      transform version, with literal blobs and checkout filters disabled. A
+      repository whose .gitattributes applies text, eol, filter, or
+      working-tree-encoding to an allowed path is refused.
+  - id: CCR-003
+    name: stale_base_or_tree_refuses_before_branch_creation
+    proves: >-
+      A changed default-branch commit or tree fails BASE_STALE; the Provider
+      never rebases, retargets, or creates a PR from another base.
+  - id: CCR-004
+    name: changed_pr_head_rule_or_required_check_invalidates_merge
+    proves: >-
+      A changed head/tree/diff, branch rule, required-check state or definition,
+      or base invalidates the merge decision and blocks the GitHub merge call.
+      A new exact-material MERGE decision appends as the sole current leaf;
+      the stale immutable approval remains readable and cannot authorize merge.
+  - id: CCR-005
+    name: merge_approver_must_be_the_mapped_required_github_reviewer
+    proves: >-
+      An unmapped Solvan approver, similarly named account, expired binding,
+      or another user's GitHub review cannot satisfy the frozen reviewer policy.
+  - id: CCR-006
+    name: github_effect_replay_and_crash_recovery_are_fenced
+    proves: >-
+      Duplicate create-branch, create-PR, and merge delivery plus a crash after
+      ISSUED reconcile by authoritative GitHub ref, PR-marker, and merged-PR
+      state queries and never issue a second external effect.
+  - id: CCR-007
+    name: deployment_effect_replay_and_target_race_are_fenced
+    proves: >-
+      Concurrent canary, promotion, or rollback attempts cannot share a target
+      reservation or active target. A missing, released, cross-scope, wrong
+      target, wrong epoch, or expired release-target reservation is refused;
+      post-ISSUED recovery reconciles rather than calls again.
+  - id: CCR-008
+    name: release_provenance_and_signature_bind_the_exact_candidate
+    proves: >-
+      Another repository, merge tree, build definition, builder identity,
+      artifact subject, SBOM, provenance predicate, signer identity, or signer
+      key version is refused before deployment, including a revoked but
+      otherwise matching signer key version.
+  - id: CCR-009
+    name: verifier_cannot_promote_its_own_or_deployer_context
+    proves: >-
+      Shared producer/deployer/verifier identity, process, mutable artifact
+      root, or substituted verification profile is denied; only the independent
+      signed receipt can promote the rollout.
+  - id: CCR-010
+    name: rollback_is_bound_to_the_exact_predeploy_release
+    proves: >-
+      Failure creates a separate decision over the frozen predeploy candidate
+      and assignment plus fresh target observation. Rejection, expiry, unsafe
+      state, or ambiguity blocks and exposes human recovery; no fallback
+      release is selected automatically.
+  - id: CCR-011
+    name: external_channels_cannot_authorize_a_code_change
+    proves: >-
+      Slack, email, Discord, and MCP cards reveal only permitted status and a
+      safe locator; replies, buttons, replayed events, and locators cannot
+      create a PR, merge, deployment, or rollback decision.
+  - id: CCR-012
+    name: stage_authority_is_explicit_and_auditable
+    proves: >-
+      One verified principal with the active, exact CODE_CHANGE_APPROVER and
+      RELEASE_APPROVER roles may approve every stage, including a request they
+      started. A principal lacking a stage-specific role, fresh step-up session,
+      or current material cannot infer authority from an earlier decision,
+      GitHub account, channel identity, or another role; every decision records
+      the verified principal and exact authorization state.
+  - id: CCR-013
+    name: actuator_and_deployment_controller_authority_separation
+    proves: >-
+      The Action Actuator refuses Code Change Requests, PRs, commits, release
+      candidates, and deployment operations. The Deployment Controller has no
+      GitHub credential, operational mutation connector, or actuator
+      reservation namespace, and dependency/IAM/network checks deny each path.
+  - id: CCR-014
+    name: github_reviewer_oauth_callback_is_session_bound_and_one_time
+    proves: >-
+      A reviewer link requires a verified Solvan session with fresh step-up,
+      a random state bound to that session/principal/repository/profile, a
+      callback cookie, fixed HTTPS redirect URI, and PKCE S256. Missing,
+      replayed, expired, cross-user, cross-session, cross-repository,
+      cross-profile, altered-state, authorization-denied, or code-intercepted
+      callbacks create no binding and reveal neither OAuth material nor an
+      arbitrary redirect.
+  - id: CCR-015
+    name: github_user_token_is_ephemeral_and_cannot_mutate
+    proves: >-
+      The user-to-server authorization code, access token, refresh token, and
+      PKCE verifier are absent from Cloud SQL, logs, traces, events, console
+      responses, channels, model context, and GitHub Provider requests after
+      the current-user identity proof. Dependency, IAM, and egress tests prove
+      the Identity Broker has no repository mutation path and the Provider has
+      no OAuth-client secret, callback, or user-token path.
+  - id: CCR-016
+    name: github_reviewer_binding_lifecycle_refuses_ambiguity
+    proves: >-
+      Only one active mapping exists per repository/Solvan principal and per
+      repository/GitHub account node ID. Login/email lookalikes and shared
+      account attempts fail; re-link replaces rather than mutates history.
+      Role expiry, repository or installation change, policy change, explicit
+      disconnect, account mismatch, and proof expiry make a binding ineligible;
+      restoration requires a fresh OAuth link.
+  - id: CCR-017
+    name: merge_revalidates_the_active_link_and_github_review
+    proves: >-
+      Immediately before merge, an unavailable, degraded, expired, revoked,
+      revalidation-required, policy-mismatched, or account-mismatched binding
+      blocks the provider call even when an earlier decision was valid. The
+      provider accepts only the current GitHub required review by the linked
+      immutable account node ID over the frozen head/base/tree/check state.
+  - id: CCR-018
+    name: target_delivery_schema_preserves_authority_and_history
+    proves: >-
+      The target DDL rejects an egress-enabled command definition, duplicate
+      active OAuth profile, invalid guidance-selection lifecycle, duplicate
+      active guidance set, reused command/operation idempotency key with
+      different material, invalid decision/operation status shape, decision
+      chain fork/reapproval/expiry rules, and every update, delete, or TRUNCATE
+      of immutable transition, candidate, exploratory-receipt, decision, or
+      verifier-receipt history. It also proves every delivery relation has a
+      unique type prefix and every repository binding is typed and scope-FK'd.
+  - id: CCR-019
+    name: private_command_envelopes_are_scope_bound_and_reconcilable
+    proves: >-
+      Every private command rejects unknown fields, a caller/audience mismatch,
+      request-supplied scope/subject/material/authority field, expired deadline,
+      and idempotency reuse with changed material. Scope and typed subject are
+      resolved only from the globally unique durable command ID. A duplicate
+      exact command returns its prior receipt; post-issue unavailability follows
+      authoritative reconciliation and cannot cause a second external effect.
+  - id: CCR-020
+    name: cloud_run_release_adapter_is_bound_to_registered_target_and_manifest
+    proves: >-
+      gcp-cloud-run-revision-traffic@1 rejects a substituted project, region,
+      service, target epoch, runtime identity, candidate digest, manifest field,
+      traffic percentage, decision, reservation, signer, or policy. The
+      Controller's IAM, egress, imports, and APIs exclude GitHub, secrets, IAM
+      mutation, arbitrary Cloud Run services, the Action Actuator, and verifier
+      authority.
+  - id: CCR-021
+    name: cloud_run_canary_promotion_and_rollback_are_etag_fenced
+    proves: >-
+      A stale etag, changed service generation, missing candidate revision,
+      unexpected traffic map, skipped canary step, duplicate operation, timeout,
+      or ambiguous long-running operation blocks promotion and reconciles by
+      authoritative read. Rollback uses a fresh etag and only the rollout's
+      frozen predeploy revision; it never selects latest or mutates a template.
+  - id: CCR-022
+    name: automated_rollout_requires_a_known_predeploy_release
+    proves: >-
+      An automated rollout cannot be created or advanced without scope-valid
+      predeploy and rollback release-candidate references plus the exact same
+      predeploy/rollback assignment. An estate without an independently
+      qualified prior release is refused into the separate human bootstrap path.
+  - id: CCR-023
+    name: signed_baseline_and_each_rollout_stage_are_exactly_bound
+    proves: >-
+      The Deployment Controller accepts only the active verifier key and exact
+      signed baseline. Every canary stage waits its frozen observation window,
+      accepts one signed receipt for its exact ordinal and generation, and may
+      advance only to the next registered percentage; the final receipt alone
+      can schedule terminal promotion.
+  - id: CCR-024
+    name: failed_verification_cannot_trigger_automatic_rollback
+    proves: >-
+      A signed FAILED or INCONCLUSIVE receipt registers the exact rollout
+      failure and creates ROLLBACK_APPROVAL_PENDING. No rollback operation is
+      prepared until a fresh RELEASE_APPROVER decision binds the latest failure
+      receipt, rollout, prior release, prior assignment, and current reservation.
+  - id: CCR-025
+    name: rollback_remains_pending_until_independently_verified
+    proves: >-
+      The Controller assigns traffic only to the frozen prior revision and then
+      leaves the rollout ROLLBACK_PENDING. The independent Verifier re-reads the
+      target and signs its result; only a VERIFIED rollback receipt may release
+      the reservation and move the request and rollout to ROLLED_BACK.
+  - id: CCR-026
+    name: durable_effect_receipt_closes_command_completion_crash_gap
+    proves: >-
+      A crash after canary, promotion, rollback, baseline, release verification,
+      or rollback verification is durable but before its private command is
+      terminal reloads the exact stored receipt and original observation time.
+      The retry completes the same command without a second provider mutation,
+      a second authoritative verification row, or a conflicting response
+      object. Uncommitted verifier artifacts are content-addressed and cannot
+      collide with a later safe re-observation.
+  - id: CCR-027
+    name: unknowable_post_issue_rollout_effect_is_terminally_ambiguous
+    proves: >-
+      When a Cloud Run mutation was issued but its provider handle was lost,
+      its operation failed after acceptance, or its final authoritative target
+      state is not exact, the operation and command become AMBIGUOUS exactly
+      once. The rollout becomes AMBIGUOUS, its reservation remains
+      RECONCILING, the request becomes BLOCKED or ROLLBACK_AMBIGUOUS, and no
+      retry can issue another deployment mutation.

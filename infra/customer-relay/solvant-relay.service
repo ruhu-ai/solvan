@@ -1,0 +1,20 @@
+# Customer-owned systemd supervisor for the rootless on-prem profile. Replace
+# every CUSTOMER_* token in the customer's configuration management system.
+[Unit]
+Description=Solvant Relay one-shot customer evidence collection
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=CUSTOMER_RELAY_USER
+Group=CUSTOMER_RELAY_GROUP
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=CUSTOMER_ENCRYPTED_RELAY_LEDGER
+ExecStart=/usr/bin/podman run --rm --user 10001:10001 --read-only --cap-drop ALL --security-opt no-new-privileges --pids-limit 128 --memory 512m --cpus 1 --tmpfs /tmp:rw,noexec,nosuid,nodev,size=16m --mount type=bind,src=CUSTOMER_POLICY_AND_KEYS,dst=/var/run/solvant,ro --mount type=bind,src=CUSTOMER_KILL_SWITCH,dst=/var/run/solvant-kill-switch,ro --mount type=bind,src=CUSTOMER_ENCRYPTED_RELAY_LEDGER,dst=/var/lib/solvant-ledger CUSTOMER_REGISTRY/solvant-relay@sha256:REPLACE
+
+[Install]
+WantedBy=multi-user.target

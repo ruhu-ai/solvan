@@ -1,0 +1,141 @@
+schema_version: 1
+status: target
+release_gate: false
+governing_spec: specs/22-solvant-relay.md
+note: >-
+  Target traceability only. A null implementation is an explicit implementation
+  gap. Local evidence is not a customer deployment or production qualification
+  receipt and cannot enlarge the competition release.
+tests:
+  CT-RELAY-SEPARATE-BINARY-001:
+    requirements: [INV-RELAY-01]
+    proves: relay build has no mutation imports, IAM, routes, SDKs, or permissive mode flag
+    implementation: null
+  SEC-RELAY-NO-INGRESS-001:
+    requirements: [INV-RELAY-02]
+    proves: no Service, Ingress, application listener, callback, MCP, A2A, or inbound customer path
+    implementation: null
+  SEC-RELAY-IDENTITY-SCOPE-001:
+    requirements: [INV-RELAY-03, INV-RELAY-09, INV-RELAY-22]
+    proves: forged body/header scope, wrong issuer/audience/principal/cell/placement is refused
+    implementation: null
+  SEC-RELAY-POLICY-FAIL-CLOSED-001:
+    requirements: [INV-RELAY-04]
+    proves: missing, empty, expired, unsigned, malformed, widened or digest-mismatched policy performs no read or egress
+    implementation: null
+  SEC-RELAY-ATTESTATION-001:
+    requirements: [INV-RELAY-05]
+    proves: self-report, stale/revoked key, wrong builder/source/image/SBOM/scan, or expired attestation cannot become READY
+    implementation: null
+  IT-RELAY-PLAN-BEFORE-JOB-001:
+    requirements: [INV-RELAY-06]
+    proves: no job exists without one persisted Agent run, Tool call, exact profile and coordinator command
+    implementation: null
+  SEC-RELAY-NO-GENERIC-PROXY-001:
+    requirements: [INV-RELAY-07]
+    proves: URL, header, body, arbitrary query, SDK method, shell, file, Kubernetes, credential and mutation fields are unrepresentable/refused before network access
+    implementation: null
+  SEC-RELAY-TOCTOU-001:
+    requirements: [INV-RELAY-08, INV-RELAY-09, INV-RELAY-21]
+    proves: policy/catalog/image/identity/placement/connection/enrollment change after poll prevents an unstarted call
+    implementation: null
+  IT-RELAY-CLAIM-RACE-001:
+    requirements: [INV-RELAY-09, INV-RELAY-10]
+    proves: concurrent replicas yield one accepted claim token and one accepted projection
+    implementation: null
+  IT-RELAY-RECEIPT-IDEMPOTENT-001:
+    requirements: [INV-RELAY-10]
+    proves: exact receipt replay returns the projection; changed covered bytes conflict; no duplicate evidence or Tool completion
+    implementation: null
+  IT-RELAY-UPSTREAM-DELIVERY-TRUTH-001:
+    requirements: [INV-RELAY-11, INV-RELAY-16]
+    proves: v1 UI/audit says bounded at-least-once under ambiguity and never claims exactly-once upstream
+    implementation: null
+  SEC-RELAY-REDACTION-BEFORE-EGRESS-001:
+    requirements: [INV-RELAY-12, INV-RELAY-15]
+    proves: secret, PII, raw error, policy and credential canaries are absent from every egress/storage/telemetry surface; scanner failure withholds all bytes
+    implementation: null
+  IT-RELAY-EVIDENCE-ATOMICITY-001:
+    requirements: [INV-RELAY-10, INV-RELAY-13]
+    proves: receipt, acceptance, evidence item, Tool completion and outbox commit together or not at all
+    implementation: null
+  SEC-RELAY-EVIDENCE-POISONING-001:
+    requirements: [INV-RELAY-12, INV-RELAY-14]
+    proves: instruction-like log/trace/error content or unavailable Model Armor remains ineligible for prompt construction
+    implementation: null
+  SEC-RELAY-CREDENTIAL-CONTAINMENT-001:
+    requirements: [INV-RELAY-15]
+    proves: credential references and values never occur in jobs, SQL, objects, logs, traces, prompts, receipts or support bundles
+    implementation: null
+  IT-RELAY-PROCESS-KILL-MATRIX-001:
+    requirements: [INV-RELAY-10, INV-RELAY-16]
+    proves: kill before claim, after claim, before call, during call, after local store, after upload, before/after receipt ack never creates a duplicate accepted projection
+    implementation: null
+  LOAD-RELAY-BOUNDS-001:
+    requirements: [INV-RELAY-17]
+    proves: bytes/pages/items/calls/attempts/poll/upstream/storage limits refuse without rerouting or partial unbounded forwarding
+    implementation: null
+  IT-RELAY-RETENTION-001:
+    requirements: [INV-RELAY-18]
+    proves: expiry deletes only eligible local/control-plane objects; legal hold, region, CMEK and classification restrictions hold
+    implementation: null
+  IT-RELAY-GRAPH-NONAUTHORITY-001:
+    requirements: [INV-RELAY-19]
+    proves: Relay observations cannot insert, reconcile, promote or verify Production Graph material
+    implementation: null
+  E2E-UI-RELAY-STATUS-001:
+    requirements: [INV-RELAY-20]
+    proves: every lifecycle has definition, reason and deterministic next step; client cannot force READY, edit policy, reveal credentials, or enable remediation
+    implementation: null
+  IT-RELAY-REVOCATION-RACE-001:
+    requirements: [INV-RELAY-09, INV-RELAY-16, INV-RELAY-21]
+    proves: revocation racing poll/claim/call/upload/receipt blocks new work and reconciles possibly executed reads
+    implementation: null
+  SEC-RELAY-CROSS-TENANT-001:
+    requirements: [INV-RELAY-03, INV-RELAY-13, INV-RELAY-22]
+    proves: OSS, shared and dedicated profiles reject cross-tenant jobs, objects, receipts, evidence and SQL access
+    implementation: null
+  SEC-RELAY-SOURCE-ROUTING-001:
+    requirements: [INV-RELAY-03, INV-RELAY-06, INV-RELAY-23]
+    proves: a forged source connection, Relay transport, source binding, capability receipt, profile member or Tool call cannot create or claim a job
+    implementation: null
+  E2E-RELAY-CHAT-STEER-001:
+    requirements: [INV-RELAY-24]
+    proves: central Chat can only park and confirm an exact bounded Steer; Liaison/model cannot address Relay or create an Agent run, Tool call or job, and the coordinator creates them in order
+    implementation: null
+  IT-RELAY-ATTEMPT-RETRY-001:
+    requirements: [INV-RELAY-11, INV-RELAY-16, INV-RELAY-25]
+    proves: a retryable attempt outcome creates no final receipt and cannot block a later final success; budget exhaustion terminalizes exactly once
+    implementation: null
+  IT-RELAY-SUCCESS-BUNDLE-001:
+    requirements: [INV-RELAY-10, INV-RELAY-13, INV-RELAY-26]
+    proves: direct or mismatched receipt, grant, evidence provenance, Tool completion, job transition/version or outbox writes roll back the entire success bundle
+    implementation: null
+  SEC-RELAY-CLASSIFICATION-REGION-001:
+    requirements: [INV-RELAY-13, INV-RELAY-18, INV-RELAY-27]
+    proves: a job, grant, receipt or evidence item outside the exact region or above any enrollment, source, connection, job or tenant ceiling is refused
+    implementation: null
+  SEC-RELAY-RESOURCE-BINDING-DIGEST-001:
+    requirements: [INV-RELAY-03, INV-RELAY-23, INV-RELAY-28]
+    proves: every canonical binding field and its order affects the published vector; a forged/stale digest refuses before provider access and acceptance
+    implementation: null
+  SEC-RELAY-RUNTIME-PROOF-001:
+    requirements: [INV-RELAY-05, INV-RELAY-09, INV-RELAY-29]
+    proves: missing, expired, replayed or mismatched challenge, OIDC principal, process boot, epoch, proof key, policy signature or runtime proof cannot create READY
+    implementation: null
+  CT-RELAY-ADAPTER-BINDING-001:
+    requirements: [INV-RELAY-06, INV-RELAY-23, INV-RELAY-30]
+    proves: each selectable adapter operation equals the accepted governed Tool provider/capability pair and current coverage; catalog-only or cross-paired adapters refuse
+    implementation: null
+  SEC-RELAY-SOVEREIGNTY-001:
+    requirements: [INV-RELAY-13, INV-RELAY-18, INV-RELAY-22]
+    proves: poll, object, SQL, KMS, log, trace, backup and support locations outside the allowed intersection refuse without spillover
+    implementation: null
+  IT-RELAY-UPGRADE-001:
+    requirements: [INV-RELAY-05, INV-RELAY-09, INV-RELAY-16]
+    proves: rolling version overlap is attested, lease-fenced and process-restart safe; unsupported versions receive no work
+    implementation: null
+  CT-RELAY-MSR-BOUNDARY-001:
+    requirements: [REL-RELAY-01]
+    proves: Relay target artifacts cannot become competition-release requirements or receipts
+    implementation: null

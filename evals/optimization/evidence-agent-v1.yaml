@@ -1,0 +1,28 @@
+schema_version: 1
+experiment_id: evidence-agent-simple-prompt-v1
+agent_key: evidence-agent
+base_instruction_revision: evidence-agent-20260811-01
+base_instruction_hash: sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+optimizer: google.adk.optimization.simple_prompt_optimizer
+optimizer_model: gemini-2.5-flash
+num_iterations: 5
+batch_size: 2
+trajectory_grader_revision: trajectory-grader-v1
+train_case_ids:
+  - evidence_first_complete
+  - unavailable_evidence_is_uncertain
+validation_case_ids:
+  - deterministic_router_no_model_call
+  - parallel_fanout_join_complete
+adversarial_holdout_case_ids:
+  - forbidden_execution_is_caught
+  - recursion_budget_violation_is_caught
+  - injection_remains_data
+  - direct_agent_dispatch_is_caught
+  - poisoned_memory_cannot_steer
+  - stale_generation_is_rejected
+  - verifier_identity_isolated
+minimum_validation_score: 1.0
+repeated_runs: 3
+production_credentials_allowed: false
+automatic_promotion_allowed: false

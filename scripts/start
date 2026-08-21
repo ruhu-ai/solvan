@@ -1,0 +1,278 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+# shellcheck source=scripts/load-dotenv
+source scripts/load-dotenv
+
+eval "$(scripts/dev-env --shell)"
+
+mkdir -p "$SOLVAN_STATE_DIR/pids" "$SOLVAN_STATE_DIR/observability" "$SOLVAN_STATE_DIR/artifacts"
+
+cloud_connected="${SOLVAN_LOCAL_CONNECTED_GCP:-false}"
+
+if [[ ! -x .venv/bin/python || ! -d node_modules ]]; then
+  echo "Dependencies are missing. Run scripts/bootstrap first." >&2
+  exit 1
+fi
+if ! docker info >/dev/null 2>&1; then
+  echo "Docker is not running; isolated PostgreSQL cannot start." >&2
+  exit 1
+fi
+
+if curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_API_PORT/ready" >/dev/null 2>&1 \
+  && curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_API_PORT/api/console/settings" >/dev/null 2>&1 \
+  && curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_CONSOLE_PORT" >/dev/null 2>&1 \
+  && curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_PAYMENTS_PORT/live" >/dev/null 2>&1 \
+  && { [[ "$cloud_connected" != "true" ]] \
+    || { curl --fail --silent --unix-socket "$SOLVAN_LOCAL_DIRECT_GCP_READER_SOCKET" \
+           http://solvan-local-reader/healthz >/dev/null 2>&1 \
+      && curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_DETECTOR_PORT/live" >/dev/null 2>&1 \
+      && curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_LOCAL_COORDINATOR_PORT/healthz" >/dev/null 2>&1; }; }; then
+  echo "Solvan local harness is already ready for worktree $SOLVAN_WORKTREE_ID."
+  exit 0
+fi
+if compgen -G "$SOLVAN_STATE_DIR/pids/*.pid" >/dev/null; then
+  scripts/stop >/dev/null
+fi
+
+port_is_busy() {
+  python3 - "$1" <<'PY'
+import socket, sys
+port=int(sys.argv[1])
+with socket.socket() as sock:
+    raise SystemExit(0 if sock.connect_ex(("127.0.0.1", port)) == 0 else 1)
+PY
+}
+
+ports=("$SOLVAN_API_PORT" "$SOLVAN_CONSOLE_PORT" "$SOLVAN_POSTGRES_PORT" "$SOLVAN_PAYMENTS_PORT" "$SOLVAN_IDENTITY_PORT")
+if [[ "$cloud_connected" == "true" ]]; then
+  ports+=("$SOLVAN_DETECTOR_PORT" "$SOLVAN_LOCAL_COORDINATOR_PORT")
+fi
+for port in "${ports[@]}"; do
+  if port_is_busy "$port"; then
+    echo "Port $port is already in use. Set SOLVAN_PORT_OFFSET and retry." >&2
+    exit 1
+  fi
+done
+
+# Generate the local inter-service credential only after stale-process cleanup.
+# scripts/stop deliberately removes the previous credential; creating it in the
+# wrapper before this point would leave the newly launched services with a path
+# that cleanup had just deleted.
+if [[ "$cloud_connected" == "true" ]]; then
+  if [[ -z "${SOLVAN_LOCAL_READER_TOKEN_PATH:-}" ]]; then
+    echo "Local reader token path is missing. Use scripts/start-cloud-dev." >&2
+    exit 1
+  fi
+  umask 077
+  uv run python - "$SOLVAN_LOCAL_READER_TOKEN_PATH" <<'PY'
+import secrets
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+path.parent.mkdir(parents=True, exist_ok=True)
+path.write_text(secrets.token_urlsafe(48) + "\n", encoding="ascii")
+path.chmod(0o600)
+PY
+fi
+
+# The console is one origin and proxies /api, locally exactly as deployed. It
+# previously called the API's own origin directly, so the session transport
+# under test was not the transport that shipped: the deployed proxy dropped the
+# session cookie entirely and nothing local could notice.
+export SOLVAN_API_ORIGIN="http://$SOLVAN_DEV_HOST:$SOLVAN_API_PORT"
+
+docker compose -f infra/local/compose.yaml up -d --wait postgres
+
+export PAYMENTS_DATABASE_URL="postgresql://solvan_local:solvan_local_only@127.0.0.1:$SOLVAN_POSTGRES_PORT/solvan_local"
+# The conversational surface is durable, so the local API needs the worktree
+# database. This grants no production authority: the console projection stays a
+# labeled fixture and every mutation route still refuses outside GCP mode.
+export SOLVAN_DATABASE_URL="$PAYMENTS_DATABASE_URL"
+export PAYMENTS_REVISION="${PAYMENTS_REVISION:-v2.8.0}"
+# Declared before the bootstrap, which seeds an invitation for each: sign-in
+# requires a membership, so without them every local sign-in meets a correct
+# refusal.
+export SOLVAN_DEV_IDENTITIES="${SOLVAN_DEV_IDENTITIES:-operator@solvan.local,approver@solvan.local,admin@solvan.local}"
+# The first administrator cannot be invited, because nobody exists to invite
+# them. This account is granted ADMIN on its first sign-in and only while the
+# environment has no administrator at all, so it starts an environment rather
+# than opening one.
+export SOLVAN_FOUNDING_ADMINISTRATOR="${SOLVAN_FOUNDING_ADMINISTRATOR:-founder@ruhu.ai}"
+
+uv run python tools/bootstrap_local_database.py --database-url "$PAYMENTS_DATABASE_URL" \
+  --rebuild-local-target-schemas
+
+if [[ "$cloud_connected" == "true" ]]; then
+  uv run python tools/bootstrap_local_connected_admin.py
+  if [[ -z "${SOLVAN_LOCAL_DIRECT_GCP_READER_SOCKET:-}" \
+    || -z "${SOLVAN_LOCAL_READER_TOKEN_PATH:-}" \
+    || -z "${SOLVAN_READER_SERVICE_ACCOUNT:-}" ]]; then
+    echo "Local-connected GCP settings are incomplete. Use scripts/start-cloud-dev." >&2
+    exit 1
+  fi
+  if [[ -S "$SOLVAN_LOCAL_DIRECT_GCP_READER_SOCKET" ]]; then
+    rm "$SOLVAN_LOCAL_DIRECT_GCP_READER_SOCKET"
+  elif [[ -e "$SOLVAN_LOCAL_DIRECT_GCP_READER_SOCKET" ]]; then
+    echo "Local reader socket path exists and is not a socket; refusing." >&2
+    exit 1
+  fi
+  nohup .venv/bin/uvicorn apps.local_direct_gcp_reader.main:app \
+    --uds "$SOLVAN_LOCAL_DIRECT_GCP_READER_SOCKET" \
+    >"$SOLVAN_STATE_DIR/observability/direct-gcp-reader-process.log" 2>&1 &
+  reader_pid=$!
+  printf '%s\n' "$reader_pid" >"$SOLVAN_STATE_DIR/pids/direct-gcp-reader.pid"
+
+  nohup .venv/bin/uvicorn apps.local_detector.main:app \
+    --host "$SOLVAN_DEV_HOST" --port "$SOLVAN_DETECTOR_PORT" \
+    >"$SOLVAN_STATE_DIR/observability/detector-process.log" 2>&1 &
+  detector_pid=$!
+  printf '%s\n' "$detector_pid" >"$SOLVAN_STATE_DIR/pids/detector.pid"
+
+  export SOLVAN_LOCAL_DETECTOR_URL="http://$SOLVAN_DEV_HOST:$SOLVAN_DETECTOR_PORT"
+  export SOLVAN_LOCAL_CLOUD_WORKER_URL="http://$SOLVAN_DEV_HOST:$SOLVAN_LOCAL_COORDINATOR_PORT"
+  nohup .venv/bin/uvicorn apps.local_cloud_worker.main:app \
+    --host "$SOLVAN_DEV_HOST" --port "$SOLVAN_LOCAL_COORDINATOR_PORT" \
+    >"$SOLVAN_STATE_DIR/observability/local-cloud-worker-process.log" 2>&1 &
+  worker_pid=$!
+  printf '%s\n' "$worker_pid" >"$SOLVAN_STATE_DIR/pids/local-cloud-worker.pid"
+fi
+
+nohup .venv/bin/uvicorn apps.payments_fixture.main:app \
+  --host "$SOLVAN_DEV_HOST" --port "$SOLVAN_PAYMENTS_PORT" \
+  >"$SOLVAN_STATE_DIR/observability/payments-process.log" 2>&1 &
+payments_pid=$!
+printf '%s\n' "$payments_pid" >"$SOLVAN_STATE_DIR/pids/payments.pid"
+
+# Google is the product's only identity provider. This is the harness fixture
+# the browser suite signs in against, because the alternative is a suite that
+# injects a fabricated cookie and therefore never exercises the callback, the
+# nonce, or an expiry. It issues genuine RS256 assertions and the API verifies
+# them exactly as it verifies Google's — signature, issuer, audience, nonce,
+# PKCE, auth_time — and refuses the fixture outright wherever Google Cloud holds
+# authority, so it cannot loosen a deployment.
+#
+# To develop against real Google instead, register an OAuth client whose
+# redirect URI is this worktree's console origin and export
+# SOLVAN_APPROVAL_AUDIENCE, SOLVAN_OAUTH_CLIENT_SECRET and
+# SOLVAN_ADMITTED_DOMAINS before starting. Pin the port first with
+# SOLVAN_CONSOLE_PORT, since Google matches redirect URIs exactly and this
+# worktree's port is derived from its path.
+# The browser suite sets SOLVAN_USE_TEST_IDENTITY_PROVIDER, because it cannot
+# sign into Google: the flow needs a person, and a Workspace account with 2-step
+# verification is not something a headless run can complete. It forces the
+# fixture over whatever `.env` holds, so a developer configuring real Google for
+# themselves does not thereby break the suite.
+if [[ "${SOLVAN_USE_TEST_IDENTITY_PROVIDER:-}" == "1" || -z "${SOLVAN_APPROVAL_AUDIENCE:-}" ]]; then
+  export SOLVAN_TEST_ISSUER="http://$SOLVAN_DEV_HOST:$SOLVAN_IDENTITY_PORT"
+  export SOLVAN_APPROVAL_AUDIENCE="solvan-local-console"
+  # The fixture's identities are @solvan.local, so its admitted domains are
+  # forced too: inheriting a real deployment's domain from `.env` would refuse
+  # every fixture identity at the door.
+  export SOLVAN_ADMITTED_DOMAINS="solvan.local"
+  # The fixture receives step-up messages over loopback so browser tests can
+  # prove the production-shaped request/delivery/verify flow without reading a
+  # person's mailbox. Both secrets are fixture-only and are force-overridden;
+  # the API refuses this issuer wherever Google Cloud authority exists.
+  export SOLVAN_TEST_STEP_UP_SINK_TOKEN="solvan-local-test-step-up-sink-token-v1"
+  export SOLVAN_OPERATOR_STEP_UP_PEPPER="solvan-local-test-step-up-pepper-v1"
+  # A Google client secret alongside a fixture issuer is a contradiction, and
+  # the fixture path never redeems against Google anyway.
+  unset SOLVAN_OAUTH_CLIENT_SECRET
+else
+  # Real Google sign-in on a local host. The presence-code step-up still needs
+  # its verifier secret and a delivery path, which the fixture branch above
+  # gets for free and this branch used to get not at all — so every
+  # challenge-bound action (estate.connect, role.grant) failed at preparation.
+  # A deployment sets its own secret; locally a fixed one is enough.
+  : "${SOLVAN_OPERATOR_STEP_UP_PEPPER:=solvan-local-google-step-up-pepper-v1}"
+  export SOLVAN_OPERATOR_STEP_UP_PEPPER
+  if [[ -z "${SOLVAN_OPERATOR_STEP_UP_EMAIL_RELAY_URL:-}" ]]; then
+    # No mailbox relay: deliver codes to the same loopback mailbox the fixture
+    # path uses, started below in mailbox-only mode — it mounts no sign-in
+    # endpoints, and the API never sees SOLVAN_TEST_ISSUER, so sign-in stays
+    # genuinely Google. The API refuses any loopback sink wherever Google
+    # Cloud holds authority, so this cannot travel into a deployment.
+    : "${SOLVAN_OPERATOR_STEP_UP_SINK_TOKEN:=solvan-local-google-step-up-sink-token-v1}"
+    export SOLVAN_OPERATOR_STEP_UP_SINK_TOKEN
+    export SOLVAN_OPERATOR_STEP_UP_SINK_URL="http://$SOLVAN_DEV_HOST:$SOLVAN_IDENTITY_PORT/operator-step-up-messages"
+    export SOLVAN_LOCAL_STEP_UP_MAILBOX=1
+  fi
+fi
+# The callback lands on the console, which proxies it to the API. Pointing it at
+# the API's own origin worked locally only because cookies ignore ports, and
+# could never work in a deployment where the two are different hosts.
+export SOLVAN_OAUTH_REDIRECT_URI="http://$SOLVAN_DEV_HOST:$SOLVAN_CONSOLE_PORT/api/auth/callback"
+
+if [[ -n "${SOLVAN_TEST_ISSUER:-}" ]]; then
+  nohup .venv/bin/uvicorn apps.dev_identity_provider.main:app \
+    --host "$SOLVAN_DEV_HOST" --port "$SOLVAN_IDENTITY_PORT" \
+    >"$SOLVAN_STATE_DIR/observability/identity-process.log" 2>&1 &
+  identity_pid=$!
+  printf '%s\n' "$identity_pid" >"$SOLVAN_STATE_DIR/pids/identity.pid"
+elif [[ -n "${SOLVAN_LOCAL_STEP_UP_MAILBOX:-}" ]]; then
+  # Mailbox-only mode: the variables are scoped to this one process, so the
+  # API's issuer stays Google and the provider mounts no sign-in endpoints.
+  SOLVAN_STEP_UP_MAILBOX_ONLY=1 \
+  SOLVAN_TEST_STEP_UP_SINK_TOKEN="$SOLVAN_OPERATOR_STEP_UP_SINK_TOKEN" \
+    nohup .venv/bin/uvicorn apps.dev_identity_provider.main:app \
+    --host "$SOLVAN_DEV_HOST" --port "$SOLVAN_IDENTITY_PORT" \
+    >"$SOLVAN_STATE_DIR/observability/identity-process.log" 2>&1 &
+  identity_pid=$!
+  printf '%s\n' "$identity_pid" >"$SOLVAN_STATE_DIR/pids/identity.pid"
+fi
+
+nohup .venv/bin/uvicorn apps.api.main:app \
+  --host "$SOLVAN_DEV_HOST" --port "$SOLVAN_API_PORT" \
+  >"$SOLVAN_STATE_DIR/observability/api-process.log" 2>&1 &
+api_pid=$!
+printf '%s\n' "$api_pid" >"$SOLVAN_STATE_DIR/pids/api.pid"
+
+nohup apps/console/node_modules/.bin/vite apps/console \
+  --host "$SOLVAN_DEV_HOST" --port "$SOLVAN_CONSOLE_PORT" \
+  >"$SOLVAN_STATE_DIR/observability/console-process.log" 2>&1 &
+console_pid=$!
+printf '%s\n' "$console_pid" >"$SOLVAN_STATE_DIR/pids/console.pid"
+
+cleanup_failed_start() {
+  scripts/stop >/dev/null 2>&1 || true
+}
+trap cleanup_failed_start ERR
+
+for _ in {1..60}; do
+  if curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_API_PORT/ready" >/dev/null \
+    && curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_API_PORT/api/console/settings" >/dev/null \
+    && curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_CONSOLE_PORT" >/dev/null \
+    && curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_PAYMENTS_PORT/live" >/dev/null \
+    && { [[ "$cloud_connected" != "true" ]] \
+      || { curl --fail --silent --unix-socket "$SOLVAN_LOCAL_DIRECT_GCP_READER_SOCKET" \
+             http://solvan-local-reader/healthz >/dev/null \
+        && curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_DETECTOR_PORT/live" >/dev/null \
+        && curl --fail --silent "http://$SOLVAN_DEV_HOST:$SOLVAN_LOCAL_COORDINATOR_PORT/healthz" >/dev/null; }; }; then
+    trap - ERR
+    printf '%s\n' \
+      "Solvan local harness is ready." \
+      "Authority: LOCAL / NO PRODUCTION AUTHORITY" \
+      "Worktree: $SOLVAN_WORKTREE_ID" \
+      "Console: http://$SOLVAN_DEV_HOST:$SOLVAN_CONSOLE_PORT" \
+      "API: http://$SOLVAN_DEV_HOST:$SOLVAN_API_PORT" \
+      "Payments fixture: http://$SOLVAN_DEV_HOST:$SOLVAN_PAYMENTS_PORT ($PAYMENTS_REVISION)" \
+      "$([[ "$cloud_connected" == "true" ]] && printf 'Direct GCP Reader: Unix socket (authenticated, worktree-scoped)' || true)" \
+      "$([[ "$cloud_connected" == "true" ]] && printf 'Detector: http://%s:%s' "$SOLVAN_DEV_HOST" "$SOLVAN_DETECTOR_PORT" || true)" \
+      "$([[ "$cloud_connected" == "true" ]] && printf 'Incident worker: loopback authenticated' || true)" \
+      "$([[ -n "${SOLVAN_TEST_ISSUER:-}" ]] && printf 'Sign in as: %s (test identity provider)' "${SOLVAN_DEV_IDENTITIES%%,*}" || printf 'Sign in with Google')" \
+      "$([[ -n "${SOLVAN_LOCAL_STEP_UP_MAILBOX:-}" ]] && printf 'Step-up codes: curl -s -H "Authorization: Bearer %s" "http://%s:%s/operator-step-up-messages/latest?address=<your Google email>"' "$SOLVAN_OPERATOR_STEP_UP_SINK_TOKEN" "$SOLVAN_DEV_HOST" "$SOLVAN_IDENTITY_PORT" || true)" \
+      "Metrics: http://$SOLVAN_DEV_HOST:$SOLVAN_API_PORT/internal/dev/metrics" \
+      "State: $SOLVAN_STATE_DIR" \
+      "Stop: scripts/stop"
+    exit 0
+  fi
+  sleep 0.25
+done
+
+echo "Harness did not become ready. Inspect $SOLVAN_STATE_DIR/observability/." >&2
+exit 1

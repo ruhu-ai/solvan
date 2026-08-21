@@ -1,0 +1,136 @@
+schema_version: 1
+canonicalization: RFC8785_UTF8_SHA256_PREFIXED
+vectors:
+  - kind: profile_material
+    canonical_json: '{"allowed_agent_key":"evidence-agent","canonicalization_version":1,"data_classification_ceiling":"CONFIDENTIAL","maximum_aggregate_evidence_bytes":1048576,"maximum_parallel_calls":2,"maximum_read_window_ms":86400000,"maximum_total_calls":12,"profile_key":"alert-triage-read-compute-v1","purpose":"ALERT_TRIAGE","runtime_region":"POLICY_BOUND","schema_version":2,"tool_connection_requirements":[{"binding_kind":"POLICY_SOURCE_CONNECTION","capability_key":"METRIC_READ","external_project_selector":"TARGET_RESOURCE_PROJECT","provider":"CLOUD_MONITORING","tool":{"tool_key":"cloud_monitoring_query","version":"1"}},{"binding_kind":"COMPUTE_ONLY","tool":{"tool_key":"metric_baseline_compare","version":"1"}},{"binding_kind":"COMPUTE_ONLY","tool":{"tool_key":"metric_change_point_detect","version":"1"}},{"binding_kind":"COMPUTE_ONLY","tool":{"tool_key":"metric_correlate","version":"1"}}],"tool_revisions":[{"tool_key":"cloud_monitoring_query","version":"1"},{"tool_key":"metric_baseline_compare","version":"1"},{"tool_key":"metric_change_point_detect","version":"1"},{"tool_key":"metric_correlate","version":"1"}],"version":"1"}'
+    expected_hash: sha256:e466179ca23b9d7c28364342ae375ebf36527e484e41ea2fe0d01c50cc4b04f8
+  - kind: effective_tool_set
+    canonical_json: '{"accepted_data_classification":"INTERNAL","accepted_step_budget_hash":"sha256:1111111111111111111111111111111111111111111111111111111111111111","accepted_tools":[{"tool_key":"cloud_monitoring_query","version":"1"},{"tool_key":"metric_baseline_compare","version":"1"}],"agent_key":"evidence-agent","agent_revision":"evidence-agent@1","classification_ceiling":"CONFIDENTIAL","connection_bindings":[{"binding_kind":"POLICY_SOURCE_CONNECTION","capability_key":"METRIC_READ","capability_receipt_hash":"sha256:2222222222222222222222222222222222222222222222222222222222222222","capability_receipt_id":"cap_01","connection_epoch":4,"connection_id":"conn_monitoring_01","external_project_id":"project_a","external_project_selector":"TARGET_RESOURCE_PROJECT","provider":"CLOUD_MONITORING","tool":{"tool_key":"cloud_monitoring_query","version":"1"}},{"binding_kind":"COMPUTE_ONLY","tool":{"tool_key":"metric_baseline_compare","version":"1"}}],"placement_epoch":7,"policy_head_activation_id":"activation_01","policy_head_epoch":5,"profile_material_hash":"sha256:e466179ca23b9d7c28364342ae375ebf36527e484e41ea2fe0d01c50cc4b04f8","runtime_region":"europe-west1","schema_version":1,"scope":{"environment_id":"env_prod","organization_id":"org_a","project_id":"project_a"}}'
+    expected_hash: sha256:3133cf96301f1a6f2aff253b480d9c560fc42ff1bbabad9c1d9e2bc6e1e8e9bc
+mutation_vectors:
+  # Apply one indicated mutation to the named base vector, RFC 8785-canonicalize,
+  # and hash. These prove hashing coverage, not that the mutated object is valid.
+  - {base: profile_material, field: canonicalization_version, expected_hash: sha256:b0e53f846e74878bb6f096b3a88c7928ca080c1940fc5a9bbeb6ebef1c891492}
+  - {base: profile_material, field: schema_version, expected_hash: sha256:e06a3d0c77bf910d6be00eb1bf9cc1f2536e6b3989a818a9aa2779a205f8fc07}
+  - {base: profile_material, field: profile_key, expected_hash: sha256:140b16e932f10dc87e26cea64f6a5e8678d338fbd4926c0f9b3e348c06a25000}
+  - {base: profile_material, field: version, expected_hash: sha256:b0fac5986d0ddf9c28814e03235801be3b5516185aecc9bd1bd1bc03594c9db3}
+  - {base: profile_material, field: purpose, expected_hash: sha256:e5985e8639402eb8239c654f0f258df6bc6950935f98a22188475d349f1aa2ee}
+  - {base: profile_material, field: allowed_agent_key, expected_hash: sha256:a3f80a575849e5ceb1fb9192c3bb6b9b17e542cf1afa02c1909c5353e20570d9}
+  - {base: profile_material, field: tool_revisions_order, expected_hash: sha256:3c9b57d2769216b568c6c22c8998273c51aa1ca4ebf96884f4648785b4035275}
+  - {base: profile_material, field: tool_connection_requirements_order, expected_hash: sha256:3190e4762a6269c85d1a3fd0076e11b95bcec6c2776ae4e30f346a2da15f79ae}
+  - {base: profile_material, field: maximum_total_calls, expected_hash: sha256:42b3d92a54c4a7e93ca2354d53a916354f1a88f6e85c671b117a2fd1d44c0ef9}
+  - {base: profile_material, field: maximum_parallel_calls, expected_hash: sha256:7b8b36589ca02b3fd27c9acbfafe0781985f13fa897bb14f4782311fd23f71c9}
+  - {base: profile_material, field: maximum_read_window_ms, expected_hash: sha256:21f82b4bbc736c17c7eeef1c426c1c5576b83db912db4940bbe32a898effc012}
+  - {base: profile_material, field: maximum_aggregate_evidence_bytes, expected_hash: sha256:4d66f7fe4d69caf23e7480063b20d345dc06f3a5c4903dc2ee960541b48db6bf}
+  - {base: profile_material, field: data_classification_ceiling, expected_hash: sha256:5585edfab447cd685ee975a94434a4107ca0d20471cfd47550f5d63f6ad250c0}
+  - {base: profile_material, field: runtime_region, expected_hash: sha256:e92289798a4e9fc3dd76fac6e3eed1424ff90bba58d9ad7de07f7e13cffe8c46}
+  - {base: effective_tool_set, field: schema_version, expected_hash: sha256:689f9b70004fc80a2cf1bcd0e0984204419933d532feece3f3b095d57013d171}
+  - {base: effective_tool_set, field: profile_material_hash, expected_hash: sha256:866b72fc91af41e569c6d77909311db7c92324effffcef5ac71ea92a97292c5e}
+  - {base: effective_tool_set, field: accepted_tools_order, expected_hash: sha256:b1769e9ea14c78b214f8985f062c60dc5ca7f92c90e795636a7782c27941a794}
+  - {base: effective_tool_set, field: agent_key, expected_hash: sha256:5d18e97214e7ac11095bbd9316a02d7f2da461658326e56c6f55720305374fad}
+  - {base: effective_tool_set, field: agent_revision, expected_hash: sha256:2913fa8e9dcc42707fdac2da64e2ec90c769d29030593be7f3fb255cd1967798}
+  - {base: effective_tool_set, field: scope.organization_id, expected_hash: sha256:a16dec1a192887107b00f47e4d523d59cc2c5c251ebe5b8c73bc932dd1a3ac59}
+  - {base: effective_tool_set, field: scope.project_id, expected_hash: sha256:2fb9f519261df1c1366050b36ecfd78614ba303ad9abd6d506798c89bc70076c}
+  - {base: effective_tool_set, field: scope.environment_id, expected_hash: sha256:3aeba4e2d8f82920f18ac1563cd8b4b2030cf6f7a444e1cd982d8efefc60a280}
+  - {base: effective_tool_set, field: connection_bindings_order, expected_hash: sha256:ecfbec911e6eddef4181c15ea67b47f59ef9078a38c2eb5eb58532e698b9d2ed}
+  - {base: effective_tool_set, field: connection_bindings.policy_source.binding_kind, expected_hash: sha256:ca2197fe01303ef5890ac5bfe7fbd35d0161d42d8e1f2cbbc62e7fd71c61fbf4}
+  - {base: effective_tool_set, field: connection_bindings.policy_source.provider, expected_hash: sha256:a0e3850f418a8d1d73c95d2f19fab8004427b0d12a0325dc30988b5ddb913691}
+  - {base: effective_tool_set, field: connection_bindings.policy_source.capability_key, expected_hash: sha256:8532139b43bd7e60171ed86f5b5956c3019fb50f573541fc75e67fd8b4c6d69e}
+  - {base: effective_tool_set, field: connection_bindings.policy_source.external_project_selector, expected_hash: sha256:c848081aa4be6e4d86d2379d8a71e5275af0b30929ad3088bf70045743c56bc5}
+  - {base: effective_tool_set, field: connection_bindings.policy_source.connection_id, expected_hash: sha256:9bc2cb01751f004b407086aafce0ac59f8aa771b6d6b406eb9b40378bcfdac1b}
+  - {base: effective_tool_set, field: connection_bindings.policy_source.connection_epoch, expected_hash: sha256:9c9a3db8da8e156a9f6f19600fe6d7edf1b294cf1bc87c38b26b057818d34e1d}
+  - {base: effective_tool_set, field: connection_bindings.policy_source.capability_receipt_id, expected_hash: sha256:763ac5cbb225adb34ab7064693b416665176e736480cfd3a1d26af052907c696}
+  - {base: effective_tool_set, field: connection_bindings.policy_source.capability_receipt_hash, expected_hash: sha256:970c198b95576c17723bd1399ee2c21de076684c4e578a0ad889ed29442dd1c6}
+  - {base: effective_tool_set, field: connection_bindings.policy_source.tool.tool_key, expected_hash: sha256:37fafa4eca164addd303f2abc722aea0d7aa1b94085157d3e6e28804126bc5fe}
+  - {base: effective_tool_set, field: connection_bindings.policy_source.tool.version, expected_hash: sha256:7c754070e3cd1eeb4e6219becdc45f2e39d222ee04c1b7e6ce174d09392dc060}
+  - {base: effective_tool_set, field: connection_bindings.compute_only.binding_kind, expected_hash: sha256:12ff69651e72b7f8cfc36e5a76ae47617ebcb0b88fc3c8baacb825e6badef7e2}
+  - {base: effective_tool_set, field: runtime_region, expected_hash: sha256:14d53b48c9bbba198d57b7dc2309ed411f8afe7bc7425bdde9bc2724d5c95c1d}
+  - {base: effective_tool_set, field: accepted_data_classification, expected_hash: sha256:38bdddbb954dbe98753cc2777c64491ae51da09395785cf1d1f292d1354c5004}
+  - {base: effective_tool_set, field: classification_ceiling, expected_hash: sha256:1a97b7c0271914a947aca15858dcbedaa37ca17e4702bd7015977b2527ca7417}
+  - {base: effective_tool_set, field: policy_head_activation_id, expected_hash: sha256:ecf3a57b120e9a0c5a0e26810e88893a190f238ad0a09f68f0c147686a7c592b}
+  - {base: effective_tool_set, field: policy_head_epoch, expected_hash: sha256:2980bd5374f24f0937ac6d0e2dd554e2c4d661797eccf2e1714a17cef3f9e0cb}
+  - {base: effective_tool_set, field: placement_epoch, expected_hash: sha256:3adf243a1ba8da3f134479748a52b2a7982ac80de89205edd019f0d134275f23}
+  - {base: effective_tool_set, field: accepted_step_budget_hash, expected_hash: sha256:1c0570a07daeae972932588461b851b7445dd4e494a7acf504b119e07b23bdad}
+  - {base: effective_tool_set, field: connection_bindings.policy_source.external_project_id, expected_hash: sha256:55e7bf178b9ec970b658b6a99d80d1114f47e18e9b3ade87963dad64e0094061}
+  - {base: profile_material, field: "tool_revisions[0].tool_key", expected_hash: sha256:071c5fabbffa928762740f5cb3770315c3f4210c9f67857678a76202c117dc42}
+  - {base: profile_material, field: "tool_revisions[0].version", expected_hash: sha256:d1537ad3909c4ad084799470e3b2ad2721c3619977b2d8a0f897b35c0a964c59}
+  - {base: profile_material, field: "tool_revisions[1].tool_key", expected_hash: sha256:f7d6da01a2a1bff59aa296a2fb4b2afe50e23086a51c29fe3fa269e5901448d5}
+  - {base: profile_material, field: "tool_revisions[1].version", expected_hash: sha256:892a7b7b1dadd284860aebaf84e0e8476cf717ead44cd6a8c83b378dc3178cbf}
+  - {base: profile_material, field: "tool_revisions[2].tool_key", expected_hash: sha256:9b9141e82ea0b78b56f08fa2930ad40a077e711b5e182517548c3576c1d3ba66}
+  - {base: profile_material, field: "tool_revisions[2].version", expected_hash: sha256:62a41896e1bda83cb5d5b5f2b34d900c13467efd245a976145809e117bced212}
+  - {base: profile_material, field: "tool_revisions[3].tool_key", expected_hash: sha256:f33d7552aebdc4b1ed13574e1ed0d9ff690758976c3125de197a5ad805420c22}
+  - {base: profile_material, field: "tool_revisions[3].version", expected_hash: sha256:2cbec12334bd0ca415d3e6f90b30ea677ba5a951a31e37f9ec1b6f232d05f84a}
+  - {base: profile_material, field: "tool_connection_requirements[0].tool.tool_key", expected_hash: sha256:6116862a4f35d21d410dd763adb543dcd3e01ffed100e7ca5e75e4ec2f3f8d84}
+  - {base: profile_material, field: "tool_connection_requirements[0].tool.version", expected_hash: sha256:e8af9f182bbe291380f05004c6afdbb7cacd99f6be75e839b21221f1cebf8012}
+  - {base: profile_material, field: "tool_connection_requirements[1].tool.tool_key", expected_hash: sha256:d0e7c0f2c94901603b4cac4737219454035e0e625a7c757f2122315cc6e7d388}
+  - {base: profile_material, field: "tool_connection_requirements[1].tool.version", expected_hash: sha256:6a7d27c3369b35518138f3d484fd8b3ac17b13f262440d6d54363bb9c8353ea0}
+  - {base: profile_material, field: "tool_connection_requirements[2].tool.tool_key", expected_hash: sha256:f096a3bb9246f70dab5c6ed688e2d58ec8ff76e64b714de3a3954d7673276d86}
+  - {base: profile_material, field: "tool_connection_requirements[2].tool.version", expected_hash: sha256:40b1ba0a712cca2d2f400841bc05a9cdc342c1db77f86799bbf46a56d8730a99}
+  - {base: profile_material, field: "tool_connection_requirements[3].tool.tool_key", expected_hash: sha256:12dccd9691f1d0d6b03331e150e56998bd7772fefde40e898823b22fc52730ef}
+  - {base: profile_material, field: "tool_connection_requirements[3].tool.version", expected_hash: sha256:c24d3f2d041cf4380743d91d1bbcc6943d97bb8a939f928a88fd1a28b1992479}
+  - {base: profile_material, field: "tool_connection_requirements[0].binding_kind", expected_hash: sha256:377f718c530ce62161528fcc986588cf5b0d2855152f75a0e433900dedb3d9e6}
+  - {base: profile_material, field: "tool_connection_requirements[0].capability_key", expected_hash: sha256:df18c4affcaf3453e829db6c0558ac3f2d3e04df25bfdb7ee3ca6c8bc8eadd0b}
+  - {base: profile_material, field: "tool_connection_requirements[0].external_project_selector", expected_hash: sha256:30d2003bb035f7907b59f8c7c2c03753da446688297a054f0aab0d9c6e12f5b2}
+  - {base: profile_material, field: "tool_connection_requirements[0].provider", expected_hash: sha256:27159276318cae1d9dd0c1d9d0d1ee17268fd5c30be1b4fd35295889e8796a26}
+  - {base: profile_material, field: "tool_connection_requirements[1].binding_kind", expected_hash: sha256:e65682090d457aced644d5209905e52da79b8d3717fb5fd715a2f7e666ced214}
+  - {base: profile_material, field: "tool_connection_requirements[2].binding_kind", expected_hash: sha256:78550c49f071eedc7fb63529caa3d20683b4d217a9eb61c980f921f6c8c6c74b}
+  - {base: profile_material, field: "tool_connection_requirements[3].binding_kind", expected_hash: sha256:4598942886e24562ced56de70f6bc79fb7156100862ae2120a7da9ea683b02e6}
+  - {base: effective_tool_set, field: "accepted_tools[0].tool_key", expected_hash: sha256:c7c3646e76348f7dbbbee95ea6dfe8042347ee06996b386af1116655dd8bbf91}
+  - {base: effective_tool_set, field: "accepted_tools[0].version", expected_hash: sha256:a9fb1ae6099a4cad05a41f212462519058eca0580cbf1286f7ed03635cc1370f}
+  - {base: effective_tool_set, field: "accepted_tools[1].tool_key", expected_hash: sha256:70119ee69aac965769ad1f6ef12be3bada50ee54edbbdc54dab472f7a5cae0c8}
+  - {base: effective_tool_set, field: "accepted_tools[1].version", expected_hash: sha256:b4f97a26f7633b473987913a8e373e8d90269fba8ec1c932db89e65910a919ca}
+  - {base: effective_tool_set, field: connection_bindings.compute_only.tool.tool_key, expected_hash: sha256:a156275e74d8a69fe0771f27158e2e3da949186c0e6972afbc2cd421c1ed4e8e}
+  - {base: effective_tool_set, field: connection_bindings.compute_only.tool.version, expected_hash: sha256:4c4bf277f6c7797715ab72caa35dae4beb90be280d1ac276f968096f92cc0105}
+mutation_values:
+  # The field and value jointly define each same-base mutation vector above.
+  profile_material:
+    canonicalization_version: 2
+    schema_version: 3
+    profile_key: alert-triage-read-compute-v2
+    version: "2"
+    purpose: OTHER
+    allowed_agent_key: different-agent
+    tool_revisions_order: REVERSE
+    tool_connection_requirements_order: REVERSE
+    maximum_total_calls: 13
+    maximum_parallel_calls: 3
+    maximum_read_window_ms: 3600000
+    maximum_aggregate_evidence_bytes: 1048577
+    data_classification_ceiling: RESTRICTED
+    runtime_region: us-central1
+  effective_tool_set:
+    schema_version: 2
+    profile_material_hash: sha256:3333333333333333333333333333333333333333333333333333333333333333
+    accepted_tools_order: REVERSE
+    agent_key: other-agent
+    agent_revision: evidence-agent@2
+    scope.organization_id: org_b
+    scope.project_id: project_b
+    scope.environment_id: env_stage
+    connection_bindings_order: REVERSE
+    connection_bindings.policy_source.binding_kind: COMPUTE_ONLY
+    connection_bindings.policy_source.provider: OTHER
+    connection_bindings.policy_source.capability_key: OTHER
+    connection_bindings.policy_source.external_project_selector: OTHER
+    connection_bindings.policy_source.external_project_id: project_b
+    connection_bindings.policy_source.connection_id: conn_monitoring_02
+    connection_bindings.policy_source.connection_epoch: 5
+    connection_bindings.policy_source.capability_receipt_id: cap_02
+    connection_bindings.policy_source.capability_receipt_hash: sha256:5555555555555555555555555555555555555555555555555555555555555555
+    connection_bindings.policy_source.tool.tool_key: other_query
+    connection_bindings.policy_source.tool.version: "2"
+    connection_bindings.compute_only.binding_kind: POLICY_SOURCE_CONNECTION
+    runtime_region: us-central1
+    accepted_data_classification: CONFIDENTIAL
+    classification_ceiling: RESTRICTED
+    policy_head_activation_id: activation_02
+    policy_head_epoch: 6
+    placement_epoch: 8
+    accepted_step_budget_hash: sha256:4444444444444444444444444444444444444444444444444444444444444444
+  # Indexed leaf vectors use these deterministic replacement conventions:
+  # `tool_revisions[i].tool_key` -> `other_tool_i`; corresponding requirement
+  # Tool keys -> `other_req_tool_i`; accepted Tool keys -> `accepted_other_i`;
+  # every `.version` -> string `2`; and `compute_only.tool.tool_key` ->
+  # `compute_other`. Requirement binding changes are COMPUTE_ONLY at index 0,
+  # POLICY_SOURCE_CONNECTION at indices 1–3, and OTHER for index 0 provider,
+  # capability, and selector fields. These conventions are part of each vector.

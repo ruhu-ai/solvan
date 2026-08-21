@@ -1,0 +1,130 @@
+schema_version: 1
+status: target
+implementation: null
+description: >-
+  Adversarial acceptance matrix for the proposal-only Code Repair Workspace
+  profile, governed skills, exploratory sandbox, and independent handoff.
+  Every case requires deployed receipts before this profile is production
+  eligible.
+cases:
+  - id: CRW-001
+    name: profile_is_exact_frozen_and_proposal_only
+    proves: >-
+      The run accepts only the three ordered revisions in
+      workspace.code-repair.v1 with its persisted profile/effective-set,
+      repair-plan, command-catalog, guidance-set, and budget hashes. A model,
+      retry, memory item, or guidance body cannot add, substitute, reorder, or
+      re-enable a tool, connection, region, classification, or ceiling.
+  - id: CRW-002
+    name: workspace_reads_and_writes_only_its_frozen_artifacts
+    proves: >-
+      Cross-run/cross-case handles, paths, URLs, Git identifiers, object-store
+      locators, symlinks, special files, case-folding collisions, .git paths,
+      any CI/workflow, IAM, deployment-manifest, credential, or policy path
+      regardless of path-policy content, stale generations, omitted prior
+      hashes, and aggregate/file-budget overflows are refused. Candidate writes
+      cannot mutate a checkout or any durable repository object.
+  - id: CRW-003
+    name: exploratory_sandbox_has_no_arbitrary_command_or_authority
+    proves: >-
+      The Workspace may name only a frozen catalog command ID and candidate
+      tree. Raw command strings, shell wrappers, argument injection, env,
+      image, mount, identity, run-kind, timeout, network, or region fields are
+      refused. The sandbox has no egress, metadata access, credentials, shared
+      cache, host mount, or writable output beyond its bounded receipt.
+  - id: CRW-004
+    name: workspace_cannot_request_or_observe_adjudication
+    proves: >-
+      A workspace caller, confused token, replayed exploratory request, or
+      altered response cannot obtain ADJUDICATION or supply its result. The
+      coordinator's adjudication uses a distinct identity and fresh root; only
+      its accepted receipt may satisfy patch-test outcome.
+  - id: CRW-005
+    name: exploratory_success_is_not_release_or_test_authority
+    proves: >-
+      A successful exploratory receipt cannot mark a patch artifact
+      TESTS_PASSED, create a Code Change Request, satisfy review, merge,
+      deployment, verification, recovery, incident resolution, or case
+      closure. Missing or failed independent adjudication blocks handoff.
+  - id: CRW-006
+    name: patch_proposal_is_derived_from_candidate_tree
+    proves: >-
+      The coordinator derives the strict canonical transform and result tree
+      from the frozen base and candidate generation; a raw model diff, changed
+      path list, test narrative, or substituted candidate tree cannot become
+      the Patch Proposal or its independent adjudication input.
+  - id: CRW-007
+    name: code_repair_skills_are_selected_before_dispatch_and_cannot_widen
+    proves: >-
+      The required code-repair skill and any CI skill are selected from the
+      approved exact-profile shortlist before run creation, content-hash-bound,
+      rescanned, and written once to one repair-plan selection set. At most one
+      PENDING_BIND or BOUND set exists per plan; a transient fetch retry reuses
+      it; changed material may supersede either a pending or bound set while
+      retaining any historical run binding, then creates a successor plan. A
+      draft, stale, cross-scope, injected, unavailable, profile-incompatible,
+      post-run, or NO_GUIDANCE_MATCH result is refused; skill text cannot alter
+      tools, commands, paths, budgets, identity, authority, or prompt hierarchy.
+  - id: CRW-008
+    name: ci_failure_creates_a_new_bounded_repair_attempt
+    proves: >-
+      Only normalized, GitHub-provider-receipted CI_FAILURE_EVIDENCE can enable
+      ci-failure-triage. It creates a successor plan with a newly frozen base,
+      head, tree, re-materialised command catalog from the same registered
+      command definitions, profile, and guidance set. It proves the registered
+      reproduction/regression commands can run only after their declared inputs
+      resolve in that successor snapshot. It cannot resume an old run, rewrite
+      a decision, retarget a branch, rerun CI, override a check, or merge a
+      changed head.
+  - id: CRW-009
+    name: workspace_has_no_github_release_or_production_mutation_path
+    proves: >-
+      Dependency, IAM, egress, credential, audience, and API-negative tests
+      deny Workspace access to GitHub App/user tokens, PR/branch/review/merge,
+      deployment, rollback, actuator, verifier, approval, and closure paths.
+  - id: CRW-010
+    name: duplicate_and_restart_recovery_preserve_one_attempt_meaning
+    proves: >-
+      Duplicate tool calls, provider restart, stale run generation, expired
+      budget, and post-write/pre-receipt interruption reconcile immutable
+      candidate generations and sandbox receipts without a hidden second write,
+      command execution, budget reset, or changed input/profile/guidance set.
+  - id: CRW-011
+    name: audit_and_observability_do_not_leak_workspace_content
+    proves: >-
+      Source, candidate, guidance, command-output, OAuth, credential, PII,
+      prompt, response, and reasoning canaries are absent from logs, traces,
+      audit rows, errors, metrics, safe console projections, and channel cards;
+      only permitted hashes, closed codes, and safe identifiers remain.
+  - id: CRW-012
+    name: console_and_channels_preserve_human_decision_boundary
+    proves: >-
+      The authenticated console may render durable proposal/receipt/status and
+      then the separate CCR decision controls. Slack, email, Discord, MCP, and
+      workspace text can only show reader-filtered status/deep links and cannot
+      create a reviewer link, PR, merge, deployment, rollback, or approval.
+  - id: CRW-013
+    name: repair_profile_cannot_change_required_check_definitions
+    proves: >-
+      Candidate writes to CI/workflow, IAM, deployment-manifest, credential,
+      and policy paths are refused regardless of path-policy content. The
+      GitHub Provider refuses CREATE_PR when a canonical transform touches a
+      frozen required-check-definition path and refuses merge if current base
+      or head definition content differs from the request's frozen base hash.
+  - id: CRW-014
+    name: production_repair_tool_keys_are_not_synthetic_tool_aliases
+    proves: >-
+      workspace.code-repair.read-artifact@1 and
+      workspace.code-repair.write-candidate-artifact@1 accept only their
+      opaque-handle and candidate-generation schemas. Path-shaped synthetic
+      provider helper input is refused, and no global Tool Catalog revision key
+      is registered with incompatible synthetic and production schemas.
+  - id: CRW-015
+    name: repair_workspace_target_schema_and_private_invocation_are_exact
+    proves: >-
+      Target DDL enforces catalog-only literal argv/no egress, one active
+      guidance selection set, immutable ordered selections, one candidate
+      generation ordinal per run, experimental-only receipt trust, and receipt
+      idempotency, and distinct type prefixes for selection sets and items. The private invocation envelope rejects model-supplied
+      caller, run kind, command, image, path, region, network, or budget fields
+      outside the exact closed tool schemas.

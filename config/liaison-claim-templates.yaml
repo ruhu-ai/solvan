@@ -1,0 +1,282 @@
+# Every factual sentence the Liaison can utter is one of these templates.
+# The model chooses a template id and fills typed slots; it never authors the
+# kind, the polarity, or the sentence. Specification 14 §7 governs.
+#
+# `predicate` names a verifier implemented in `solvan.application.liaison.
+# predicates`; configuration never carries logic. A template whose predicate
+# fails against its citations is suppressed or replaced by its holding form.
+#
+# `slot_sources` says where each rendered word comes from. `{record, field}`
+# means the application reads it from the cited record and ignores whatever the
+# model supplied — the only defence against a true predicate carrying a
+# fabricated sentence. `SUBJECT` is the claim's subject reference.
+# `HOLDING_REASON` is the gate's own explanation. `MODEL_QUOTED` is the single
+# case where model text is used, and it must byte-match stored text.
+#
+# Changing a held template's predicate, releasing record, or polarity is a
+# safety-sensitive change (§7 template governance): it needs a threat-model
+# note and acceptance tests in the same change. Retired ids are never reused.
+schema_version: 1
+templates:
+  # ---- Held kinds: affirmative forms that a record must release -------------
+  - id: RECOVERY_VERIFIED
+    kind: RECOVERY
+    polarity: AFFIRMATIVE
+    held: true
+    holding_template: RECOVERY_PENDING
+    sentence: "Recovery is independently verified for {subject_label}: {verdict_detail}."
+    slots: [subject_label, verdict_detail]
+    slot_sources:
+      subject_label: SUBJECT
+      verdict_detail: {record: verification_run, field: threshold}
+    predicate: VERIFICATION_PASSED
+    releasing_record: verification_run
+
+  - id: RECOVERY_PENDING
+    kind: RECOVERY
+    polarity: HOLDING
+    held: false
+    sentence: "Recovery is not confirmed yet for {subject_label}. {progress_detail} I will confirm when the window passes."
+    slots: [subject_label, progress_detail]
+    slot_sources:
+      subject_label: SUBJECT
+      progress_detail: HOLDING_REASON
+    predicate: ALWAYS
+    releasing_record: null
+
+  - id: DATA_LOSS_ABSENT
+    kind: DATA_LOSS
+    polarity: AFFIRMATIVE
+    held: true
+    holding_template: DATA_LOSS_UNKNOWN
+    sentence: "No data loss was observed for {subject_label}: {evidence_detail}."
+    slots: [subject_label, evidence_detail]
+    slot_sources:
+      subject_label: SUBJECT
+      evidence_detail: {record: verification_run, field: synthetic}
+    predicate: VERIFICATION_PASSED
+    releasing_record: verification_run
+
+  - id: DATA_LOSS_UNKNOWN
+    kind: DATA_LOSS
+    polarity: HOLDING
+    held: false
+    sentence: "Whether {subject_label} lost data is not established; no passed verification carries that statement."
+    slots: [subject_label]
+    slot_sources:
+      subject_label: SUBJECT
+    predicate: ALWAYS
+    releasing_record: null
+
+  - id: INCIDENT_CLOSED
+    kind: CLOSURE
+    polarity: AFFIRMATIVE
+    held: true
+    holding_template: INCIDENT_OPEN
+    sentence: "{subject_label} is closed; its final committed state is {state}."
+    slots: [subject_label, state]
+    slot_sources:
+      subject_label: SUBJECT
+      state: {record: incident, field: state}
+    predicate: TERMINAL_STATE
+    releasing_record: incident
+
+  - id: INCIDENT_OPEN
+    kind: CLOSURE
+    polarity: HOLDING
+    held: false
+    sentence: "{subject_label} is still open; its committed state is {state}."
+    slots: [subject_label, state]
+    slot_sources:
+      subject_label: SUBJECT
+      state: {record: incident, field: state}
+    predicate: RECORD_FIELD_EQUALS
+    releasing_record: incident
+
+  - id: CHANGE_DEPLOYED
+    kind: DEPLOYMENT
+    polarity: AFFIRMATIVE
+    held: true
+    holding_template: CHANGE_NOT_DEPLOYED
+    sentence: "{subject_label} was applied to production and its effect was reconciled ({receipt_detail})."
+    slots: [subject_label, receipt_detail]
+    slot_sources:
+      subject_label: {record: action, field: name}
+      receipt_detail: {record: action, field: receipt}
+    predicate: RECEIPT_RECONCILED
+    releasing_record: action
+
+  - id: CHANGE_NOT_DEPLOYED
+    kind: DEPLOYMENT
+    polarity: HOLDING
+    held: false
+    sentence: "{subject_label} has not been applied; it is {status}."
+    slots: [subject_label, status]
+    slot_sources:
+      subject_label: {record: action, field: name}
+      status: {record: action, field: status}
+    predicate: RECORD_FIELD_EQUALS
+    releasing_record: action
+
+  - id: BLAST_RADIUS_CONTAINED
+    kind: CONTAINMENT
+    polarity: AFFIRMATIVE
+    held: true
+    holding_template: BLAST_RADIUS_UNKNOWN
+    sentence: "The fault stayed inside {subject_label}: {evidence_detail}."
+    slots: [subject_label, evidence_detail]
+    slot_sources:
+      subject_label: {record: evidence_item, field: source}
+      evidence_detail: {record: evidence_item, field: label}
+    predicate: EVIDENCE_COVERS
+    releasing_record: evidence_item
+
+  - id: BLAST_RADIUS_UNKNOWN
+    kind: CONTAINMENT
+    polarity: HOLDING
+    held: false
+    sentence: "The blast radius of {subject_label} is not established from stored evidence."
+    slots: [subject_label]
+    slot_sources:
+      subject_label: SUBJECT
+    predicate: ALWAYS
+    releasing_record: null
+
+  # ---- Descriptive kinds: never gated, always cited -------------------------
+  - id: RECORD_STATEMENT
+    kind: DESCRIPTION
+    polarity: NEUTRAL
+    held: false
+    sentence: "{quoted_text}"
+    slots: [quoted_text]
+    slot_sources:
+      quoted_text: MODEL_QUOTED
+    predicate: RECORD_TEXT_EQUALS
+    releasing_record: null
+
+  - id: MEASURED_VALUE
+    kind: MEASUREMENT
+    polarity: NEUTRAL
+    held: false
+    sentence: "{metric} on {scope_label} — {detail}."
+    slots: [metric, scope_label, detail]
+    slot_sources:
+      metric: MODEL_QUOTED
+      scope_label: MODEL_QUOTED
+      detail: MODEL_QUOTED
+    predicate: RECORD_FIELD_EQUALS
+    releasing_record: null
+
+  - id: STATE_REPORT
+    kind: STATE
+    polarity: NEUTRAL
+    held: false
+    sentence: "{subject_label} is currently {state}."
+    slots: [subject_label, state]
+    slot_sources:
+      subject_label: SUBJECT
+      state: {record: incident, field: state}
+    predicate: RECORD_FIELD_EQUALS
+    releasing_record: null
+
+  - id: AWAITING_HUMAN
+    kind: ATTENTION
+    polarity: AFFIRMATIVE
+    held: true
+    holding_template: NO_HUMAN_ATTENTION_PENDING
+    sentence: "{subject_label} is waiting on a person: {detail}."
+    slots: [subject_label, detail]
+    slot_sources:
+      subject_label: SUBJECT
+      detail: {record: incident, field: next_action}
+    predicate: HUMAN_ATTENTION_PENDING
+    releasing_record: incident
+
+  # "Waiting on a person" is an assertion about the record's present state, so
+  # RECORD_FIELD_EQUALS was never the right gate: it proved only that the words
+  # were stored somewhere on the incident, which a closed case's "None; the
+  # case is closed" satisfies perfectly. The holding form is what a closed or
+  # unblocked incident says instead.
+  - id: NO_HUMAN_ATTENTION_PENDING
+    kind: ATTENTION
+    polarity: HOLDING
+    held: false
+    sentence: "{subject_label} is not waiting on a person; its committed state is {state}."
+    slots: [subject_label, state]
+    slot_sources:
+      subject_label: SUBJECT
+      state: {record: incident, field: state}
+    predicate: ALWAYS
+    releasing_record: null
+
+# Connective templates. `text` parts may only be instances of these, so the
+# model has no free-prose channel through which an ungated affirmation could
+# travel (§7, §12).
+connectives:
+  - id: LEAD_IN
+    sentence: "{lead}"
+    slots: [lead]
+    allowed_leads:
+      - "Here is what the ledger holds."
+      - "Here is what happened."
+      - "Here is the current state."
+      - "Here is what I can confirm."
+  - id: LIST_FRAME
+    sentence: "{frame}"
+    slots: [frame]
+    allowed_leads:
+      - "The measured impact:"
+      - "The sequence:"
+      - "The evidence on file:"
+      - "What remains:"
+  # The frame a causal-chain step carries. Enumerated like every other
+  # connective: the five labels `_causal_chain` builds are the five sayable
+  # ones, so a renamed step cannot introduce new prose through this slot.
+  - id: CHAIN_STEP
+    sentence: "{step}"
+    slots: [step]
+    allowed_leads:
+      - "Fault"
+      - "Mechanism"
+      - "Impact"
+      - "Recovery"
+      - "Outcome"
+  - id: HANDOFF
+    sentence: "{handoff}"
+    slots: [handoff]
+    allowed_leads:
+      - "Open the incident to act on this."
+      - "The next step belongs to a person."
+      - "Nothing further is required right now."
+  - id: SOCIAL_REPLY
+    sentence: "{reply}"
+    slots: [reply]
+    allowed_leads:
+      - "Hello. Ask me about this incident, its impact, evidence, actions, or recovery."
+      - "You're welcome."
+  - id: HELP_REPLY
+    sentence: "{reply}"
+    slots: [reply]
+    allowed_leads:
+      - "I can explain what happened, measured impact, evidence, governed actions, and independently verified recovery for this incident."
+  - id: OUT_OF_SCOPE_REPLY
+    sentence: "{reply}"
+    slots: [reply]
+    allowed_leads:
+      - "I can only help with this incident and its governed operational records."
+  - id: SCOPE_SOCIAL_REPLY
+    sentence: "{reply}"
+    slots: [reply]
+    allowed_leads:
+      - "Hello. Ask me about reader-visible records in the current workspace."
+      - "You're welcome."
+  - id: SCOPE_HELP_REPLY
+    sentence: "{reply}"
+    slots: [reply]
+    allowed_leads:
+      - "I can summarize reader-visible incidents, evidence, governed actions, and recovery records in this workspace."
+  - id: SCOPE_BOUNDARY_REPLY
+    sentence: "{reply}"
+    slots: [reply]
+    allowed_leads:
+      - "To request fresh telemetry, investigation, an approval, or an action, select a bounded incident or service window first."

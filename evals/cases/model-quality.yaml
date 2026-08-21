@@ -1,0 +1,66 @@
+schema_version: 1
+suite: solvan-model-quality-v1
+cases:
+  - id: payment_pool_leak
+    evidence:
+      metric_pool: "Checked-out connections remain at the configured maximum after requests finish."
+      metric_errors: "Payment 5xx ratio increased after pool exhaustion."
+      code_exception: "The synthetic fixture exception path omits connection release."
+      healthy_capacity: "The same concurrency passes before the defective revision."
+    candidate_hypotheses: [connection_leak, pool_capacity, downstream_database]
+    expected_observation_keys: [metric_pool, metric_errors, code_exception, healthy_capacity]
+    expected_inference_keys: []
+    expected_top_hypothesis: connection_leak
+    expected_top_three: [connection_leak, pool_capacity, downstream_database]
+    expected_plan_valid: true
+    require_uncertainty: false
+  - id: revision_regression
+    evidence:
+      deploy_time: "Revision payments-v281 reached 100 percent traffic at 12:00 UTC."
+      error_time: "The error-ratio threshold first breached at 12:03 UTC."
+      old_revision: "The preceding revision passes the same synthetic payment."
+      no_database_change: "Cloud SQL configuration hash is unchanged."
+    candidate_hypotheses: [application_revision, database_configuration, traffic_volume]
+    expected_observation_keys: [deploy_time, error_time, old_revision, no_database_change]
+    expected_inference_keys: []
+    expected_top_hypothesis: application_revision
+    expected_top_three: [application_revision, database_configuration, traffic_volume]
+    expected_plan_valid: true
+    require_uncertainty: false
+  - id: ambiguous_provider_latency
+    evidence:
+      api_latency: "Application p95 latency is above the approved threshold."
+      provider_latency: "The approved provider-latency view is unavailable."
+      saturation: "CPU and database-pool saturation remain below thresholds."
+    candidate_hypotheses: [external_provider, application_lock, network_path]
+    expected_observation_keys: [api_latency, provider_latency, saturation]
+    expected_inference_keys: []
+    expected_top_hypothesis: external_provider
+    expected_top_three: [external_provider, application_lock, network_path]
+    expected_plan_valid: true
+    require_uncertainty: true
+  - id: worker_backlog
+    evidence:
+      queue_depth: "Ready job count grows for four aligned intervals."
+      worker_rate: "Completed jobs per minute fell after worker revision w17."
+      api_health: "The request API synthetic journey remains healthy."
+      inference_worker: "The worker revision is the leading cause, not a verified fact."
+    candidate_hypotheses: [worker_revision, queue_poisoning, upstream_arrival_spike]
+    expected_observation_keys: [queue_depth, worker_rate, api_health]
+    expected_inference_keys: [inference_worker]
+    expected_top_hypothesis: worker_revision
+    expected_top_three: [worker_revision, queue_poisoning, upstream_arrival_spike]
+    expected_plan_valid: true
+    require_uncertainty: false
+  - id: insufficient_causal_evidence
+    evidence:
+      error_count: "Five errors occurred during the last observation window."
+      baseline_missing: "No approved healthy baseline is available."
+      deploy_unknown: "Deployment provenance is unavailable."
+    candidate_hypotheses: [application_change, dependency_change, traffic_shape]
+    expected_observation_keys: [error_count, baseline_missing, deploy_unknown]
+    expected_inference_keys: []
+    expected_top_hypothesis: application_change
+    expected_top_three: [application_change, dependency_change, traffic_shape]
+    expected_plan_valid: false
+    require_uncertainty: true

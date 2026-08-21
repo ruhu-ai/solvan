@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solvan.dev/schemas/synthetic-data-attestation-v1.json",
+  "title": "Solvan synthetic data attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "attestation_id",
+    "organization_id",
+    "project_id",
+    "environment_id",
+    "release_commit",
+    "deployment_id",
+    "fixture_id",
+    "classification",
+    "synthetic",
+    "artifact_manifest_ref",
+    "artifact_manifest_hash",
+    "issuer_principal",
+    "issued_at",
+    "expires_at",
+    "canonicalization",
+    "signature_algorithm",
+    "kms_key_version",
+    "signed_payload_hash",
+    "signature_ref",
+    "signature_hash"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "attestation_id": {"type": "string", "pattern": "^att_[0-7][0-9A-HJKMNP-TV-Z]{25}$"},
+    "organization_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "environment_id": {"type": "string", "minLength": 1},
+    "release_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "deployment_id": {"type": "string", "minLength": 1},
+    "fixture_id": {"type": "string", "minLength": 1},
+    "classification": {"const": "PUBLIC"},
+    "synthetic": {"const": true},
+    "artifact_manifest_ref": {"type": "string", "pattern": "^gs://"},
+    "artifact_manifest_hash": {"$ref": "#/$defs/sha256"},
+    "issuer_principal": {"type": "string", "minLength": 1},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "canonicalization": {"const": "RFC8785"},
+    "signature_algorithm": {"const": "EC_SIGN_P256_SHA256"},
+    "kms_key_version": {
+      "type": "string",
+      "pattern": "^projects/[^/]+/locations/[^/]+/keyRings/[^/]+/cryptoKeys/[^/]+/cryptoKeyVersions/[0-9]+$"
+    },
+    "signed_payload_hash": {"$ref": "#/$defs/sha256"},
+    "signature_ref": {"type": "string", "pattern": "^gs://"},
+    "signature_hash": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}

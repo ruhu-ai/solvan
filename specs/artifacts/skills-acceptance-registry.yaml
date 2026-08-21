@@ -1,0 +1,119 @@
+version: 2
+status: target
+governing_specification: specs/18-agent-skills-interchange.md
+acceptance:
+  - id: CT-SKILL-PROFILE-001
+    tests:
+      - tests/unit/test_skill_interchange.py::test_profile_rejects_required_adversarial_packages
+      - tests/unit/test_skill_interchange.py::test_profile_records_normalization_and_strip_findings
+      - tests/unit/test_skill_import_service.py::test_multiple_structural_failures_are_all_persisted_once
+  - id: CT-SKILL-ATTEMPT-001
+    tests:
+      - tests/unit/test_skill_import_service.py::test_rejected_attempt_is_durable_and_idempotent
+      - tests/integration/test_tool_catalog_persistence.py::test_agent_skills_cloud_sql_target_e2e_import_approve_select_export
+  - id: CT-SKILL-DIGEST-001
+    tests:
+      - tests/unit/test_skill_interchange.py::test_import_quarantines_content_and_hashes_deterministically
+      - tests/unit/test_skill_interchange.py::test_export_is_byte_deterministic_and_domain_separated
+  - id: CT-SKILL-COMPILE-001
+    tests:
+      - tests/unit/test_skills_governance.py::test_compile_is_draft_and_uses_typed_advisory_step
+      - tests/integration/test_tool_catalog_persistence.py::test_agent_skills_cloud_sql_target_e2e_import_approve_select_export
+  - id: CT-SKILL-STEP-001
+    tests:
+      - tests/unit/test_operational_guidance.py::test_approval_requires_known_predicate_and_profile_subset
+      - tests/unit/test_operational_guidance.py::test_guidance_content_fetched_predicate_requires_exact_selection_and_receipt
+  - id: CT-SKILL-KEY-001
+    tests:
+      - tests/unit/test_skill_selection.py::test_skill_selector_parses_qualified_and_bare_forms
+      - tests/unit/test_skill_selection.py::test_selector_refuses_ambiguous_and_ineligible_results
+  - id: CT-SKILL-IDEMPOTENT-001
+    tests:
+      - tests/unit/test_skill_import_service.py::test_import_request_identity_excludes_retry_credentials_and_key
+      - tests/unit/test_skill_import_service.py::test_import_request_identity_binds_scanner_policy_versions
+      - tests/integration/test_tool_catalog_persistence.py::test_agent_skills_cloud_sql_target_e2e_import_approve_select_export
+  - id: SEC-SKILL-NOEXEC-001
+    tests:
+      - tests/unit/test_skill_security.py::test_scanners_fail_closed_on_secret_pii_and_injection
+      - tests/unit/test_skills_governance.py::test_compile_is_draft_and_uses_typed_advisory_step
+  - id: SEC-SKILL-ARCHIVE-001
+    tests:
+      - tests/unit/test_skill_interchange.py::test_profile_rejects_required_adversarial_packages
+      - tests/unit/test_skill_interchange.py::test_closed_rejection_codes
+  - id: SEC-SKILL-YAML-001
+    tests:
+      - tests/unit/test_skill_interchange.py::test_unsafe_yaml_and_oversized_archive_are_rejected
+      - tests/unit/test_skill_interchange.py::test_profile_rejects_required_adversarial_packages
+  - id: SEC-SKILL-PIN-001
+    tests:
+      - tests/unit/test_skills_governance.py::test_refresh_is_metadata_only_and_token_fenced
+      - tests/unit/test_skills_refresh_ledger.py::test_postgres_ledger_acquires_and_releases_a_fenced_lease
+  - id: SEC-SKILL-LICENSE-001
+    tests:
+      - tests/unit/test_skill_security.py::test_license_policy_is_reviewable_then_allowed_after_metadata_is_bound
+      - tests/unit/test_skill_import_service.py::test_disallowed_license_is_preserved_in_quarantine_for_governance
+      - tests/unit/test_operational_guidance.py::test_imported_guidance_requires_license_but_can_follow_lifecycle
+      - tests/integration/test_tool_catalog_persistence.py::test_agent_skills_cloud_sql_target_e2e_import_approve_select_export
+  - id: SEC-SKILL-SCOPE-001
+    tests:
+      - tests/unit/test_agent_skills_api.py::test_registered_export_refuses_bucket_outside_exact_region
+      - tests/integration/test_tool_catalog_persistence.py::test_agent_skills_cloud_sql_target_e2e_import_approve_select_export
+  - id: SEC-SKILL-EXPORT-001
+    tests:
+      - tests/unit/test_skill_security.py::test_export_scans_serialized_bytes
+      - tests/unit/test_agent_skills_api.py::test_registered_export_writes_exact_scope_under_exact_gcs_binding
+      - tests/integration/test_tool_catalog_persistence.py::test_agent_skills_cloud_sql_target_e2e_import_approve_select_export
+  - id: IT-SKILL-INVOKE-001
+    tests:
+      - tests/unit/test_skill_selection.py::test_selector_resolves_current_eligible_head
+      - tests/unit/test_skill_selection.py::test_selector_refuses_ambiguous_and_ineligible_results
+      - tests/unit/test_operational_guidance_annotations.py::test_operator_note_is_bounded_and_analytics_are_content_free
+  - id: IT-SKILL-PRECEDENCE-001
+    tests:
+      - tests/integration/test_tool_catalog_persistence.py::test_agent_skills_declared_incompatibility_is_the_only_conflict_authority
+  - id: CT-SKILL-EXPORT-RT-001
+    tests:
+      - tests/unit/test_skills_governance.py::test_approved_export_rewrites_transport_metadata_and_preserves_content_digest
+      - tests/unit/test_skill_interchange.py::test_export_is_byte_deterministic_and_domain_separated
+  - id: CT-SKILL-FIRSTPARTY-001
+    tests:
+      - tests/unit/test_skills_governance.py::test_first_party_compilation_requires_exact_provenance
+    commands:
+      - scripts/validate_skill_packs.py
+  - id: CT-SKILL-REFRESH-001
+    tests:
+      - tests/unit/test_skills_governance.py::test_refresh_is_metadata_only_and_token_fenced
+      - tests/unit/test_skills_refresh_ledger.py::test_successful_observation_resets_failure_budget
+      - tests/unit/test_skills_refresh_ledger.py::test_record_failure_increments_durable_failure_budget
+  - id: CT-SKILL-EVAL-001
+    tests:
+      - tests/unit/test_guidance_evaluation.py::test_generation_pinned_evaluation_reproduces_complete_binding
+      - tests/unit/test_guidance_evaluation.py::test_evaluation_decision_must_match_exact_case_results
+      - tests/integration/test_tool_catalog_persistence.py::test_agent_skills_cloud_sql_target_e2e_import_approve_select_export
+  - id: CT-SKILL-ANALYTICS-001
+    tests:
+      - tests/unit/test_operational_guidance_annotations.py::test_operator_note_is_bounded_and_analytics_are_content_free
+      - tests/integration/test_tool_catalog_persistence.py::test_agent_skills_cloud_sql_target_e2e_import_approve_select_export
+  - id: SEC-SKILL-EXCLUSION-001
+    tests:
+      - tests/integration/test_tool_catalog_persistence.py::test_agent_skills_cloud_sql_target_e2e_import_approve_select_export
+  - id: SEC-SKILL-LIFECYCLE-001
+    tests:
+      - tests/unit/test_skills_governance.py::test_export_requires_approval_and_refresh_is_fenced
+      - tests/unit/test_skills_governance.py::test_deprecated_export_requires_and_records_explicit_stale_acknowledgment
+      - tests/integration/test_tool_catalog_persistence.py::test_agent_skills_cloud_sql_target_e2e_import_approve_select_export
+  - id: CT-SKILL-LINEAGE-001
+    tests:
+      - tests/integration/test_tool_catalog_persistence.py::test_agent_skills_cloud_sql_target_e2e_import_approve_select_export
+
+packs:
+  - key: reliability.triage-latency
+    path: guidance/reliability/triage-latency
+    source_kind: FIRST_PARTY
+    license: Apache-2.0
+    provenance: first-party
+    validator: scripts/validate_skill_packs.py
+    qualification:
+      - no-execution
+      - no-credentials
+      - no-model-authority

@@ -1,0 +1,53 @@
+schema_version: 1
+status: UNFROZEN
+category: Fortified Enterprise Fleet
+representative: UNFILLED
+devpost:
+  submission_id: UNFILLED
+  submitted_at: null
+source:
+  repository_url: UNFILLED
+  release_commit: UNFILLED_FULL_GIT_SHA
+  branch: UNFILLED
+deployment:
+  environment: staging
+  project_id: UNFILLED
+  project_number: UNFILLED
+  region: europe-west1
+  deployment_id: UNFILLED
+  test_url: UNFILLED
+  retained_until: null
+  image_digests: {}
+platform:
+  model_resource: UNFILLED
+  agent_runtime_resources: {}
+  agent_runtime_revisions: {}
+  agent_registry_resources: {}
+  agent_identity_principals: {}
+  gateway_resources: {}
+  model_armor_template: UNFILLED
+evidence:
+  deployment_receipt: UNFILLED
+  preflight_receipt: UNFILLED
+  scenario_receipts: {}
+  cleanup_receipt: UNFILLED
+  release_manifest_uri: UNFILLED
+  release_manifest_sha256: UNFILLED
+submission:
+  architecture_image: docs/assets/architecture.svg
+  architecture_image_sha256: UNFILLED
+  readme_sha256: UNFILLED
+  video_url: UNFILLED
+  video_duration_seconds: null
+  public_content_urls: []
+  social_urls: []
+  disclosure_inventory: THIRD_PARTY_NOTICES.md
+  disclosure_inventory_sha256: UNFILLED
+attestations:
+  clean_published_commit: false
+  platform_preflight_passed: false
+  exact_s1_to_s6_set_passed: false
+  zero_open_p0: false
+  signed_out_access_verified: false
+  video_rules_verified: false
+  representative_approved_freeze: false

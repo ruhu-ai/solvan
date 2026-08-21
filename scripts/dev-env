@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+"""Derive stable, collision-resistant local settings for one Git worktree."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import shlex
+import subprocess
+from pathlib import Path
+
+
+def repository_root() -> Path:
+    result = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return Path(result.stdout.strip()).resolve()
+
+
+def build_environment() -> dict[str, str]:
+    root = repository_root()
+    digest = hashlib.sha256(str(root).encode()).hexdigest()
+    worktree_id = digest[:10]
+    schema_revision = "71"
+    offset = int(os.environ.get("SOLVAN_PORT_OFFSET", "0"))
+    if not -1000 <= offset <= 1000:
+        raise SystemExit("SOLVAN_PORT_OFFSET must be between -1000 and 1000")
+    base = 20_000 + (int(digest[:6], 16) % 7_000) * 3 + offset
+    # An offset is a separate local instance, not merely a different socket.
+    # PID files and the Compose project must be isolated too; otherwise a
+    # concurrent default-port session can overwrite the shifted session's PID
+    # files and `scripts/stop` will terminate the wrong harness mid-test.
+    instance_key = "default" if offset == 0 else f"offset-{'p' if offset > 0 else 'm'}{abs(offset)}"
+    state_dir = root / ".solvan" / "dev" / worktree_id / f"schema-{schema_revision}" / instance_key
+    compose_suffix = "" if offset == 0 else f"_{instance_key.replace('-', '_')}"
+    return {
+        "SOLVAN_REPOSITORY_ROOT": str(root),
+        "SOLVAN_WORKTREE_ID": worktree_id,
+        "SOLVAN_SCHEMA_REVISION": schema_revision,
+        "SOLVAN_STATE_DIR": str(state_dir),
+        "SOLVAN_DEV_HOST": os.environ.get("SOLVAN_DEV_HOST", "127.0.0.1"),
+        "SOLVAN_API_PORT": str(base),
+        # Overridable alone among these. Google matches an OAuth redirect URI
+        # exactly, and a port derived from the worktree's path cannot be
+        # registered in advance — so developing against real Google means
+        # pinning this one port to a registered value. Every other port stays
+        # worktree-derived, and an explicit value races with nothing.
+        "SOLVAN_CONSOLE_PORT": os.environ.get("SOLVAN_CONSOLE_PORT") or str(base + 1),
+        "SOLVAN_POSTGRES_PORT": str(base + 2),
+        "SOLVAN_PAYMENTS_PORT": str(base + 3),
+        "SOLVAN_DETECTOR_PORT": str(base + 4),
+        "SOLVAN_LOCAL_COORDINATOR_PORT": str(base + 5),
+        "SOLVAN_IDENTITY_PORT": str(base + 6),
+        "SOLVAN_LOCAL_READER_SOCKET_PATH": str(state_dir / "direct-gcp-reader.sock"),
+        "SOLVAN_LOCAL_READER_TOKEN_FILE": str(state_dir / "direct-gcp-reader.token"),
+        "COMPOSE_PROJECT_NAME": f"solvan_{worktree_id}_s{schema_revision}{compose_suffix}",
+        "SOLVAN_ENVIRONMENT": "local",
+        "SOLVAN_AUTHORITY": "NO_PRODUCTION_AUTHORITY",
+        # The grant planner emits commands the customer runs; it reads nothing
+        # and grants nothing. Locally it uses an obviously templated identity so
+        # the flow is demonstrable and a copied command cannot silently work.
+        "SOLVAN_READER_SERVICE_ACCOUNT": os.environ.get(
+            "SOLVAN_READER_SERVICE_ACCOUNT",
+            "solvan-reader@REPLACE-WITH-YOUR-SOLVAN-PROJECT.iam.gserviceaccount.com",
+        ),
+        # The scope this deployment serves, which locally is the development scope
+        # the bootstrap seeds. Without it every scope-resolving route refused
+        # with PRODUCTION_SCOPE_NOT_CONFIGURED, so panels reported themselves
+        # unconfigured while the rows they would read sat in the database. The
+        # authority is still none; only the address is supplied.
+        "SOLVAN_ORGANIZATION_ID": "org_00000000000000000000000000",
+        "SOLVAN_SCOPE_PROJECT_ID": "prj_00000000000000000000000000",
+        "SOLVAN_ENVIRONMENT_ID": "env_00000000000000000000000000",
+    }
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--shell", action="store_true")
+    args = parser.parse_args()
+    environment = build_environment()
+    if args.shell:
+        for key, value in environment.items():
+            print(f"export {key}={shlex.quote(value)}")
+    else:
+        print(json.dumps(environment, indent=2, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()

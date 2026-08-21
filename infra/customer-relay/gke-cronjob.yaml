@@ -1,0 +1,59 @@
+# Customer-owned deployment template. It intentionally creates no Service,
+# Ingress, load balancer, or Solvan-managed identity. Fill all placeholders in
+# the customer's own GitOps repository after reviewing the local policy.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: solvant-relay
+  namespace: observability
+spec:
+  schedule: "*/1 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          serviceAccountName: CUSTOMER_RELAY_WORKLOAD_IDENTITY
+          automountServiceAccountToken: true
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile: {type: RuntimeDefault}
+          containers:
+            - name: relay
+              image: CUSTOMER_REGISTRY/solvant-relay@sha256:REPLACE
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: {drop: ["ALL"]}
+              resources:
+                requests: {cpu: "100m", memory: "256Mi"}
+                limits: {cpu: "500m", memory: "512Mi"}
+              env:
+                - {name: SOLVAN_RELAY_CONTROL_AUDIENCE, value: "https://RELAY_CONTROL"}
+                - {name: SOLVANT_RELAY_VERSION, value: "1.0.0"}
+                - {name: SOLVANT_RELAY_IMAGE_DIGEST, value: "sha256:REPLACE"}
+                - {name: SOLVANT_RELAY_IMAGE_ATTESTATION_DIGEST, value: "sha256:REPLACE"}
+                - {name: SOLVANT_RELAY_RUNTIME_PROOF_KEY_ID, value: "CUSTOMER_RUNTIME_KEY"}
+                - {name: SOLVANT_RELAY_PROCESS_BOOT_ID, valueFrom: {fieldRef: {fieldPath: metadata.uid}}}
+                - {name: SOLVANT_RELAY_POLICY_PATH, value: "/var/run/solvant/policy.json"}
+                - {name: SOLVANT_RELAY_POLICY_PUBLIC_KEY_PATH, value: "/var/run/solvant/policy.pem"}
+                - {name: SOLVANT_RELAY_CONTROL_PUBLIC_KEY_PATH, value: "/var/run/solvant/control.pem"}
+                - {name: SOLVANT_RELAY_RUNTIME_PROOF_PRIVATE_KEY_PATH, value: "/var/run/solvant/runtime.key"}
+                - {name: SOLVANT_RELAY_LEDGER_KEY_PATH, value: "/var/run/solvant/ledger.key"}
+                - {name: SOLVANT_RELAY_LEDGER_DIR, value: "/var/lib/solvant-ledger"}
+                - {name: SOLVANT_RELAY_KILL_SWITCH_PATH, value: "/var/run/solvant-kill-switch/state"}
+              volumeMounts:
+                - {name: relay-policy, mountPath: /var/run/solvant, readOnly: true}
+                - {name: relay-kill-switch, mountPath: /var/run/solvant-kill-switch, readOnly: true}
+                - {name: relay-ledger, mountPath: /var/lib/solvant-ledger}
+          volumes:
+            - name: relay-policy
+              secret: {secretName: CUSTOMER_MANAGED_RELAY_POLICY_AND_KEYS}
+            - name: relay-kill-switch
+              configMap: {name: CUSTOMER_MANAGED_RELAY_KILL_SWITCH}
+            - name: relay-ledger
+              persistentVolumeClaim: {claimName: solvant-relay-ledger}

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+eval "$(scripts/dev-env --shell)"
+mkdir -p "$SOLVAN_STATE_DIR/evals"
+uv run python tools/run_agent_trajectory_evals.py \
+  --output "$SOLVAN_STATE_DIR/evals/agent-trajectories.json" "$@"

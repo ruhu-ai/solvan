@@ -1,0 +1,39 @@
+schema_version: 1
+status: target
+release_gate: false
+governing_spec: specs/19-saas-scale-and-isolation.md
+note: >-
+  This is target-product traceability, not the competition PR/MSR registry.
+  A test remains target until its implementation and exact environment receipt
+  are recorded; local SQL oracles prove only the named target constraint.
+tests:
+  SEC-SCALE-ROUTE-SPOOF-001: {requirements: [INV-SCALE-01, INV-SCALE-21], implementation: tests/unit/test_saas_scale.py::test_oss_placement_is_startup_bound_and_request_cannot_spoof_tenant}
+  SEC-SCALE-STALE-EPOCH-001: {requirements: [INV-SCALE-02, INV-SCALE-22], implementation: tests/unit/test_saas_scale.py::test_routing_grant_binds_principal_request_audience_and_epoch}
+  SEC-SCALE-CROSS-TENANT-001: {requirements: [INV-SCALE-04, INV-SCALE-13], implementation: tests/unit/test_saas_scale.py::test_shared_cell_broker_rejects_project_environment_scope_spoof}
+  IT-SCALE-QUOTA-IDEMPOTENCY-001: {requirements: [INV-SCALE-06], implementation: tests/unit/test_saas_scale.py::test_quota_reservation_is_idempotent_and_settlement_exact}
+  IT-SCALE-FAIRNESS-001: {requirements: [INV-SCALE-07, INV-SCALE-24], implementation: tests/unit/test_saas_scale.py::test_scheduler_selects_tenant_before_fifo_work_and_does_not_use_control_reserve}
+  IT-SCALE-CONTROL-RESERVE-001: {requirements: [INV-SCALE-08, INV-SCALE-24], implementation: specs/artifacts/saas-scale-schema-contract-tests.sql}
+  IT-SCALE-CAPACITY-FAIL-CLOSED-001: {requirements: [INV-SCALE-03, INV-SCALE-09, INV-SCALE-17], implementation: tests/unit/test_saas_scale.py::test_capacity_envelope_requires_fresh_bound_receipts_and_reserves_headroom}
+  IT-SCALE-POOL-BUDGET-001: {requirements: [INV-SCALE-10, INV-SCALE-11], implementation: tests/unit/test_saas_scale.py::test_capacity_envelope_requires_fresh_bound_receipts_and_reserves_headroom}
+  IT-SCALE-SEQUENCER-RACE-001: {requirements: [INV-SCALE-12, INV-SCALE-25], implementation: tests/unit/test_saas_scale_runtime.py::test_sequencer_fences_claims_and_assigns_monotonic_scope_positions}
+  IT-SCALE-SLOW-CONSUMER-001: {requirements: [INV-SCALE-11, INV-SCALE-12], implementation: tests/unit/test_liaison_stream_flow_control.py::test_stream_page_at_ceiling_forces_cursor_recovery_without_dropping_cursor}
+  IT-SCALE-FANOUT-CURSOR-001: {requirements: [INV-SCALE-12, INV-SCALE-13, INV-SCALE-25], implementation: tests/unit/test_saas_scale_events.py::test_pubsub_wakeup_is_content_free_and_duplicate_delivery_is_idempotent}
+  IT-SCALE-MOVE-001: {requirements: [INV-SCALE-02, INV-SCALE-14, INV-SCALE-23], implementation: tests/unit/test_saas_scale_runtime.py::test_move_requires_verified_receipts_and_monotonic_cutover}
+  SEC-SCALE-SOVEREIGNTY-001: {requirements: [INV-SCALE-03, INV-SCALE-09], implementation: null}
+  IT-SCALE-DELETE-001: {requirements: [INV-SCALE-15, INV-SCALE-23], implementation: specs/artifacts/saas-scale-schema-contract-tests.sql}
+  IT-SCALE-OSS-ONE-TENANT-001: {requirements: [INV-SCALE-18], implementation: tests/unit/test_saas_scale.py::test_oss_placement_is_startup_bound_and_request_cannot_spoof_tenant}
+  LOAD-SCALE-NOISY-NEIGHBOUR-001: {requirements: [INV-SCALE-07, INV-SCALE-10, INV-SCALE-24], implementation: null}
+  DR-SCALE-RESTORE-001: {requirements: [INV-SCALE-14, INV-SCALE-17], implementation: null}
+  SEC-SCALE-STOLEN-CONTEXT-001: {requirements: [INV-SCALE-21], implementation: specs/artifacts/saas-scale-schema-contract-tests.sql}
+  SEC-SCALE-REVOKE-BEFORE-ACCEPT-001: {requirements: [INV-SCALE-22], implementation: specs/artifacts/saas-scale-schema-contract-tests.sql}
+  SEC-SCALE-POOL-RESET-001: {requirements: [INV-SCALE-21], implementation: tests/unit/test_saas_scale.py::test_shared_cell_scope_rolls_back_and_resets_on_exception}
+  IT-SCALE-EPOCH-MONOTONIC-001: {requirements: [INV-SCALE-02, INV-SCALE-23], implementation: specs/artifacts/saas-scale-schema-contract-tests.sql}
+  IT-SCALE-RESERVATION-RACE-001: {requirements: [INV-SCALE-06, INV-SCALE-24], implementation: tests/unit/test_saas_scale.py::test_quota_reservation_race_never_oversubscribes_the_tenant_limit}
+  IT-SCALE-CAPACITY-BINDING-001: {requirements: [INV-SCALE-03, INV-SCALE-17], implementation: tests/unit/test_saas_scale.py::test_capacity_envelope_requires_fresh_bound_receipts_and_reserves_headroom}
+  CT-SCALE-CELL-ELIGIBILITY-001: {requirements: [INV-SCALE-03], implementation: specs/artifacts/saas-scale-schema-contract-tests.sql}
+  IT-SCALE-SEQUENCER-POISON-001: {requirements: [INV-SCALE-12, INV-SCALE-25], implementation: tests/unit/test_saas_scale_runtime.py::test_poison_event_blocks_cursor_until_explicit_supersession}
+  CT-SCALE-PRIVILEGES-001: {requirements: [INV-SCALE-04, INV-SCALE-21, INV-SCALE-22], implementation: specs/artifacts/saas-scale-schema-contract-tests.sql}
+  CT-SCALE-DEDICATED-CONTROL-PARITY-001: {requirements: [INV-SCALE-05], implementation: tests/unit/test_saas_scale.py::test_every_deployment_profile_retains_the_same_defense_in_depth_controls}
+  SEC-SCALE-CONTENT-FREE-001: {requirements: [INV-SCALE-16], implementation: tests/unit/test_saas_scale_repository.py::test_grant_audit_persists_only_content_free_hashes_and_closed_outcomes}
+  CT-SCALE-DETERMINISTIC-AUTHORITY-001: {requirements: [INV-SCALE-19], implementation: tests/unit/test_saas_scale.py::test_model_or_request_shaped_values_cannot_become_scale_authority}
+  CT-SCALE-MSR-BOUNDARY-001: {requirements: [REL-SCALE-01], implementation: tests/unit/test_target_schema_migrations.py::test_saas_target_registry_cannot_become_a_competition_release_requirement}

@@ -1,0 +1,91 @@
+schema_version: 1
+implementations:
+  CT-INBOX-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_expired_inbox_claim_is_recovered_and_old_token_is_fenced"}
+  E2E-S2-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_duplicate_ingress_returns_the_same_durable_event"}
+  IT-DETECT-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_detection_streak_is_durable_and_window_idempotent"}
+  E2E-S1-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_bad_payments_revision_really_exhausts_and_recycles_postgres_pool"}
+  UT-SM-ALL: {runner: pytest, node: "tests/unit/test_transitions.py::test_every_declared_state_is_reachable_from_initial_or_is_a_terminal_target"}
+  IT-CAS-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_lease_fences_atomic_projection_transition_and_outbox"}
+  UT-SM-TERMINAL-001: {runner: pytest, node: "tests/unit/test_transitions.py::test_incident_machine_resolves_case_termination_and_absorbs_terminal_states"}
+  IT-RECURRENCE-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_active_detection_deduplicates_and_terminal_detection_recurs"}
+  CT-TOOLS-001: {runner: pytest, node: "tests/unit/test_agent_contracts.py::test_adk_agents_are_single_turn_and_do_not_delegate"}
+  SEC-IAM-READONLY-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_database_bootstrap_applies_least_privilege_workload_grants"}
+  CT-EVIDENCE-001: {runner: pytest, node: "tests/unit/test_evidence_broker.py::test_broker_window_and_resource_bounds"}
+  UT-CONFIRM-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_completed_investigation_deterministically_authorizes_pool_recycle"}
+  UT-EVIDENCE-CONFLICT-001: {runner: pytest, node: "tests/unit/test_verification.py::test_missing_stale_contradictory_or_insufficient_evidence_is_inconclusive"}
+  SEC-ACTUATOR-IAM-001: {runner: pytest, node: "tests/unit/test_agent_iap.py::test_iap_plan_separates_execution_and_verification_endpoints"}
+  SEC-GATEWAY-001: {runner: pytest, node: "tests/unit/test_release_contracts.py::test_gateway_is_registry_governed_fail_closed_and_has_no_generic_mutation_route"}
+  IT-ACTION-IDEMPOTENCY-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_bad_payments_revision_really_exhausts_and_recycles_postgres_pool"}
+  IT-RESERVATION-RACE-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_target_reservation_serializes_and_ambiguity_stays_exclusive"}
+  E2E-S2-002: {runner: postgres, node: "tests/integration/test_persistence.py::test_target_reservation_serializes_and_ambiguity_stays_exclusive"}
+  UT-ACTION-BUDGET-001: {runner: pytest, node: "tests/unit/test_action_policy.py::test_action_budget_enforces_every_deterministic_boundary"}
+  E2E-S1-002: {runner: postgres, node: "tests/integration/test_persistence.py::test_completed_investigation_deterministically_authorizes_pool_recycle"}
+  UT-PREAUTH-001: {runner: pytest, node: "tests/unit/test_preauthorization.py::test_exact_standing_authority_allows_one_bounded_pool_recycle"}
+  E2E-S1-003: {runner: postgres, node: "tests/integration/test_persistence.py::test_autonomous_action_requires_exact_standing_preauthorization"}
+  SEC-CRITICAL-DENY-001: {runner: pytest, node: "tests/unit/test_action_authorization.py::test_critical_action_is_denied_even_with_approval"}
+  UT-APPROVAL-DIGEST-001: {runner: pytest, node: "tests/unit/test_actions.py::test_every_approval_binding_change_invalidates_digest"}
+  SEC-EXPECTED-EFFECT-APPROVAL-BINDING-001: {runner: pytest, node: "tests/unit/test_actions.py::test_expected_effect_change_invalidates_approval_digest"}
+  IT-APPROVAL-INVALIDATE-001: {runner: pytest, node: "tests/unit/test_action_policy.py::test_execution_recheck_rejects_toctou_changes"}
+  E2E-S4-001: {runner: pytest, node: "tests/unit/test_actuator.py::test_changed_connector_target_releases_without_mutation"}
+  IT-ACTUATOR-TOCTOU-001: {runner: pytest, node: "tests/unit/test_actuator.py::test_failed_authorization_releases_without_mutation"}
+  IT-ACTUATOR-DRY-RUN-001: {runner: pytest, node: "tests/unit/test_actuator.py::test_exact_dry_run_match_is_required_before_mutation"}
+  IT-ACTUATOR-EFFECT-COMPARE-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_dry_run_mismatch_is_durable_and_never_mutates"}
+  IT-ACTUATOR-DISPATCH-INTENT-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_actuator_dispatch_intent_effect_and_dual_audit_settle_once"}
+  IT-ACTUATOR-DUAL-AUDIT-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_actuator_dispatch_intent_effect_and_dual_audit_settle_once"}
+  IT-ACTUATOR-ONE-MUTATION-ATTEMPT-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_sigkill_after_effect_recovers_reconcile_only_with_two_workers"}
+  IT-ACTUATOR-RECONCILE-ONLY-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_sigkill_after_effect_recovers_reconcile_only_with_two_workers"}
+  IT-PROCESS-KILL-MUTATION-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_sigkill_after_effect_recovers_reconcile_only_with_two_workers"}
+  IT-PROCESS-KILL-RUNTIME-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_sigkill_runtime_dispatch_fences_created_attempt_and_provider_call_count"}
+  UT-PROFILE-BINDING-001: {runner: pytest, node: "tests/unit/test_verification.py::test_caller_cannot_substitute_verification_profile"}
+  IT-VERIFY-INDEPENDENT-001: {runner: pytest, node: "tests/unit/test_verification.py::test_fresh_sustained_signals_and_probe_verify_recovery"}
+  UT-VERIFY-INCONCLUSIVE-001: {runner: pytest, node: "tests/unit/test_verification.py::test_missing_stale_contradictory_or_insufficient_evidence_is_inconclusive"}
+  UT-CONNECTOR-NOT-VERDICT-001: {runner: pytest, node: "tests/unit/test_verification.py::test_connector_success_cannot_override_failed_production_evidence"}
+  IT-RESTART-RECOVERY-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_dispatched_runtime_operation_is_recovered_by_fresh_process_without_session_state"}
+  IT-RUNTIME-CREATED-REAPER-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_expired_created_runtime_runs_are_fenced_once_by_agent_kind"}
+  IT-RUNTIME-DISPATCH-ACCEPTANCE-UNKNOWN-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_expired_created_runtime_runs_are_fenced_once_by_agent_kind"}
+  IT-RUNTIME-PARTIAL-RECEIPT-001: {runner: pytest, node: "tests/unit/test_agent_runtime.py::test_incomplete_runtime_receipt_is_persisted_before_error_escapes"}
+  IT-SESSION-LOSS-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_dispatched_runtime_operation_is_recovered_by_fresh_process_without_session_state"}
+  IT-WAKEUP-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_mitigated_incident_opens_one_case_and_due_wakeup_is_fenced"}
+  IT-CASE-RESUME-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_mitigated_incident_opens_one_case_and_due_wakeup_is_fenced"}
+  SEC-MEMORY-SCOPE-001: {runner: pytest, node: "tests/unit/test_memory_bank.py::test_non_exact_scope_from_platform_fails_closed"}
+  UT-MEMORY-SEARCH-PARTIAL-FAIL-001: {runner: pytest, node: "tests/unit/test_memory_bank.py::test_vertex_semantic_search_fails_whole_iteration_not_partial_results"}
+  IT-MEMORY-SEARCH-REVALIDATE-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_memory_candidate_promotes_once_and_retry_returns_durable_receipt"}
+  UT-EVIDENCE-MEMORY-CONTEXT-001: {runner: pytest, node: "tests/unit/test_memory_context.py::test_evidence_memory_context_is_exact_scoped_reference_only"}
+  IT-MEMORY-ELIGIBILITY-001: {runner: pytest, node: "tests/unit/test_memory.py::test_only_type_specific_confirmations_pass"}
+  E2E-S5-001: {runner: pytest, node: "tests/unit/test_memory.py::test_unconfirmed_or_poisoned_candidate_is_quarantined"}
+  IT-MEMORY-DIRECT-WRITE-DENY-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_memory_candidate_promotes_once_and_retry_returns_durable_receipt"}
+  UT-MEMORY-NO-AUTHORITY-001: {runner: pytest, node: "tests/unit/test_memory_bank.py::test_recall_labels_memory_untrusted_and_keeps_resource_id"}
+  IT-REGISTRY-CATALOG-001: {runner: pytest, node: "tests/unit/test_release_contracts.py::test_registry_catalog_is_complete_versioned_and_cross_department_discoverable"}
+  IT-REGISTRY-DISCOVERY-001: {runner: pytest, node: "tests/unit/test_release_contracts.py::test_registry_catalog_is_complete_versioned_and_cross_department_discoverable"}
+  SEC-IDENTITY-MATRIX-001: {runner: pytest, node: "tests/unit/test_release_contracts.py::test_agent_identity_matrix_has_separate_read_execute_verify_and_memory_authority"}
+  SEC-GATEWAY-BYPASS-001: {runner: pytest, node: "tests/unit/test_release_contracts.py::test_gateway_is_registry_governed_fail_closed_and_has_no_generic_mutation_route"}
+  SEC-ARMOR-COVERAGE-001: {runner: pytest, node: "tests/unit/test_release_contracts.py::test_model_armor_covers_both_gateway_directions_and_pii_fail_closed"}
+  E2E-UI-INCIDENT-001: {runner: playwright, node: "tests/e2e/critical-path.spec.ts::operator overview renders the non-authoritative release fixture"}
+  E2E-UI-STATE-001: {runner: playwright, node: "tests/e2e/critical-path.spec.ts::keyboard operator can inspect and rehearse the exact approval without authority"}
+  E2E-UI-VERDICT-001: {runner: playwright, node: "tests/e2e/critical-path.spec.ts::verification renders labelled intervals, table equivalence, and connector separation"}
+  E2E-A11Y-CRITICAL-001: {runner: playwright, node: "tests/e2e/critical-path.spec.ts::overview, incident, and exact approval have no serious accessibility violations"}
+  UT-PLAN-DAG-001: {runner: pytest, node: "tests/unit/test_investigation.py::test_plan_is_returned_in_stable_lexical_topological_order"}
+  IT-PLAN-BEFORE-DISPATCH-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_plan_is_committed_before_coordinator_only_runtime_dispatch"}
+  IT-PLAN-SUPERSEDE-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_new_supervisor_plan_supersedes_and_fences_live_plan_attempts"}
+  UT-AGENT-TRAJECTORY-GATE-001: {runner: pytest, node: "tests/unit/test_trajectory_evaluation.py::test_curated_trajectory_expectations_match_deterministic_grader"}
+  UT-ADK-WORKFLOW-PILOT-001: {runner: pytest, node: "tests/unit/test_adk_workflow_pilot.py::test_pilot_builds_deterministic_parallel_join_graph"}
+  UT-OFFLINE-OPTIMIZER-GATE-001: {runner: pytest, node: "tests/unit/test_prompt_optimization.py::test_optimizer_candidate_rejects_one_safety_regression"}
+  E2E-UI-INVESTIGATION-MAP-001: {runner: playwright, node: "tests/e2e/critical-path.spec.ts::investigation map preserves plan, evidence, inference, and operator-brief provenance"}
+  E2E-UI-NO-COT-001: {runner: playwright, node: "tests/e2e/critical-path.spec.ts::investigation map preserves plan, evidence, inference, and operator-brief provenance"}
+  UT-VERIFY-BASELINE-NO-AUTHORITY-001: {runner: pytest, node: "tests/unit/test_verification.py::test_policy_binding_is_resolved_independently"}
+  E2E-UI-VERIFY-COMPARISON-001: {runner: playwright, node: "tests/e2e/critical-path.spec.ts::verification renders labelled intervals, table equivalence, and connector separation"}
+  CT-POLICY-PROVENANCE-001: {runner: pytest, node: "tests/unit/test_release_contracts.py::test_console_governance_projection_is_scope_labeled_and_never_grants_authority"}
+  E2E-UI-POLICY-PROVENANCE-001: {runner: playwright, node: "tests/e2e/critical-path.spec.ts::fleet governance and release evidence expose policy provenance without cloud overclaim"}
+  SEC-FLEET-PROJECTIONS-SCOPE-001: {runner: pytest, node: "tests/unit/test_release_contracts.py::test_console_governance_projection_is_scope_labeled_and_never_grants_authority"}
+  E2E-UI-GOVERNANCE-EVIDENCE-001: {runner: playwright, node: "tests/e2e/critical-path.spec.ts::fleet governance and release evidence expose policy provenance without cloud overclaim"}
+  SEC-ORACLE-ISOLATION-001: {runner: pytest, node: "tests/unit/test_release_contracts.py::test_oracle_and_injector_are_outside_every_agent_visible_namespace"}
+  E2E-ORACLE-NEGATIVE-001: {runner: pytest, node: "tests/unit/test_verification.py::test_connector_success_cannot_override_failed_production_evidence"}
+  IT-CASE-WAKEUP-HISTORY-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_mitigated_incident_opens_one_case_and_due_wakeup_is_fenced"}
+  E2E-UI-CONTINUITY-001: {runner: playwright, node: "tests/e2e/critical-path.spec.ts::reliability case exposes exact patch review and calendar-separated continuity"}
+  CT-OPERATOR-BRIEF-001: {runner: pytest, node: "tests/unit/test_release_contracts.py::test_operator_brief_has_freshness_resolvable_sources_and_labels_inference"}
+  E2E-UI-OPERATOR-BRIEF-001: {runner: playwright, node: "tests/e2e/critical-path.spec.ts::investigation map preserves plan, evidence, inference, and operator-brief provenance"}
+  UT-AUDIT-ACTOR-001: {runner: pytest, node: "tests/unit/test_evidence_broker.py::test_audit_actor_reports_service_accounts_and_pseudonymizes_people"}
+  UT-ERROR-SIGNATURE-001: {runner: pytest, node: "tests/unit/test_evidence_broker.py::test_error_group_projection_is_bounded_and_redacted"}
+  IT-DISPATCH-BACKOFF-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_declared_agent_fallback_is_attempted_once_after_dispatch_failure"}
+  IT-INBOX-QUARANTINE-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_crash_looping_inbox_event_is_quarantined_after_bounded_claims"}
+  IT-OUTBOX-QUARANTINE-001: {runner: postgres, node: "tests/integration/test_persistence.py::test_unpublishable_outbox_event_is_quarantined_and_skipped"}

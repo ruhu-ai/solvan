@@ -1,0 +1,7 @@
+schema_version: 1
+pack: reliability.triage-error-rate
+source_kind: FIRST_PARTY
+authorship: Solvan project
+license: Apache-2.0
+origin: Independently authored for Solvan; no third-party source text or code copied.
+reviewed_at: 2026-08-16

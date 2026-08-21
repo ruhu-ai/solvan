@@ -1,0 +1,183 @@
+schema_version: 1
+profile_key: ruhu-gcp-v1
+status: target
+competition_release: excluded
+owners:
+  workload: ruhu-service-owner
+  reliability_control_plane: solvan-product-owner
+  security: joint-security-owner
+source:
+  repository: REPLACE_WITH_CANONICAL_RUHU_REPOSITORY
+  commit: REPLACE_WITH_CLEAN_IMMUTABLE_COMMIT
+  deployed_artifact_digest: REPLACE_WITH_DIGEST
+  require_clean_source: true
+environment:
+  name: REPLACE_WITH_ENVIRONMENT
+  workload_project: REPLACE_WITH_RUHU_GCP_PROJECT
+  control_project: REPLACE_WITH_SOLVAN_GCP_PROJECT
+  region: europe-west1
+  require_separate_projects_in_production: true
+  require_same_approved_residency: true
+  synthetic_scope:
+    organization_id: REPLACE_WITH_SYNTHETIC_ORGANIZATION
+    agent_id: REPLACE_WITH_SYNTHETIC_AGENT
+    contains_real_customer_data: false
+adoption:
+  enabled_phase: observe_only
+  phases:
+    observe_only:
+      status: target
+      mutations_allowed: false
+    approval_bound_rollback:
+      status: target
+      mutations_allowed: true
+      approval_required: true
+    bounded_autonomous_pool_recycle:
+      status: target
+      available: false
+      blocked_by: ruhu_owned_generation_operation_not_implemented
+data_boundary:
+  allowed:
+    - resource_scoped_metric_series
+    - cloud_run_and_worker_metadata
+    - approved_log_view_projected_fields
+    - validated_trace_and_operation_ids
+    - normalized_error_classes
+    - synthetic_scope_turn_results
+  denied:
+    - customer_prompt_or_response
+    - conversation_or_call_transcript
+    - attachment_or_knowledge_document
+    - phone_email_ip_or_auth_material
+    - cloud_sql_data_plane
+    - redis_data_plane
+    - secret_manager_payload
+    - billing_or_customer_record
+  memory_promotion_default: denied
+identities:
+  evidence:
+    allowed:
+      - monitoring.timeSeries.list_on_approved_resources
+      - logging.logEntries.list_through_approved_view
+      - trace_metadata_read
+    denied: [mutation, secret_access, database_connect, attachment_read]
+  infrastructure:
+    allowed:
+      - named_cloud_run_service_revision_worker_get_list
+      - cloud_sql_instance_metadata_read
+    denied: [traffic_update, deploy, delete, iam_change, database_connect]
+  actuator:
+    allowed:
+      - invoke_exact_private_ruhu_operations_audience_with_action_id
+    denied: [arbitrary_http, direct_sql, shell, secret_access, generic_cloud_admin]
+  verifier:
+    allowed:
+      - approved_metric_read
+      - readiness_probe
+      - synthetic_scope_journey
+    denied: [mutation, customer_scope, injector_namespace, oracle_definition]
+production_graph:
+  require_declared_discovered_reconciliation: true
+  required_nodes:
+    - cloud_run_backend_and_revisions
+    - cloud_run_worker_pool
+    - runtime_and_auth_cloud_sql_metadata
+    - memorystore_dependency
+    - attachment_bucket_dependency
+    - frontend_and_ready_endpoint
+    - model_backends
+    - channel_and_provider_dependencies
+    - migration_provisioning_and_role_jobs
+    - slos_verification_profiles_owners_and_source
+signals:
+  approved_metric_names:
+    - ruhu_http_requests_total
+    - ruhu_http_request_duration_seconds
+    - ruhu_kernel_turn_duration_seconds
+    - ruhu_db_pool_checked_out
+    - ruhu_db_pool_overflow
+    - ruhu_audit_queue_drops_total
+    - ruhu_pg_notify_connected
+    - ruhu_pg_notify_reconnects_total
+  availability_preflight: required
+incident_classes:
+  ruhu.api.availability:
+    phase: observe_only
+    candidate_action: ruhu_cloud_run_revision_rollback
+    action_risk: HIGH
+    approval_required: true
+    verification_profile: ruhu-api-availability-v1
+  ruhu.db.pool_saturation:
+    phase: observe_only
+    candidate_action: ruhu_pool_generation_bump
+    action_available: false
+    verification_profile: ruhu-db-pool-v1
+  ruhu.worker.backlog:
+    phase: observe_only
+    candidate_action: none
+    verification_profile: ruhu-worker-backlog-v1
+  ruhu.classifier.degradation:
+    phase: observe_only
+    candidate_action: ruhu_cloud_run_revision_rollback
+    action_risk: HIGH
+    approval_required: true
+    verification_profile: ruhu-classifier-v1
+  ruhu.provider.degradation:
+    phase: observe_only
+    candidate_action: none
+    verification_profile: ruhu-provider-v1
+  ruhu.trace_or_audit_loss:
+    phase: observe_only
+    candidate_action: none
+    verification_profile: ruhu-observability-v1
+tools:
+  read:
+    - gcp_cloud_monitoring_query
+    - gcp_approved_log_view_query
+    - gcp_cloud_run_resource_read
+    - ruhu_readiness_probe
+    - ruhu_synthetic_turn_probe
+  mutation:
+    ruhu_cloud_run_revision_rollback:
+      status: target
+      approval_required: true
+      preferred_route: private_ruhu_operations_service
+    ruhu_pool_generation_bump:
+      status: target
+      available: false
+      required_route: private_ruhu_operations_service
+  prohibited:
+    - generic_http
+    - generic_shell
+    - raw_sql
+    # Explicitly prohibited because Cloud Run has no selected-instance restart API.
+    - cloud_run_instance_restart
+    - human_superuser_diagnostics_route
+verification:
+  independent_identity: true
+  connector_success_is_recovery: false
+  thresholds_require_deployed_calibration: true
+  injector_and_oracle_hidden_from_agents: true
+gates:
+  phase_a:
+    - clean_source_and_deployed_digest
+    - authoritative_inventory_or_signed_discovery_with_drift_detection
+    - approved_metrics_exported
+    - logging_view_and_negative_iam_tests
+    - synthetic_scope_contains_no_customer_data
+    - production_graph_and_bindings_loaded
+    - induced_nonproduction_incident_receipt
+  phase_b:
+    - phase_a_green
+    - known_good_revision_provenance
+    - immutable_approval_and_target_epoch
+    - stale_conflict_duplicate_and_partial_tests
+    - owner_and_security_approval
+    - nonproduction_rollback_verification_receipt
+  phase_c:
+    - typed_identity_bound_ruhu_generation_operation
+    - idempotency_and_cross_instance_convergence
+    - cooldown_circuit_breaker_and_negative_iam_tests
+    - calibrated_fault_experiment
+    - graduated_autonomy_evaluation
+    - explicit_environment_enablement

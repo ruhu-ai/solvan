@@ -1,0 +1,291 @@
+steps:
+  - id: build-alert-ingress
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.alert_ingress.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/alert-ingress:${BUILD_ID}
+      - .
+  - id: build-direct-gcp-reader
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.direct_gcp_reader.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/direct-gcp-reader:${BUILD_ID}
+      - .
+  - id: build-pilot-qualification-verifier
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.pilot_qualification_verifier.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/pilot-qualification-verifier:${BUILD_ID}
+      - .
+  - id: build-api
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.api.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/api:${BUILD_ID}
+      - .
+  - id: build-coordinator
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.coordinator.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/coordinator:${BUILD_ID}
+      - .
+  - id: build-detector
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.detector.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/detector:${BUILD_ID}
+      - .
+  - id: build-actuator
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.actuator.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/actuator:${BUILD_ID}
+      - .
+  - id: build-evidence-broker
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.evidence_broker.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/evidence-broker:${BUILD_ID}
+      - .
+  - id: build-verifier
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.verifier.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/verifier:${BUILD_ID}
+      - .
+  - id: build-publisher
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.publisher.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/publisher:${BUILD_ID}
+      - .
+  - id: build-payments-good
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.payments_fixture.main:app
+      - --build-arg=PAYMENTS_REVISION=v2.8.0
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/payments-good:${BUILD_ID}
+      - .
+  - id: build-payments-bad
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.payments_fixture.main:app
+      - --build-arg=PAYMENTS_REVISION=v2.8.1
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/payments-bad:${BUILD_ID}
+      - .
+  - id: build-console
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=apps/console/Dockerfile
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/console:${BUILD_ID}
+      - .
+  - id: build-memory-promoter
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.memory_promoter.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/memory-promoter:${BUILD_ID}
+      - .
+  - id: build-antigravity-workspace
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.antigravity_workspace.main:app
+      - --build-arg=UV_EXTRAS=--extra antigravity
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/antigravity-workspace:${BUILD_ID}
+      - .
+  - id: build-workspace-sandbox
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.workspace-sandbox
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/workspace-sandbox:${BUILD_ID}
+      - .
+  - id: build-workspace-adapter
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.workspace_adapter.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/workspace-adapter:${BUILD_ID}
+      - .
+  - id: build-fixture-attester
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.fixture_attester.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/fixture-attester:${BUILD_ID}
+      - .
+  - id: build-release-admin
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.release
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/release-admin:${BUILD_ID}
+      - .
+  - id: build-github-provider
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.github_provider.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/github-provider:${BUILD_ID}
+      - .
+  - id: build-github-identity-broker
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.github_identity_broker.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/github-identity-broker:${BUILD_ID}
+      - .
+  - id: build-deployment-controller
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.deployment_controller.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/deployment-controller:${BUILD_ID}
+      - .
+  - id: build-release-verifier
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.release_verifier.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/release-verifier:${BUILD_ID}
+      - .
+  - id: build-slack-liaison
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.slack_liaison.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/slack-liaison:${BUILD_ID}
+      - .
+  - id: build-liaison-maintenance
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.liaison_maintenance.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/liaison-maintenance:${BUILD_ID}
+      - .
+  - id: build-trigger-scheduler
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.trigger_scheduler.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/trigger-scheduler:${BUILD_ID}
+      - .
+  - id: build-mcp-facade
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.mcp_facade.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/mcp-facade:${BUILD_ID}
+      - .
+  - id: build-discord-liaison
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.discord_liaison.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/discord-liaison:${BUILD_ID}
+      - .
+  - id: build-email-liaison
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.email_liaison.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/email-liaison:${BUILD_ID}
+      - .
+  - id: build-relay-control
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.python
+      - --build-arg=APP_MODULE=apps.relay_control.main:app
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/relay-control:${BUILD_ID}
+      - .
+  - id: build-solvant-relay
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.solvant-relay
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/solvant-relay:${BUILD_ID}
+      - .
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/alert-ingress:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/direct-gcp-reader:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/pilot-qualification-verifier:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/api:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/coordinator:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/detector:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/actuator:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/evidence-broker:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/verifier:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/publisher:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/payments-good:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/payments-bad:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/console:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/memory-promoter:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/antigravity-workspace:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/workspace-sandbox:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/workspace-adapter:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/fixture-attester:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/release-admin:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/github-provider:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/github-identity-broker:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/deployment-controller:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/release-verifier:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/slack-liaison:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/liaison-maintenance:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/trigger-scheduler:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/mcp-facade:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/discord-liaison:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/email-liaison:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/relay-control:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/solvant-relay:${BUILD_ID}
+
+serviceAccount: projects/${PROJECT_ID}/serviceAccounts/solvan-build@${PROJECT_ID}.iam.gserviceaccount.com
+substitutions:
+  _REGION: europe-west1
+  _REPOSITORY: solvan
+options:
+  dynamicSubstitutions: true
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+timeout: 2400s

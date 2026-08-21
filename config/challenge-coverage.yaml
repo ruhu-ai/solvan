@@ -1,0 +1,268 @@
+# Which mutating routes require a step-up challenge (specification 05 §4.2).
+#
+# "Every consequential operation" is prose no test can fail. Every mutating
+# route is listed here with either the enumerated operation it requires or an
+# explicit reason it requires none. A new route that is neither is a gate
+# failure, so the classification is made deliberately rather than by omission.
+#
+# `operation` names an entry in solvan.application.action_challenge.
+# `none` carries the reason, because "no challenge" is a claim about what the
+# route can do and must be defensible on its face.
+
+routes:
+  - route: "POST /api/admin/operators/invitations"
+    operation: role.grant
+  - route: "DELETE /api/admin/operators/invitations/{invitation_id}"
+    operation: role.grant
+  - route: "POST /api/admin/guidance/drafts"
+    operation: guidance.author
+  - route: "POST /api/admin/guidance/{key}/revisions/{version}/approve"
+    operation: guidance.approve
+  - route: "POST /api/admin/guidance/{key}/revisions/{version}/deprecate"
+    operation: guidance.lifecycle
+  - route: "POST /api/admin/guidance/{key}/revisions/{version}/evaluations"
+    operation: guidance.author
+  - route: "POST /api/admin/guidance/{key}/revisions/{version}/retire"
+    operation: guidance.lifecycle
+  - route: "POST /api/admin/guidance/{key}/revisions/{version}/submit"
+    operation: guidance.author
+  - route: "POST /api/admin/trigger-policies/drafts"
+    operation: trigger_policy.author
+  - route: "POST /api/admin/trigger-policies/{key}/heads/activate"
+    operation: trigger_policy.activate
+  - route: "POST /api/admin/trigger-policies/{key}/heads/deactivate"
+    operation: trigger_policy.activate
+  - route: "POST /api/admin/trigger-policies/{key}/heads/prepare-replacement"
+    operation: trigger_policy.activate
+  - route: "POST /api/admin/trigger-policies/{key}/revisions/{version}/approve"
+    operation: trigger_policy.approve
+  - route: "POST /api/admin/trigger-policies/{key}/revisions/{version}/evaluations"
+    operation: trigger_policy.author
+  - route: "POST /api/admin/trigger-policies/{key}/revisions/{version}/mark-eligible"
+    operation: trigger_policy.author
+  - route: "POST /api/admin/trigger-policies/{key}/revisions/{version}/retire"
+    operation: trigger_policy.activate
+  - route: "POST /api/alerts/{alert_episode_id}/feedback"
+    none: "records an operator opinion and changes no workflow state"
+  - route: "POST /api/alerts/{alert_episode_id}/request-incident-continuation"
+    operation: alert.command
+  - route: "POST /api/alerts/{alert_episode_id}/request-retriage"
+    operation: alert.command
+  - route: "POST /authorize"
+    none: "the development identity provider's own account picker; it is a separate local service that grants nothing in Solvan"
+  - route: "POST /operator-step-up-messages"
+    none: "the bearer-protected loopback mailbox fixture records test delivery only; it is absent from every deployment and grants no Solvan authority"
+  - route: "POST /token"
+    none: "the development identity provider's own token endpoint; it issues assertions Solvan then verifies like any other issuer's"
+  - route: "POST /api/auth/step-up"
+    none: "freezes an action and delivers a bound presence code; it grants no action authority"
+  - route: "POST /api/auth/step-up/verify"
+    none: "consumes presence, rotates the session, and issues the exact challenge; the later protected route atomically spends that challenge"
+  - route: "POST /api/auth/logout"
+    none: "ends or begins the caller's own session and confers no authority"
+  - route: "POST /api/fleet/alert-policy-simulations"
+    operation: alert.policy.simulate
+  - route: "POST /api/internal/alert-sources/cloud-monitoring/pubsub-push/{connection_id}"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /api/v1/actuators"
+    operation: estate.connect
+  - route: "DELETE /api/v1/channels/bindings/{binding_id}"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/channels/enrollments"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "DELETE /api/v1/channels/enrollments/{challenge_id}"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/connections"
+    operation: estate.connect
+  - route: "POST /api/v1/connections/estates"
+    operation: estate.connect
+  - route: "POST /api/v1/connections/{connection_id}:probe"
+    none: "a bounded read-only capability check that grants nothing; it runs under the signed-in administrator's session and current ADMIN role, never a pasted identity token"
+  - route: "POST /api/v1/direct-gcp-alert-sources"
+    operation: estate.connect
+  - route: "POST /api/v1/direct-gcp-pilot:qualify"
+    none: "a bounded read-only qualification that grants nothing"
+  - route: "POST /api/v1/github/reviewer-links"
+    operation: github.bind
+  - route: "DELETE /api/v1/github/reviewer-links/{binding_id}"
+    operation: github.bind
+  - route: "POST /api/v1/liaison/parked/{request_id}:decide"
+    operation: action.approve
+  - route: "POST /api/v1/liaison/selections"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/liaison/selections/{receipt_id}:open"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/liaison/service-selections"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/liaison/service-selections/{receipt_id}:open"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/liaison/steer:draft"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/liaison:ask"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/parked/{request_id}:answer"
+    none: "answers a parked conversational request from durable projections"
+  - route: "POST /api/v1/relays"
+    operation: relay.enroll
+  - route: "POST /api/v1/relays/{enrollment_id}:disable"
+    operation: relay.disable
+  - route: "POST /api/v1/relays/{enrollment_id}:revoke"
+    operation: relay.revoke
+  - route: "POST /api/v1/skills/governance/destinations"
+    operation: skills.govern
+  - route: "POST /api/v1/skills/governance/licenses"
+    operation: skills.govern
+  - route: "POST /api/v1/skills/governance/owners"
+    operation: skills.govern
+  - route: "POST /api/v1/skills/governance/readers"
+    operation: skills.govern
+  - route: "POST /api/v1/skills/import"
+    none: "imports into quarantine; approval is a separate governed decision"
+  - route: "POST /api/v1/skills/{guidance_key}/export"
+    operation: skills.govern
+  - route: "POST /api/v1/skills/{guidance_key}/refresh"
+    none: "re-reads a bound source into quarantine and approves nothing"
+  - route: "POST /api/v1/skills/{import_id}/compile"
+    none: "compiles quarantined material; selection still requires approval"
+  - route: "POST /api/v1/subscriptions"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "DELETE /api/v1/subscriptions/{subscription_id}"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/threads/{thread_id}/access-requests"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/threads/{thread_id}/access-requests/{request_id}:decide"
+    operation: thread.access.decide
+  - route: "POST /api/v1/threads/{thread_id}/messages/{message_id}/attachments"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "DELETE /api/v1/threads/{thread_id}/participants"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/threads/{thread_id}/participants"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "PUT /api/v1/threads/{thread_id}/read-cursor"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/threads/{thread_id}/turns/{message_id}:abort"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/threads/{thread_id}/turns/{message_id}:cancel"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /api/v1/threads/{thread_id}/turns/{message_id}:stop-and-send"
+    none: "conversational: reads durable projections and creates no durable authority"
+  - route: "POST /discord/interactions"
+    none: "channel webhook verified by provider signature, never an operator identity"
+  - route: "POST /email/events"
+    none: "channel webhook verified by provider signature, never an operator identity"
+  - route: "POST /internal/detection/burst"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/dev/detection/once"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/dev/pipeline:run"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/evidence/commit-history"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/evidence/deployments"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/evidence/discussions"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/evidence/merge-queue"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/evidence/commit-range"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/evidence/issue"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/evidence/pull-request-diff"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/evidence/repository-tree"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/evidence/search"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/evidence/workflow-run"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/evidence/workflow-runs"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/repositories:probe"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/github/webhooks"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/memory/promotions/tick"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/outbox/tick"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/pubsub/security"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/pubsub/workflow"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/tick"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/v1/commands:execute"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/v1/direct-gcp-pilot:qualify"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/v1/github/repositories:probe"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/v1/relay/observability-jobs"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/v1/relay/poll"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/v1/sandbox:execute"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/v1/synthetic-attestations"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/v1/tick"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/v1/trigger-events"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/v1/verifications:run"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/v1/workspace-tools/{operation}"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/v1/workspace-tools:invoke"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /internal/wakeups/tick"
+    none: "service identity: an OIDC-bound worker or provider push, never an operator"
+  - route: "POST /mcp"
+    none: "model context endpoint bound to a service identity, not a person"
+  - route: "POST /oauth/enrollment/confirm"
+    none: "completes a channel enrollment the operator already authorized"
+  - route: "POST /reconciliations"
+    none: "service identity: the reconciler reports observed effect and decides nothing"
+  - route: "POST /repositories"
+    operation: github.bind
+  - route: "POST /signer-keys"
+    none: "service identity: release signing keys are provisioned, never operator-set"
+  - route: "POST /slack/events"
+    none: "channel webhook verified by provider signature, never an operator identity"
+  - route: "POST /targets"
+    none: "service identity: deployment targets are declared by release configuration"
+  - route: "POST /v1/admin/connection-pool:recycle"
+    none: "the payments fixture's own admin surface; it is not part of the control plane"
+  - route: "POST /v1/synthetic/payments"
+    none: "the payments fixture generates synthetic load and touches no customer estate"
+  - route: "POST /verifier-keys"
+    none: "service identity: verification keys are provisioned, never operator-set"
+  - route: "POST /{definition_id}:revoke"
+    none: "service identity: a provider revokes its own definition, not an operator's"
+  - route: "POST /{request_id}/decisions"
+    operation: action.approve
+  # Approving a publication puts words into a public thread under Solvan's
+  # identity. That is an approval in the same sense a pull-request decision is,
+  # and it is irreversible in the way that matters: a deleted comment was still
+  # read, quoted, and acted on.
+  - route: "POST /actions/{action_id}/decision"
+    operation: action.approve
+  # Admitting a GitHub login decides who may direct Solvan's attention on a
+  # repository, so it is bound to the same authority that binds the repository.
+  - route: "POST /repositories/{repository_id}/participants"
+    operation: github.bind
+  # Binding every repository an installation reaches, investigate-only. It
+  # grants no GitHub write, but it does give Solvan read reach over private
+  # code, which is an administrator's decision.
+  # Beginning an install re-authenticates before the operator leaves for
+  # GitHub, because the redirect that returns cannot carry a challenge.
+  - route: "POST /installations:begin"
+    operation: github.bind
+  - route: "POST /installations/{installation_id}:connect-all"
+    operation: github.bind
+  # Changing what one bound repository may do. The challenge is bound to the
+  # exact authority, so a page altered while the operator re-authenticates
+  # cannot reuse it.
+  - route: "POST /repositories/{repository_id}/authority"
+    operation: github.bind

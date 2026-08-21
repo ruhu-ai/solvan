@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solvan.dev/schemas/provider-eligibility-receipt-v1.json",
+  "title": "Solvan provider eligibility receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "policy_kind",
+    "policy_version",
+    "organization_id",
+    "project_id",
+    "environment_id",
+    "workspace_id",
+    "workspace_generation",
+    "task_kind",
+    "provider",
+    "provider_revision",
+    "implementation_sdk",
+    "implementation_sdk_version",
+    "implementation_sdk_distribution_hash",
+    "hosting_control_plane",
+    "hosting_data_plane",
+    "provider_service_identity",
+    "provider_artifact_digest",
+    "classification",
+    "synthetic",
+    "artifact_manifest_ref",
+    "artifact_manifest_hash",
+    "synthetic_attestation_ref",
+    "synthetic_attestation_hash",
+    "terms_revision",
+    "required_processing_location",
+    "provider_location",
+    "effective_tool_set_hash",
+    "effective_network_policy_hash",
+    "input_hash",
+    "decision",
+    "reason_codes",
+    "decided_by",
+    "decided_at"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "decision_id": {"type": "string", "minLength": 1},
+    "policy_kind": {"const": "PROVIDER_ELIGIBILITY"},
+    "policy_version": {"type": "string", "minLength": 1},
+    "organization_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "environment_id": {"type": "string", "minLength": 1},
+    "workspace_id": {"type": "string", "minLength": 1},
+    "workspace_generation": {"type": "integer", "minimum": 1},
+    "task_kind": {
+      "enum": [
+        "MAINTAIN_DOSSIER",
+        "FORENSICS",
+        "SYNTHESIZE_EVIDENCE",
+        "REPRODUCE",
+        "BISECT",
+        "REPAIR",
+        "PREVALIDATE",
+        "REHEARSE",
+        "LEARN"
+      ]
+    },
+    "provider": {
+      "enum": ["GEMINI_ADK_AGENT_ENGINE", "ANTIGRAVITY_SDK_CLOUD_RUN"]
+    },
+    "provider_revision": {"type": "string", "minLength": 1},
+    "implementation_sdk": {"enum": ["google-adk", "google-antigravity"]},
+    "implementation_sdk_version": {"type": "string", "minLength": 1},
+    "implementation_sdk_distribution_hash": {"$ref": "#/$defs/sha256"},
+    "hosting_control_plane": {
+      "enum": ["AGENT_RUNTIME", "CLOUD_RUN"]
+    },
+    "hosting_data_plane": {
+      "enum": ["AGENT_RUNTIME_QUERY_API", "PRIVATE_HTTPS"]
+    },
+    "provider_service_identity": {"type": "string", "minLength": 1},
+    "provider_artifact_digest": {"$ref": "#/$defs/sha256"},
+    "classification": {
+      "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"]
+    },
+    "synthetic": {"type": "boolean"},
+    "artifact_manifest_ref": {"type": "string", "pattern": "^gs://"},
+    "artifact_manifest_hash": {"$ref": "#/$defs/sha256"},
+    "synthetic_attestation_ref": {
+      "type": ["string", "null"],
+      "pattern": "^gs://"
+    },
+    "synthetic_attestation_hash": {
+      "anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]
+    },
+    "terms_revision": {"type": "string", "minLength": 1},
+    "required_processing_location": {"type": "string", "minLength": 1},
+    "provider_location": {"type": "string", "minLength": 1},
+    "effective_tool_set_hash": {"$ref": "#/$defs/sha256"},
+    "effective_network_policy_hash": {"$ref": "#/$defs/sha256"},
+    "input_hash": {"$ref": "#/$defs/sha256"},
+    "decision": {"enum": ["ALLOW", "DENY"]},
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "decided_by": {"type": "string", "minLength": 1},
+    "decided_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "provider": {"const": "ANTIGRAVITY_SDK_CLOUD_RUN"},
+          "decision": {"const": "ALLOW"}
+        },
+        "required": ["provider", "decision"]
+      },
+      "then": {
+        "properties": {
+          "classification": {"const": "PUBLIC"},
+          "synthetic": {"const": true},
+          "implementation_sdk": {"const": "google-antigravity"},
+          "implementation_sdk_version": {"const": "0.1.10"},
+          "hosting_control_plane": {"const": "CLOUD_RUN"},
+          "hosting_data_plane": {"const": "PRIVATE_HTTPS"},
+          "required_processing_location": {"const": "europe-west1"},
+          "provider_location": {"const": "europe-west1"},
+          "synthetic_attestation_ref": {"type": "string", "pattern": "^gs://"},
+          "synthetic_attestation_hash": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"provider": {"const": "GEMINI_ADK_AGENT_ENGINE"}},
+        "required": ["provider"]
+      },
+      "then": {
+        "properties": {
+          "implementation_sdk": {"const": "google-adk"},
+          "hosting_control_plane": {"const": "AGENT_RUNTIME"},
+          "hosting_data_plane": {"const": "AGENT_RUNTIME_QUERY_API"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}

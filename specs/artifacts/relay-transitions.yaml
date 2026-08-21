@@ -1,0 +1,51 @@
+schema_version: 1
+status: target
+machines:
+  relay_enrollment:
+    initial_state: REGISTERED
+    terminal_states: [REVOKED]
+    transitions:
+      - {from: REGISTERED, event: ATTESTATION_ACCEPTED, to: READY, guard: identity_image_policy_catalog_and_region_current}
+      - {from: REGISTERED, event: ADMIN_DISABLED, to: DISABLED, guard: authorized_administrator}
+      - {from: READY, event: HEALTH_DEGRADED, to: DEGRADED, guard: current_safe_health_receipt}
+      - {from: READY, event: POLICY_OR_EPOCH_CHANGED, to: STALE, guard: authoritative_binding_changed}
+      - {from: READY, event: ADMIN_DISABLED, to: DISABLED, guard: authorized_administrator}
+      - {from: DEGRADED, event: HEALTH_RESTORED, to: READY, guard: fresh_attested_health_receipt}
+      - {from: DEGRADED, event: POLICY_OR_EPOCH_CHANGED, to: STALE, guard: authoritative_binding_changed}
+      - {from: DEGRADED, event: ADMIN_DISABLED, to: DISABLED, guard: authorized_administrator}
+      - {from: STALE, event: REATTESTED, to: READY, guard: identity_image_policy_catalog_and_region_current}
+      - {from: STALE, event: ADMIN_DISABLED, to: DISABLED, guard: authorized_administrator}
+      - {from: DISABLED, event: ADMIN_REENABLED, to: REGISTERED, guard: authorized_administrator_and_epoch_advanced}
+      - {from: REGISTERED, event: REVOKED, to: REVOKED, guard: authorized_administrator_or_identity_revoked}
+      - {from: READY, event: REVOKED, to: REVOKED, guard: authorized_administrator_or_identity_revoked}
+      - {from: DEGRADED, event: REVOKED, to: REVOKED, guard: authorized_administrator_or_identity_revoked}
+      - {from: STALE, event: REVOKED, to: REVOKED, guard: authorized_administrator_or_identity_revoked}
+      - {from: DISABLED, event: REVOKED, to: REVOKED, guard: authorized_administrator_or_identity_revoked}
+    rejections:
+      - {when: terminal_state, rule: reject_all_transitions}
+      - {when: unlisted_transition, rule: reject_without_epoch_or_timestamp_change}
+  collection_job:
+    initial_state: PENDING
+    terminal_states: [ACCEPTED, REFUSED, EXPIRED, CANCELLED]
+    transitions:
+      - {from: PENDING, event: CLAIM_ACCEPTED, to: CLAIMED, guard: ready_enrollment_current_epochs_and_no_active_claim}
+      - {from: PENDING, event: EXPIRED, to: EXPIRED, guard: expiry_reached_before_claim}
+      - {from: PENDING, event: CANCELLED, to: CANCELLED, guard: coordinator_and_no_claim}
+      - {from: CLAIMED, event: EXECUTION_STARTED, to: EXECUTING, guard: claim_token_and_all_bindings_revalidated}
+      - {from: CLAIMED, event: CLAIM_EXPIRED_UNSTARTED, to: PENDING, guard: no_attempt_started_and_retry_budget_remaining}
+      - {from: CLAIMED, event: CLAIM_EXPIRED_AMBIGUOUS, to: AMBIGUOUS, guard: attempt_may_have_started}
+      - {from: EXECUTING, event: LOCAL_RESULT_STORED, to: RESULT_STORED, guard: local_result_hash_and_attempt_token_bound}
+      - {from: EXECUTING, event: RETRYABLE_ATTEMPT_FAILED, to: RETRY_WAIT, guard: closed_retryable_error_and_no_local_result}
+      - {from: EXECUTING, event: EXECUTION_AMBIGUOUS, to: AMBIGUOUS, guard: upstream_effect_unknown_or_process_lost}
+      - {from: RESULT_STORED, event: RECEIPT_ACCEPTED, to: ACCEPTED, guard: exact_receipt_bindings_and_evidence_projection_committed_atomically}
+      - {from: RESULT_STORED, event: RECEIPT_REFUSED, to: REFUSED, guard: closed_nonretryable_reason}
+      - {from: AMBIGUOUS, event: LOCAL_RESULT_RECONCILED, to: RESULT_STORED, guard: exact_local_attempt_result_found}
+      - {from: AMBIGUOUS, event: SAFE_RETRY_AUTHORIZED, to: PENDING, guard: adapter_retryable_and_budget_remaining_and_no_local_result}
+      - {from: AMBIGUOUS, event: AMBIGUITY_EXHAUSTED, to: REFUSED, guard: reconciliation_or_retry_budget_exhausted}
+      - {from: RETRY_WAIT, event: SAFE_RETRY_AUTHORIZED, to: PENDING, guard: retryable_error_and_budget_remaining}
+      - {from: RETRY_WAIT, event: RETRY_BUDGET_EXHAUSTED, to: REFUSED, guard: retry_budget_exhausted}
+    rejections:
+      - {when: terminal_state, rule: return_committed_projection_without_adapter_invocation}
+      - {when: cancel_after_claim, rule: mark_cancel_requested_and_reconcile_before_terminal_transition}
+      - {when: stale_claim_token, rule: refuse_without_local_adapter_invocation}
+      - {when: binding_changed_after_poll, rule: refuse_without_local_adapter_invocation}

@@ -1,0 +1,48 @@
+schema_version: 1
+status: target
+release_gate: false
+governing_specs:
+  - specs/13-tenant-integration.md
+  - specs/21-alert-triage.md
+  - specs/07-implementation-deployment.md
+note: >-
+  Target traceability only. Every null implementation is an explicit gap.
+  Local fixtures, Terraform plans, health checks, and demo evidence cannot
+  qualify a GCP estate or enable this profile.
+tests:
+  PT-DIRECT-IDENTITY-001:
+    proves: direct GCP reads use only the bound customer reader service account, exact Solvan delegator, digest-pinned condition, and a <=900-second token
+    implementation: tests/unit/test_google_rest.py; tests/unit/test_direct_gcp_pilot_boundaries.py
+    deployed_evidence: null
+  PT-DIRECT-IDENTITY-002:
+    proves: changing any delegator, reader, condition, scope, role receipt, or token ceiling stales the connection and source binding before another provider read
+    implementation: src/solvan/persistence/connection_store.py; tests/integration/test_alert_triage_persistence.py
+    deployed_evidence: null
+  PT-ALERT-INGRESS-001:
+    proves: Alert Ingress alone accepts the bound Pub/Sub OIDC identity; the API, console, coordinator, and model services reject it
+    implementation: tests/unit/test_alert_ingress_boundary.py
+    deployed_evidence: null
+  PT-ALERT-INGRESS-002:
+    proves: an invalid issuer, audience, subject, email verification, subscription, connection, schema, or payload bound writes no semantic alert event
+    implementation: tests/unit/test_alert_ingress_api.py
+    deployed_evidence: null
+  PT-SOURCE-QUALIFICATION-001:
+    proves: a source binding becomes qualified only from the dedicated authenticated qualification delivery, which creates neither Alert Episode, Agent run, nor Incident
+    implementation: tests/integration/test_alert_triage_persistence.py
+    deployed_evidence: null
+  PT-ALERT-TRIAGE-READONLY-001:
+    proves: a real qualifying provider alert produces only bounded ingress, triage, console, and manual-continuation records; no customer mutation or autonomous escalation is possible
+    implementation: apps/alert_ingress/main.py; apps/coordinator/alert_triage.py
+    deployed_evidence: null
+  PT-PILOT-DEPLOYMENT-MINIMAL-001:
+    proves: direct_gcp_alert_triage_pilot_enabled is default-off, cannot be enabled by target_product_enabled, and deploys no Relay, Actuator, channel, fault, or unrelated Agent workload
+    implementation: infra/terraform/environments/gcp/cloud_run.tf; infra/terraform/environments/gcp/sql.tf
+    deployed_evidence: null
+  PT-PILOT-RECEIPT-001:
+    proves: only the independent verifier revision with its own identity and KMS key can issue a successful receipt after recomputing all predicates from immutable evidence
+    implementation: apps/pilot_qualification_verifier/main.py; tests/unit/test_direct_gcp_pilot_boundaries.py
+    deployed_evidence: null
+  PT-PILOT-RECEIPT-002:
+    proves: verifier revision/key, deployed revision, connection epoch, source binding, or evidence change supersedes the receipt and requires requalification
+    implementation: src/solvan/persistence/connection_store.py; specs/artifacts/alert-triage-schema.target.v6.sql
+    deployed_evidence: null

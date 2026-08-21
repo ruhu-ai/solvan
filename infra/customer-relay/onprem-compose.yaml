@@ -1,0 +1,33 @@
+# Customer-owned rootless Podman/Docker Compose profile. It exposes no ports.
+# Bind mounts must be customer-managed, with policy/key mounts read-only and the
+# encrypted attempt ledger on a dedicated, access-restricted filesystem.
+services:
+  solvant-relay:
+    image: CUSTOMER_REGISTRY/solvant-relay@sha256:REPLACE
+    user: "10001:10001"
+    read_only: true
+    restart: "no"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1.0
+    tmpfs: [/tmp:rw,noexec,nosuid,nodev,size=16m]
+    environment:
+      SOLVAN_RELAY_CONTROL_AUDIENCE: https://RELAY_CONTROL
+      SOLVANT_RELAY_VERSION: "1.0.0"
+      SOLVANT_RELAY_IMAGE_DIGEST: sha256:REPLACE
+      SOLVANT_RELAY_IMAGE_ATTESTATION_DIGEST: sha256:REPLACE
+      SOLVANT_RELAY_RUNTIME_PROOF_KEY_ID: CUSTOMER_RUNTIME_KEY
+      SOLVANT_RELAY_PROCESS_BOOT_ID: customer-supervisor-instance-id
+      SOLVANT_RELAY_POLICY_PATH: /var/run/solvant/policy.json
+      SOLVANT_RELAY_POLICY_PUBLIC_KEY_PATH: /var/run/solvant/policy.pem
+      SOLVANT_RELAY_CONTROL_PUBLIC_KEY_PATH: /var/run/solvant/control.pem
+      SOLVANT_RELAY_RUNTIME_PROOF_PRIVATE_KEY_PATH: /var/run/solvant/runtime.key
+      SOLVANT_RELAY_LEDGER_KEY_PATH: /var/run/solvant/ledger.key
+      SOLVANT_RELAY_LEDGER_DIR: /var/lib/solvant-ledger
+      SOLVANT_RELAY_KILL_SWITCH_PATH: /var/run/solvant-kill-switch/state
+    volumes:
+      - CUSTOMER_POLICY_AND_KEYS:/var/run/solvant:ro
+      - CUSTOMER_KILL_SWITCH:/var/run/solvant-kill-switch:ro
+      - CUSTOMER_ENCRYPTED_RELAY_LEDGER:/var/lib/solvant-ledger:rw

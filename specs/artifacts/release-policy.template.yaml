@@ -1,0 +1,79 @@
+schema_version: 1
+status: TEMPLATE_NOT_DEPLOYABLE
+environment_scope:
+  organization_id: REPLACE_WITH_ULID
+  project_id: REPLACE_WITH_ULID
+  environment_id: REPLACE_WITH_ULID
+rbac:
+  bindings:
+    - {principal: "user:operator@example.invalid", roles: [OPERATOR]}
+    - {principal: "user:approver@example.invalid", roles: [APPROVER]}
+    - {principal: "group:solvan-admins@example.invalid", roles: [ADMIN]}
+  separation:
+    proposer_may_approve_same_action: false
+standing_preauthorizations:
+  - id: payments-pool-recycle-v1
+    version: 1
+    incident_class: connection_exhaustion
+    action_budget: 2
+    repeated_action_limit: 1
+    action_type: PAYMENTS_POOL_RECYCLE
+    service: payments-api
+    incident_class: connection_exhaustion
+    maximum_risk_class: MEDIUM
+    payload_constraints:
+      admin_operation: RECYCLE_DB_POOL
+      drain_timeout_ms: 5000
+    maximum_attempts: 1
+    cooldown_ms: 600000
+    validity: REPLACE_WITH_VALIDITY_WINDOW
+    approval: REPLACE_WITH_HUMAN_POLICY_OWNER
+confirmation_rules:
+  - id: connection-pool-exhaustion-v1
+    version: 1
+    incident_class: connection_exhaustion
+    required_observations:
+      normalized_cause_key: payments-connection-pool-exhaustion
+      statement: Payments failures are caused by exhausted database connections in the defective revision.
+      all_required:
+        - source_kind: CLOUD_MONITORING
+          tool_name: cloud_monitoring_query
+          argument_equals: {signal_kind: HTTP_5XX_RATIO}
+        - source_kind: CLOUD_LOGGING
+          tool_name: cloud_logging_query
+          argument_equals: {signature_key: connection-exhaustion}
+    contradiction_policy: ESCALATE
+detection_rules:
+  - id: payments-http-5xx-v1
+    version: 1
+    incident_class: connection_exhaustion
+    action_budget: 2
+    repeated_action_limit: 1
+    signal: http_5xx_ratio
+    query: typed/cloud_run/request_count_5xx_divided_by_all
+    window_ms: 60000
+    evaluation_interval_ms: 25000
+    sustained_windows: 2
+    comparator: GT
+    threshold: REPLACE_FROM_CALIBRATION_RECEIPT
+    severity: SEV2
+    deduplication_dimension: http-5xx
+  - id: payments-p95-latency-v1
+    version: 1
+    incident_class: connection_exhaustion
+    action_budget: 2
+    repeated_action_limit: 1
+    signal: request_latency_p95_ms
+    query: typed/cloud_run/request_latency_p95
+    window_ms: 60000
+    evaluation_interval_ms: 25000
+    sustained_windows: 2
+    comparator: GT
+    threshold: REPLACE_FROM_CALIBRATION_RECEIPT
+    severity: SEV2
+    deduplication_dimension: p95-latency
+deployment_guards:
+  reject_template_status: true
+  require_calibration_receipt: true
+  require_non_example_principals: true
+  require_human_policy_approval: true

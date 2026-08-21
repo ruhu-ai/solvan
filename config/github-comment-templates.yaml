@@ -1,0 +1,187 @@
+# Every sentence Solvan can publish into a GitHub repository is one of these.
+#
+# This registry is loaded by the same validator and pinned by the same digest
+# discipline as the Liaison registry (specification 14 §7), and its predicates
+# are the same implemented verifiers — configuration carries no logic here
+# either. It is a separate file because its audience is different: a Liaison
+# sentence is read by an operator inside Solvan, where a refusal is visible and
+# a claim can be traced. A GitHub comment is read by strangers, quoted into
+# other threads, and outlives the incident that produced it (specification 24
+# §3). So the forms here are deliberately narrower: they state what a record
+# says, name the incident, and stop.
+#
+# Nothing in this registry asserts that a change is safe, that a fix works, or
+# that a human should merge anything. Solvan does not have those claims to make
+# in public, and a template that cannot be uttered cannot be prompt-injected
+# into existence.
+#
+# Retired ids are never reused. Changing a held template's predicate, releasing
+# record, or polarity is a safety-sensitive change requiring a threat-model note
+# and acceptance tests in the same commit.
+schema_version: 1
+templates:
+  # ---- Held kinds: affirmative forms a record must release -----------------
+
+  # The workhorse reply to a mention: names the incident this thread is bound
+  # to, and says nothing about cause or remedy.
+  - id: GITHUB_INCIDENT_LINKED
+    kind: INCIDENT_LINK
+    polarity: AFFIRMATIVE
+    held: true
+    holding_template: GITHUB_INCIDENT_LINK_PENDING
+    sentence: "Solvan has linked this thread to incident {incident_ref}, currently {incident_state}."
+    slots: [incident_ref, incident_state]
+    slot_sources:
+      incident_ref: {record: incident, field: id}
+      incident_state: {record: incident, field: state}
+    predicate: RECORD_FIELD_EQUALS
+    releasing_record: incident
+
+  - id: GITHUB_INCIDENT_LINK_PENDING
+    kind: INCIDENT_LINK
+    polarity: HOLDING
+    held: false
+    sentence: "Solvan has not linked this thread to an incident yet. {holding_detail}"
+    slots: [holding_detail]
+    slot_sources:
+      holding_detail: HOLDING_REASON
+    predicate: ALWAYS
+    releasing_record: null
+
+  # Reports one measured value from evidence. The number comes from the record;
+  # the model chooses only which evidence item to cite.
+  - id: GITHUB_MEASURED_VALUE
+    kind: MEASUREMENT
+    polarity: AFFIRMATIVE
+    held: true
+    holding_template: GITHUB_MEASUREMENT_UNAVAILABLE
+    sentence: "Observed {evidence_label}: {evidence_value} (evidence {evidence_ref})."
+    slots: [evidence_label, evidence_value, evidence_ref]
+    slot_sources:
+      evidence_label: {record: evidence_item, field: label}
+      evidence_value: {record: evidence_item, field: value}
+      evidence_ref: {record: evidence_item, field: id}
+    predicate: EVIDENCE_COVERS
+    releasing_record: evidence_item
+
+  - id: GITHUB_MEASUREMENT_UNAVAILABLE
+    kind: MEASUREMENT
+    polarity: HOLDING
+    held: false
+    sentence: "Solvan cannot cite a measurement for this thread. {holding_detail}"
+    slots: [holding_detail]
+    slot_sources:
+      holding_detail: HOLDING_REASON
+    predicate: ALWAYS
+    releasing_record: null
+
+  # States that a change reached a deployed state. Held on the receipt, because
+  # "we shipped it" is the single most damaging thing to say wrongly in public.
+  - id: GITHUB_CHANGE_DEPLOYED
+    kind: DEPLOYMENT
+    polarity: AFFIRMATIVE
+    held: true
+    holding_template: GITHUB_CHANGE_NOT_DEPLOYED
+    sentence: "Change {action_ref} is reconciled as deployed."
+    slots: [action_ref]
+    slot_sources:
+      action_ref: {record: action, field: id}
+    predicate: RECEIPT_RECONCILED
+    releasing_record: action
+
+  - id: GITHUB_CHANGE_NOT_DEPLOYED
+    kind: DEPLOYMENT
+    polarity: HOLDING
+    held: false
+    sentence: "Solvan cannot confirm this change is deployed. {holding_detail}"
+    slots: [holding_detail]
+    slot_sources:
+      holding_detail: HOLDING_REASON
+    predicate: ALWAYS
+    releasing_record: null
+
+  # ---- Neutral forms: true by construction, asserting nothing about the world
+
+  # The acknowledgement a mention gets while work is still queued. It reports
+  # Solvan's own state, which Solvan is entitled to report.
+  - id: GITHUB_ACKNOWLEDGED
+    kind: ACKNOWLEDGEMENT
+    polarity: NEUTRAL
+    held: false
+    sentence: "Solvan received this request and opened investigation {subject_label}. Findings are posted here once they are verified."
+    slots: [subject_label]
+    slot_sources:
+      subject_label: SUBJECT
+    predicate: ALWAYS
+    releasing_record: null
+
+  # Says a human must decide. Predicate-checked so it cannot be said when no
+  # approval is actually pending — an untrue "waiting on you" trains readers to
+  # ignore the real one.
+  - id: GITHUB_AWAITING_HUMAN
+    kind: HUMAN_ATTENTION
+    polarity: NEUTRAL
+    held: false
+    sentence: "Solvan is holding {subject_label} for a human decision; it will not act until an operator approves."
+    slots: [subject_label]
+    slot_sources:
+      subject_label: SUBJECT
+    predicate: HUMAN_ATTENTION_PENDING
+    releasing_record: null
+
+  # Quotes stored record text verbatim. The predicate byte-matches the quote
+  # against the record, so a paraphrase is refused rather than published.
+  - id: GITHUB_RECORD_STATEMENT
+    kind: RECORD_STATEMENT
+    polarity: NEUTRAL
+    held: false
+    sentence: "From the incident record for {subject_label}: \"{quoted_text}\""
+    slots: [subject_label, quoted_text]
+    slot_sources:
+      subject_label: SUBJECT
+      quoted_text: MODEL_QUOTED
+    predicate: RECORD_TEXT_EQUALS
+    releasing_record: null
+
+  # The review body for REQUEST_CHANGES. It reports a failing check by name and
+  # does not characterise the author's code.
+  - id: GITHUB_CHECK_FAILING
+    kind: CHECK_STATE
+    polarity: NEUTRAL
+    held: false
+    sentence: "Solvan observed check {evidence_label} in a failing state on this pull request (evidence {evidence_ref})."
+    slots: [evidence_label, evidence_ref]
+    slot_sources:
+      evidence_label: {record: evidence_item, field: label}
+      evidence_ref: {record: evidence_item, field: id}
+    predicate: EVIDENCE_COVERS
+    releasing_record: null
+
+  # Says Solvan will not act. Always available, because a refusal must never be
+  # blocked by the same evidence gap that caused it.
+  - id: GITHUB_OUT_OF_SCOPE
+    kind: SCOPE
+    polarity: NEUTRAL
+    held: false
+    sentence: "This is outside what Solvan acts on for {subject_label}. No action will be taken from this thread."
+    slots: [subject_label]
+    slot_sources:
+      subject_label: SUBJECT
+    predicate: ALWAYS
+    releasing_record: null
+
+connectives:
+  - id: GITHUB_LEAD_IN
+    sentence: "{lead}"
+    slots: [lead]
+    allowed_leads:
+      - "Solvan investigated this thread."
+      - "Here is what Solvan can confirm."
+      - "Solvan has an update on this thread."
+
+  - id: GITHUB_SIGNATURE
+    sentence: "{lead}"
+    slots: [lead]
+    allowed_leads:
+      - "— Solvan (automated; every action here passed human approval)"
+      - "— Solvan (automated investigation; no changes were made)"

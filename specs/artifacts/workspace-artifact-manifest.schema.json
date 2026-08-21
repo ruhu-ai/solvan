@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solvan.dev/schemas/workspace-artifact-manifest-v1.json",
+  "title": "Solvan workspace artifact manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_kind",
+    "workspace_id",
+    "workspace_generation",
+    "classification",
+    "synthetic",
+    "entries",
+    "created_by",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "manifest_kind": {"enum": ["INPUT", "CHECKPOINT"]},
+    "workspace_id": {"type": "string", "minLength": 1},
+    "workspace_generation": {"type": "integer", "minimum": 1},
+    "checkpoint_sequence": {"type": ["integer", "null"], "minimum": 1},
+    "parent_manifest_ref": {"type": ["string", "null"], "pattern": "^gs://"},
+    "parent_manifest_hash": {
+      "anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]
+    },
+    "classification": {
+      "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"]
+    },
+    "synthetic": {"type": "boolean"},
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "object_ref", "content_hash", "size_bytes", "media_type", "provenance_refs"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+          },
+          "object_ref": {"type": "string", "pattern": "^gs://"},
+          "content_hash": {"$ref": "#/$defs/sha256"},
+          "size_bytes": {"type": "integer", "minimum": 0},
+          "media_type": {"type": "string", "minLength": 1},
+          "provenance_refs": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "created_by": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"manifest_kind": {"const": "INPUT"}},
+        "required": ["manifest_kind"]
+      },
+      "then": {
+        "properties": {
+          "checkpoint_sequence": {"type": "null"},
+          "parent_manifest_ref": {"type": "null"},
+          "parent_manifest_hash": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"manifest_kind": {"const": "CHECKPOINT"}},
+        "required": ["manifest_kind"]
+      },
+      "then": {
+        "required": [
+          "checkpoint_sequence",
+          "parent_manifest_ref",
+          "parent_manifest_hash"
+        ],
+        "properties": {
+          "checkpoint_sequence": {"type": "integer", "minimum": 1},
+          "parent_manifest_ref": {"type": "string", "pattern": "^gs://"},
+          "parent_manifest_hash": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}

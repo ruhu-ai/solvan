@@ -1,0 +1,23 @@
+/* Whole-page states: loading, unavailable projection, and the mobile scrim.
+   Their own file because they are what the console shows when it has nothing
+   to show, which is a different subject from the surfaces themselves. The
+   shared controls' disabled state lives here for the same reason: it is what a
+   control looks like when it has nothing to offer. */
+
+/* The shared button classes carried no disabled styling, so a disabled button
+   looked identical to an available one and still brightened on hover. That is
+   the difference between "you cannot do this yet" and "nothing happened when I
+   clicked", and it applied to every button in the console. */
+.primary-button:disabled, .secondary-button:disabled, .reject-button:disabled,
+.text-button:disabled, .back-button:disabled, .icon-button:disabled { opacity: .5; cursor: not-allowed; }
+
+.state-page { display: grid; min-height: 55vh; place-items: center; align-content: center; text-align: center; }
+.state-page p { max-width: 55ch; }
+.state-symbol { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 50%; background: var(--status-danger-bg); color: var(--status-danger-fg); font-size: 24px; }
+.spinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--status-agent-fg); border-radius: 50%; animation: spin .8s linear infinite; }
+.scrim { display: none; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}

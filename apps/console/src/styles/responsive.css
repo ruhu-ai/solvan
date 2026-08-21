@@ -1,0 +1,105 @@
+/* Cross-screen responsive layout overrides. */
+
+@media (max-width: 1180px) {
+  .overview-grid { grid-template-columns: 1fr; }
+  .attention-rail { position: static; }
+  .metric-grid { grid-template-columns: repeat(2, 1fr); }
+  .brief-columns { grid-template-columns: repeat(3, 1fr); }
+  .action-facts { grid-template-columns: repeat(2, 1fr); }
+  .settings-layout { grid-template-columns: 210px minmax(0, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); box-shadow: var(--shadow-overlay); transition: transform 160ms ease; }
+  .sidebar-open { transform: translateX(0); }
+  .workspace { margin-left: 0; }
+  .menu-button { display: grid !important; }
+  .scrim { position: fixed; z-index: 30; inset: 0; display: block; width: 100%; height: 100%; border: 0; background: rgb(9 11 14 / 42%); }
+  .sidebar { z-index: 50; }
+  .topbar { padding: 0 18px; }
+  .content-with-aside { grid-template-columns: 1fr; }
+  .context-card { position: static; }
+  .evidence-layout { grid-template-columns: 1fr; }
+  .finding-group, .full-span { grid-column: 1; }
+  .brief-grid, .brief-columns, .verification-summary { grid-template-columns: repeat(2, 1fr); }
+  .agent-grid, .agent-council-grid, .security-grid, .memory-list, .platform-detail-grid, .skills-catalog-grid, .alert-policy-grid, .alert-policy-aid-grid, .tool-status-legend, .tool-facts { grid-template-columns: 1fr; }
+  .tool-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .alert-policy-simulation-fields { grid-template-columns: 1fr; }
+  .skills-catalog-list .skill-card { grid-template-columns: 1fr; gap: 10px; }
+  .skills-catalog-list .skill-card-source, .skills-catalog-list .skill-card-meta { padding-top: 10px; border-top: 1px solid var(--border); }
+  .skill-detail-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .settings-layout { grid-template-columns: 1fr; }
+  .settings-nav { display: none; }
+  .settings-mobile-section { display: grid; gap: 5px; margin-bottom: var(--space-4); }
+  .settings-mobile-section label { color: var(--text-muted); font-size: 11px; font-weight: 600; }
+}
+
+@media (max-width: 640px) {
+  main { padding: 22px 16px 44px; }
+  .topbar { gap: 10px; }
+  .environment span, .global-state > span:not(.status-badge), .divider { display: none; }
+  .page-header, .incident-header, .action-header, .approval-footer, .verification-header { align-items: stretch; flex-direction: column; }
+  .incident-controls { justify-content: flex-start; }
+  .metric-grid, .brief-grid, .brief-columns, .action-facts, .verification-summary, .hypothesis-grid, .reproduction-grid, .release-summary, .agent-card dl, .agent-seat dl, .memory-card dl, .security-card dl, .skill-detail-facts, .tool-catalog-grid { grid-template-columns: 1fr; }
+  .skills-catalog-heading .button { width: 100%; justify-content: center; }
+  .skills-view-toggle { margin-left: 0; }
+  .settings-row { grid-template-columns: 1fr; align-items: stretch; }
+  .settings-degraded { align-items: stretch; flex-direction: column; }
+  .settings-segmented { justify-content: flex-start; }
+  .settings-facts { grid-template-columns: 1fr; }
+  .settings-facts > div, .settings-facts > div:nth-child(odd), .settings-facts > div:nth-last-child(-n + 2) { border-right: 0; border-bottom: 1px solid var(--border); }
+  .settings-facts > div:last-child { border-bottom: 0; }
+  .profile-summary { grid-template-columns: 48px minmax(0, 1fr); }
+  .profile-summary .status-badge { grid-column: 2; }
+  .governance-control-list > div { align-items: flex-start; flex-direction: column; gap: 7px; }
+  .governance-control-list > div > strong { max-width: none; text-align: left; }
+  .cognition-heading { align-items: stretch; flex-direction: column; }
+  .metric-card { min-height: 104px; }
+  .queue-grid { grid-template-columns: repeat(2, 1fr); }
+  .platform-list > div { grid-template-columns: 28px 1fr; }
+  .platform-list .status-badge { grid-column: 2; }
+  .platform-health-facts { grid-template-columns: 1fr; }
+  .platform-card-title .status-badge { margin-left: 0; }
+  .brief-top { flex-direction: column; }
+  .freshness { white-space: normal; }
+  .phase-track { grid-template-columns: 1fr 1fr; }
+  .approval-footer > div:last-child, .dialog-actions { display: grid; grid-template-columns: 1fr; }
+  .approval-digest { grid-template-columns: 1fr; }
+  .approval-digest > div { grid-column: 1 !important; }
+  .interval-rail { display: none; }
+  .phase-rail { grid-template-columns: 1fr; }
+  .phase-rail li { min-height: 52px; grid-template-columns: 28px 1fr; justify-items: start; border-top: 1px solid var(--border); border-left: 0; text-align: left; }
+  .phase-rail li:first-child { border-top: 0; }
+  .continuity-ledger article { grid-template-columns: 1fr; }
+  .scenario-list > article { grid-template-columns: 42px 1fr; }
+  .scenario-list .status-badge { grid-column: 2; }
+  .responsive-table table, .responsive-table thead, .responsive-table tbody, .responsive-table th, .responsive-table td, .responsive-table tr { display: block; }
+  .responsive-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+  .responsive-table tr { padding: 10px; border-bottom: 1px solid var(--border); }
+  .responsive-table td { display: grid; grid-template-columns: minmax(110px, 40%) minmax(0, 1fr); gap: 10px; padding: 7px; border: 0; }
+  .responsive-table td::before { color: var(--text-muted); font-size: 11px; font-weight: 650; text-transform: uppercase; content: attr(data-label); }
+}
+
+@media (max-width: 640px) {
+  /* Stacked, the matrix becomes one block per Agent: the row header reads as
+     its heading and each cell is labelled with its destination. */
+  .capability-matrix th[scope="row"] { padding: 7px; font-size: 14px; font-weight: 650; }
+  .capability-cell.empty { text-align: left; }
+}
+
+/* The sign-in surface stands alone: no shell, no navigation, nothing that
+   implies access before there is an identity. */
+.sign-in-page { display: grid; place-items: center; min-height: 100vh; padding: 24px; background: var(--surface-muted); }
+/* Centred and vertical: the door to the product, with the product named above
+   it and the provider named only on the control that goes there. */
+.sign-in-stack { display: grid; justify-items: center; gap: 0; width: min(440px, 100%); }
+.sign-in-mark { display: grid; width: 56px; height: 56px; place-items: center; border-radius: 50%; background: var(--action-primary); color: var(--text-on-action); }
+.sign-in-wordmark { margin: 12px 0 0; font-size: 15px; font-weight: 600; letter-spacing: 0.01em; }
+.sign-in-stack h1 { margin: 14px 0 0; font-size: 28px; line-height: 36px; letter-spacing: -0.02em; text-align: center; }
+.sign-in-card { display: grid; gap: 14px; width: 100%; margin-top: 26px; padding: 28px; }
+.sign-in-action { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 13px 20px; border: 1px solid var(--border-strong, var(--border-subtle)); border-radius: 999px; background: var(--surface-raised, #fff); color: var(--text-primary); font-size: 15px; font-weight: 600; text-decoration: none; }
+.sign-in-action:hover { background: var(--surface-muted); }
+
+.sign-in-development { margin: 0; padding: 9px 11px; border: 1px solid var(--status-warning-border); border-radius: var(--radius-sm); background: var(--status-warning-bg); color: var(--status-warning-strong); font-size: 12px; line-height: 18px; }
+.operator-sign-out { color: var(--danger, #b42318); }
+.operator-note { margin: 0 0 4px; color: var(--text-muted); font-size: 12px; line-height: 1.45; }

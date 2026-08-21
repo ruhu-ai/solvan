@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "receipt_id": "rqr_REPLACE_WITH_CUSTOMER_ISSUED_ULID",
+  "issued_at": "2026-01-01T00:00:00Z",
+  "customer_environment": {
+    "region": "CUSTOMER_REGION",
+    "host_profile": "GKE",
+    "customer_principal_ref": "CUSTOMER_AUDIT_REFERENCE"
+  },
+  "deployment": {
+    "image_digest": "sha256:REPLACE",
+    "policy_digest": "sha256:REPLACE",
+    "control_audience": "https://RELAY_CONTROL",
+    "connector_catalog_digest": "sha256:REPLACE",
+    "redaction_revision": "relay-redaction-v1"
+  },
+  "checks": {
+    "no_ingress": true,
+    "read_only_identity": true,
+    "egress_allowlist": true,
+    "kill_switch": true,
+    "runtime_proof": true,
+    "monitoring_read": true,
+    "redaction": true,
+    "receipt_atomicity": true,
+    "reconciliation": true
+  },
+  "attestation": {
+    "signed_by": "CUSTOMER_QUALIFICATION_SIGNER",
+    "signature_digest": "sha256:REPLACE",
+    "evidence_refs": ["CUSTOMER_QUALIFICATION_EVIDENCE_REFERENCE"]
+  }
+}

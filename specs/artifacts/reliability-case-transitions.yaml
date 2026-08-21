@@ -1,0 +1,73 @@
+schema_version: 1
+machine: reliability_case
+machine_version: 1
+initial_state: OPEN
+terminal_states: [CLOSED_VERIFIED, CANCELLED]
+transition_defaults:
+  guard: always
+  side_effects: [append_state_transition, increment_workflow_version, append_outbox_wakeup]
+  audit_reason_from: event
+cancellation_policy:
+  event: OPERATOR_CANCELLED
+  guard: operator_or_admin_and_linked_incidents_terminal_or_mitigated
+  when_linked_incident_is_mitigated:
+    emit_incident_event: CASE_TERMINATED_WITHOUT_REPAIR
+    atomic_with_case_transition: true
+  reject_when_linked_incident_is_other_nonterminal: true
+liveness_policy:
+  operational_states_require: next_action_at_and_active_scheduled_wakeup
+  blocked_state_requires: blocked_owner_and_next_review_at_and_active_scheduled_wakeup
+  on_missing_or_overdue_schedule: create_recovery_wakeup_and_security_event
+  repeated_recovery_failure: require_provider_blocked_transition
+transitions:
+  - {from: OPEN, event: RCA_STARTED, to: ROOT_CAUSE_ANALYSIS}
+  - {from: OPEN, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed}
+  - {from: ROOT_CAUSE_ANALYSIS, event: REPAIR_DEFINED, to: REPAIR_PLANNED, guard: confirmed_root_cause_and_bounded_plan}
+  - {from: ROOT_CAUSE_ANALYSIS, event: PROVIDER_BLOCKED, to: BLOCKED, guard: blocked_owner_and_next_review_at_present}
+  - {from: ROOT_CAUSE_ANALYSIS, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed}
+  - {from: BLOCKED, event: DEPENDENCY_RECOVERED, to: ROOT_CAUSE_ANALYSIS}
+  - {from: BLOCKED, event: PLAN_READY, to: REPAIR_PLANNED, guard: bounded_plan_present}
+  - {from: BLOCKED, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed}
+  - {from: REPAIR_PLANNED, event: REPAIR_STARTED, to: REPAIR_IN_PROGRESS}
+  - {from: REPAIR_PLANNED, event: PROVIDER_BLOCKED, to: BLOCKED, guard: blocked_owner_and_next_review_at_present}
+  - {from: REPAIR_PLANNED, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed}
+  - {from: REPAIR_IN_PROGRESS, event: PATCH_READY, to: AWAITING_REVIEW, guard: patch_and_test_receipts_present}
+  - {from: REPAIR_IN_PROGRESS, event: REPAIR_REPLAN_REQUIRED, to: REPAIR_PLANNED, guard: bounded_retry_budget_remaining}
+  - {from: REPAIR_IN_PROGRESS, event: PROVIDER_BLOCKED, to: BLOCKED, guard: blocked_owner_and_next_review_at_present}
+  - {from: REPAIR_IN_PROGRESS, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed_and_no_deployment_in_flight}
+  - {from: AWAITING_REVIEW, event: CHANGES_REQUESTED, to: REPAIR_IN_PROGRESS}
+  - {from: AWAITING_REVIEW, event: REVIEW_APPROVED, to: READY_FOR_CANARY, guard: authenticated_reviewer_and_test_receipts_present}
+  - {from: AWAITING_REVIEW, event: PROVIDER_BLOCKED, to: BLOCKED, guard: blocked_owner_and_next_review_at_present}
+  - {from: AWAITING_REVIEW, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed}
+  - {from: READY_FOR_CANARY, event: CANARY_STARTED, to: CANARY_RUNNING, guard: deployment_authorized}
+  - {from: READY_FOR_CANARY, event: PROVIDER_BLOCKED, to: BLOCKED, guard: blocked_owner_and_next_review_at_present}
+  - {from: READY_FOR_CANARY, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed_and_no_deployment_in_flight}
+  - {from: CANARY_RUNNING, event: CANARY_FAILED, to: REPAIR_IN_PROGRESS, guard: rollback_receipt_present}
+  - {from: CANARY_RUNNING, event: CANARY_PASSED, to: READY_FOR_ROLLOUT, guard: exact_canary_profile_passed}
+  - {from: CANARY_RUNNING, event: PROVIDER_BLOCKED, to: BLOCKED, guard: blocked_owner_and_next_review_at_present_and_no_deployment_in_flight}
+  - {from: CANARY_RUNNING, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed_and_no_deployment_in_flight}
+  - {from: READY_FOR_ROLLOUT, event: ROLLOUT_STARTED, to: ROLLOUT_RUNNING, guard: deployment_authorized}
+  - {from: READY_FOR_ROLLOUT, event: PROVIDER_BLOCKED, to: BLOCKED, guard: blocked_owner_and_next_review_at_present}
+  - {from: READY_FOR_ROLLOUT, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed_and_no_deployment_in_flight}
+  - {from: ROLLOUT_RUNNING, event: ROLLOUT_FAILED, to: ROLLED_BACK, guard: rollback_receipt_present}
+  - {from: ROLLOUT_RUNNING, event: ROLLOUT_COMPLETED, to: OBSERVING, guard: exact_rollout_profile_passed}
+  - {from: ROLLOUT_RUNNING, event: PROVIDER_BLOCKED, to: BLOCKED, guard: blocked_owner_and_next_review_at_present_and_no_deployment_in_flight}
+  - {from: ROLLOUT_RUNNING, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed_and_no_deployment_in_flight}
+  - {from: ROLLED_BACK, event: REPLAN_STARTED, to: REPAIR_PLANNED}
+  - {from: ROLLED_BACK, event: PROVIDER_BLOCKED, to: BLOCKED, guard: blocked_owner_and_next_review_at_present}
+  - {from: ROLLED_BACK, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed}
+  - {from: OBSERVING, event: OBSERVATION_PASSED, to: CLOSED_VERIFIED, guard: exact_observation_profile_passed_and_no_open_recurrence}
+  - from: OBSERVING
+    event: RECURRENCE_DETECTED
+    to: REOPENED
+    guard: recurrence_rule_passed
+    side_effects: [create_new_incident, link_case_incident, append_state_transition, increment_workflow_version, append_outbox_wakeup]
+    atomic: true
+  - {from: OBSERVING, event: PROVIDER_BLOCKED, to: BLOCKED, guard: blocked_owner_and_next_review_at_present}
+  - {from: OBSERVING, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed}
+  - {from: REOPENED, event: RCA_RESTARTED, to: ROOT_CAUSE_ANALYSIS, guard: recurrence_incident_link_present}
+  - {from: REOPENED, event: OPERATOR_CANCELLED, to: CANCELLED, guard: cancellation_policy_passed}
+rejections:
+  - {when: terminal_state, rule: reject_all_transitions}
+  - {when: event_not_listed_for_current_state, rule: reject_illegal_transition}
+  - {when: guard_false, rule: reject_without_workflow_version_increment}
