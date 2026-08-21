@@ -334,7 +334,10 @@ the release uses:
 The catalog-publication release job receives the exact immutable resource name
 for all six Runtime agents together with their evaluated tool bindings. It
 refuses publication when any resource is missing; a binding is never published
-against a name inferred from a display name, revision, or prior release.
+against a name inferred from a display name, revision, or prior release. During
+the final binding apply, Terraform derives each binding's `identity_ref` from
+the same Runtime receipt's system-attested principal; a pre-deployment
+placeholder or caller-supplied identity cannot survive into publication.
 
 The Antigravity SDK provider is not a Runtime or Managed Agents deployment.
 Cloud Build resolves the locked Linux wheel by hash, runs import and SDK-agent

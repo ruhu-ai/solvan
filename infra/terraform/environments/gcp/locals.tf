@@ -165,6 +165,49 @@ locals {
     policy_version            = "antigravity-egress-v1"
   }
   antigravity_network_policy_hash = "sha256:${sha256(jsonencode(local.antigravity_network_policy))}"
+  # Profiles, Tool ordinals, connections, routes, and classification remain
+  # reviewed Terraform input. The identity is different: it cannot exist until
+  # Agent Runtime returns the system-attested principal for this exact resource.
+  # The final release apply therefore replaces only identity_ref from that
+  # receipt; the pre-deployment value remains a fail-closed placeholder.
+  governed_agent_tool_bindings = {
+    "incident-supervisor" = merge(var.agent_tool_bindings.incident_supervisor, {
+      identity_ref = coalesce(
+        var.incident_supervisor_agent_principal,
+        var.agent_tool_bindings.incident_supervisor.identity_ref,
+      )
+    })
+    "evidence-agent" = merge(var.agent_tool_bindings.evidence_agent, {
+      identity_ref = coalesce(
+        var.evidence_agent_principal,
+        var.agent_tool_bindings.evidence_agent.identity_ref,
+      )
+    })
+    "infrastructure-agent" = merge(var.agent_tool_bindings.infrastructure_agent, {
+      identity_ref = coalesce(
+        var.infrastructure_agent_principal,
+        var.agent_tool_bindings.infrastructure_agent.identity_ref,
+      )
+    })
+    "execution-agent" = merge(var.agent_tool_bindings.execution_agent, {
+      identity_ref = coalesce(
+        var.execution_agent_principal,
+        var.agent_tool_bindings.execution_agent.identity_ref,
+      )
+    })
+    "verification-agent" = merge(var.agent_tool_bindings.verification_agent, {
+      identity_ref = coalesce(
+        var.verification_agent_principal,
+        var.agent_tool_bindings.verification_agent.identity_ref,
+      )
+    })
+    "workspace-agent" = merge(var.agent_tool_bindings.workspace_agent, {
+      identity_ref = coalesce(
+        var.workspace_agent_principal,
+        var.agent_tool_bindings.workspace_agent.identity_ref,
+      )
+    })
+  }
   labels = {
     application = "solvan"
     environment = var.environment

@@ -259,6 +259,28 @@ def test_catalog_publication_binds_every_immutable_agent_resource() -> None:
         assert f"var.agent_runtime_resources.{resource}" in block
 
 
+def test_governed_tool_bindings_derive_only_identity_from_runtime_receipts() -> None:
+    locals_text = _text("infra/terraform/environments/gcp/locals.tf")
+    cloud_run = _text("infra/terraform/environments/gcp/cloud_run.tf")
+    principals = {
+        "incident_supervisor": "incident_supervisor_agent_principal",
+        "evidence_agent": "evidence_agent_principal",
+        "infrastructure_agent": "infrastructure_agent_principal",
+        "execution_agent": "execution_agent_principal",
+        "verification_agent": "verification_agent_principal",
+        "workspace_agent": "workspace_agent_principal",
+    }
+    for agent, principal in principals.items():
+        assert f"merge(var.agent_tool_bindings.{agent}" in locals_text
+        assert f"var.{principal}" in locals_text
+        assert f"var.agent_tool_bindings.{agent}.identity_ref" in locals_text
+    assert cloud_run.count("jsonencode(local.governed_agent_tool_bindings)") == 3
+    old_inline_binding = (
+        'jsonencode({\n              "incident-supervisor"  = var.agent_tool_bindings'
+    )
+    assert old_inline_binding not in cloud_run
+
+
 def test_the_only_production_mutation_seat_is_registered_and_model_free() -> None:
     """The fleet's security claim is only checkable if the actuator is catalogued."""
 

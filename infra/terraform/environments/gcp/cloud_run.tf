@@ -1686,15 +1686,8 @@ resource "google_cloud_run_v2_service" "service" {
       dynamic "env" {
         for_each = each.key == "coordinator" ? [1] : []
         content {
-          name = "SOLVAN_AGENT_TOOL_BINDINGS_JSON"
-          value = jsonencode({
-            "incident-supervisor"  = var.agent_tool_bindings.incident_supervisor
-            "evidence-agent"       = var.agent_tool_bindings.evidence_agent
-            "infrastructure-agent" = var.agent_tool_bindings.infrastructure_agent
-            "execution-agent"      = var.agent_tool_bindings.execution_agent
-            "verification-agent"   = var.agent_tool_bindings.verification_agent
-            "workspace-agent"      = var.agent_tool_bindings.workspace_agent
-          })
+          name  = "SOLVAN_AGENT_TOOL_BINDINGS_JSON"
+          value = jsonencode(local.governed_agent_tool_bindings)
         }
       }
       dynamic "env" {
@@ -2662,14 +2655,7 @@ resource "google_cloud_run_v2_job" "catalog_publication" {
 
         dynamic "env" {
           for_each = merge(local.release_job_environment, {
-            SOLVAN_AGENT_TOOL_BINDINGS_JSON = jsonencode({
-              "incident-supervisor"  = var.agent_tool_bindings.incident_supervisor
-              "evidence-agent"       = var.agent_tool_bindings.evidence_agent
-              "infrastructure-agent" = var.agent_tool_bindings.infrastructure_agent
-              "execution-agent"      = var.agent_tool_bindings.execution_agent
-              "verification-agent"   = var.agent_tool_bindings.verification_agent
-              "workspace-agent"      = var.agent_tool_bindings.workspace_agent
-            })
+            SOLVAN_AGENT_TOOL_BINDINGS_JSON      = jsonencode(local.governed_agent_tool_bindings)
             SOLVAN_INCIDENT_SUPERVISOR_RESOURCE  = var.agent_runtime_resources.incident_supervisor
             SOLVAN_EVIDENCE_AGENT_RESOURCE       = var.agent_runtime_resources.evidence_agent
             SOLVAN_INFRASTRUCTURE_AGENT_RESOURCE = var.agent_runtime_resources.infrastructure_agent
@@ -3058,17 +3044,10 @@ resource "google_cloud_run_v2_job" "scenario_injector" {
             SOLVAN_EVIDENCE_BROKER_URL      = google_cloud_run_v2_service.service["evidence"].uri
             SOLVAN_MODEL_ARMOR_TEMPLATE     = google_model_armor_template.agent_boundary.name
             SOLVAN_INJECTOR_IDENTITY        = google_service_account.workload["injector"].email
-            SOLVAN_AGENT_TOOL_BINDINGS_JSON = jsonencode({
-              "incident-supervisor"  = var.agent_tool_bindings.incident_supervisor
-              "evidence-agent"       = var.agent_tool_bindings.evidence_agent
-              "infrastructure-agent" = var.agent_tool_bindings.infrastructure_agent
-              "execution-agent"      = var.agent_tool_bindings.execution_agent
-              "verification-agent"   = var.agent_tool_bindings.verification_agent
-              "workspace-agent"      = var.agent_tool_bindings.workspace_agent
-            })
-            SOLVAN_RELEASE_COMMIT       = "UNCONFIGURED"
-            SOLVAN_DEPLOYMENT_ID        = "UNCONFIGURED"
-            SOLVAN_SCENARIO_OBJECT_NAME = "scenarios/UNCONFIGURED/S1/fault.json"
+            SOLVAN_AGENT_TOOL_BINDINGS_JSON = jsonencode(local.governed_agent_tool_bindings)
+            SOLVAN_RELEASE_COMMIT           = "UNCONFIGURED"
+            SOLVAN_DEPLOYMENT_ID            = "UNCONFIGURED"
+            SOLVAN_SCENARIO_OBJECT_NAME     = "scenarios/UNCONFIGURED/S1/fault.json"
           })
           content {
             name  = env.key
