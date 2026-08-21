@@ -1,0 +1,38 @@
+tests/unit/test_platform_preflight.py
+  s_36f3e3f4652fc0::t_815dc658d3d4e7 95
+  s_36f3e3f4652fc0::t_8dd350090208e6 96-98,206-214
+  s_36f3e3f4652fc0::t_f755cd8e6172b1 215-216
+infra/terraform/environments/gcp/outputs.tf
+  s_36f3e3f4652fc0::t_8dd350090208e6 253-254
+tests/unit/test_release_contracts.py
+  s_36f3e3f4652fc0::t_8dd350090208e6 122-128
+specs/05-security-governance.md
+  s_36f3e3f4652fc0::t_8dd350090208e6 379-380
+docs/sources/gemini-enterprise-agent-platform.md
+  s_36f3e3f4652fc0::t_8dd350090208e6 201-203
+src/solvan/platform/preflight.py
+  s_36f3e3f4652fc0::t_8dd350090208e6 66-72,249-250,252
+tests/unit/test_release_projection.py
+  s_36f3e3f4652fc0::t_8dd350090208e6 136-137
+infra/terraform/environments/gcp/platform.tf
+  s_36f3e3f4652fc0::t_8dd350090208e6 177,180,182,188,211-237
+  s_36f3e3f4652fc0::t_5f01c193ad985b 238-240
+specs/07-implementation-deployment.md
+  s_36f3e3f4652fc0::t_8dd350090208e6 704-710
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d3ba8ae76e210e80ad88c5482eaaf8be93219d32",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
