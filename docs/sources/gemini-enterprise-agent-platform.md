@@ -198,6 +198,9 @@ Verified facts and decisions:
   capabilities. Solvan documents and tests them separately.
 - Every allowed request must satisfy registration, gateway policy, identity/IAM,
   network, content inspection, and Solvan application policy.
+- Google's IAP and Model Armor Agent Gateway examples attach each AuthzPolicy
+  to one exact Agent Gateway resource. Solvan therefore uses separate IAP
+  policies for ingress and egress while sharing the fail-closed IAP extension.
 - The Runtime Gateway guide and troubleshooting page warn that SDK startup and
   telemetry may resolve regional, mTLS, or REP Agent Platform hosts and may call
   Resource Manager to translate project numbers. The release therefore

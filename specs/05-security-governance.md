@@ -376,8 +376,8 @@ The staging release has one explicit preview-feature degradation: Google's
 Network Security API returns server-side code 13 when creating the inline
 Model Armor `CONTENT_AUTHZ` policy. `gateway_model_armor_enabled=false` omits
 only that policy; the healthy Model Armor extension remains provisioned. The
-IAP `REQUEST_AUTHZ` extension and policy remain enabled, and every model prompt
-and response still passes the separate
+IAP `REQUEST_AUTHZ` extension and per-gateway policies remain enabled, and every
+model prompt and response still passes the separate
 fail-closed in-process `sanitizeUserPrompt` / `sanitizeModelResponse` gate.
 Terraform and release receipts must label this state
 `DEGRADED_GOOGLE_AUTHZ_POLICY_CODE_13`; it is never represented as healthy or

@@ -119,6 +119,13 @@ def test_model_armor_covers_both_gateway_directions_and_pii_fail_closed() -> Non
         '(var.gateway_model_armor_enabled ? "ENFORCED"'
     ) in outputs
     assert 'iap                    = var.gateway_extensions_enabled ? "ENFORCED"' in outputs
+    assert 'resource "google_network_security_authz_policy" "iap_egress"' in platform
+    assert "resources = [google_network_services_agent_gateway.egress.id]" in platform
+    assert 'resource "google_network_security_authz_policy" "iap_ingress"' in platform
+    assert "resources = [google_network_services_agent_gateway.ingress.id]" in platform
+    assert "google_network_security_authz_policy.iap_egress" in platform
+    assert "iap_egress_policy" in outputs
+    assert "iap_ingress_policy" in outputs
     assert '"gateway_model_armor_enabled": False' in deploy
 
 

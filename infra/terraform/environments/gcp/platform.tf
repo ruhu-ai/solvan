@@ -174,21 +174,18 @@ resource "google_network_services_authz_extension" "iap" {
   depends_on = [google_project_service.required["networkservices.googleapis.com"]]
 }
 
-resource "google_network_security_authz_policy" "iap" {
+resource "google_network_security_authz_policy" "iap_egress" {
   count          = var.gateway_extensions_enabled ? 1 : 0
   project        = var.project_id
-  name           = "${local.prefix}-iap"
+  name           = "${local.prefix}-iap-egress"
   location       = var.region
-  description    = "Apply IAP request authorization to Solvan Agent Gateways."
+  description    = "Apply IAP request authorization to the Solvan egress Agent Gateway."
   policy_profile = "REQUEST_AUTHZ"
   action         = "CUSTOM"
   labels         = local.labels
 
   target {
-    resources = [
-      google_network_services_agent_gateway.egress.id,
-      google_network_services_agent_gateway.ingress.id,
-    ]
+    resources = [google_network_services_agent_gateway.egress.id]
   }
 
   custom_provider {
@@ -208,6 +205,36 @@ resource "google_network_security_authz_policy" "iap" {
   depends_on = [
     google_project_service.required["networksecurity.googleapis.com"],
     google_network_security_authz_policy.model_armor,
+  ]
+}
+
+resource "google_network_security_authz_policy" "iap_ingress" {
+  count          = var.gateway_extensions_enabled ? 1 : 0
+  project        = var.project_id
+  name           = "${local.prefix}-iap-ingress"
+  location       = var.region
+  description    = "Apply IAP request authorization to the Solvan ingress Agent Gateway."
+  policy_profile = "REQUEST_AUTHZ"
+  action         = "CUSTOM"
+  labels         = local.labels
+
+  target {
+    resources = [google_network_services_agent_gateway.ingress.id]
+  }
+
+  custom_provider {
+    authz_extension {
+      resources = [google_network_services_authz_extension.iap[0].id]
+    }
+  }
+
+  deletion_policy = "PREVENT"
+
+  # Google documents one Agent Gateway target per AuthzPolicy. Serializing the
+  # two policy creates also avoids relying on preview control-plane concurrency.
+  depends_on = [
+    google_project_service.required["networksecurity.googleapis.com"],
+    google_network_security_authz_policy.iap_egress,
   ]
 }
 

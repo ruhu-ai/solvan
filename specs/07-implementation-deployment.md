@@ -701,6 +701,13 @@ probes, and emits an explicit degraded topology status. This degradation may
 complete deployment mechanics but cannot produce a fully release-qualified
 receipt.
 
+The shared IAP extension is bound through separate, serially created
+`REQUEST_AUTHZ` policies for the egress and ingress Agent Gateways. This follows
+Google's documented one-gateway policy shape and prevents a multi-target
+preview control-plane operation from coupling the two gateway updates. Release
+topology validation requires both exact policy resources before reporting IAP
+as enforced.
+
 ## 11. Memory Bank implementation
 
 - one regional Memory Bank resource for the demo environment;

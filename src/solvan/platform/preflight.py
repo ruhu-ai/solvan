@@ -63,7 +63,13 @@ _REGISTERED = frozenset(
     }
 )
 _GATEWAY_POLICIES = frozenset(
-    {"iap_extension", "iap_policy", "model_armor_extension", "model_armor_policy"}
+    {
+        "iap_egress_policy",
+        "iap_extension",
+        "iap_ingress_policy",
+        "model_armor_extension",
+        "model_armor_policy",
+    }
 )
 _GATEWAY_POLICY_STATUS = frozenset({"iap", "inline_model_armor", "in_process_model_armor"})
 _INLINE_MODEL_ARMOR_DEGRADATION = "DEGRADED_GOOGLE_AUTHZ_POLICY_CODE_13"
@@ -240,9 +246,10 @@ def _validate_release_topology(topology: ReleaseTopology) -> None:
         dict(topology.gateway_policy_status), _GATEWAY_POLICY_STATUS, "gateway policy status"
     )
     if gateway_status["iap"] != "ENFORCED" or any(
-        gateway_policies[name] is None for name in ("iap_extension", "iap_policy")
+        gateway_policies[name] is None
+        for name in ("iap_extension", "iap_egress_policy", "iap_ingress_policy")
     ):
-        raise ValueError("release topology requires the IAP gateway policy")
+        raise ValueError("release topology requires IAP policies on both gateways")
     if gateway_status["in_process_model_armor"] != "ENFORCED_FAIL_CLOSED":
         raise ValueError("release topology requires fail-closed in-process Model Armor")
     inline_status = gateway_status["inline_model_armor"]

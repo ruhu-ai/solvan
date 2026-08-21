@@ -133,7 +133,8 @@ def _topology() -> ReleaseTopology:
             (name, f"projects/{PROJECT}/locations/europe-west1/policies/{name}")
             for name in (
                 "iap_extension",
-                "iap_policy",
+                "iap_egress_policy",
+                "iap_ingress_policy",
                 "model_armor_extension",
                 "model_armor_policy",
             )

@@ -92,7 +92,10 @@ def terraform_output() -> dict[str, object]:
         "gateway_policy_resources": {
             "value": {
                 "iap_extension": f"projects/{PROJECT}/locations/{REGION}/extensions/iap",
-                "iap_policy": f"projects/{PROJECT}/locations/{REGION}/policies/iap",
+                "iap_egress_policy": (f"projects/{PROJECT}/locations/{REGION}/policies/iap-egress"),
+                "iap_ingress_policy": (
+                    f"projects/{PROJECT}/locations/{REGION}/policies/iap-ingress"
+                ),
                 "model_armor_extension": (
                     f"projects/{PROJECT}/locations/{REGION}/extensions/model-armor"
                 ),
@@ -198,6 +201,17 @@ def test_preflight_records_scoped_inline_model_armor_degradation_with_iap_enforc
     assert receipt.reason_codes == ("DEGRADED:INLINE_MODEL_ARMOR_GOOGLE_AUTHZ_POLICY_CODE_13",)
     assert dict(receipt.topology.gateway_policy_status)["iap"] == "ENFORCED"
     assert parse_platform_preflight_receipt(receipt.canonical_dict()) == receipt
+
+
+@pytest.mark.parametrize("missing_policy", ["iap_egress_policy", "iap_ingress_policy"])
+def test_preflight_refuses_iap_status_without_both_gateway_policies(
+    missing_policy: str,
+) -> None:
+    output = terraform_output()
+    output["gateway_policy_resources"]["value"][missing_policy] = None
+
+    with pytest.raises(ValueError, match="IAP policies on both gateways"):
+        topology_from_terraform_output(output)
 
 
 def test_enabled_antigravity_topology_requires_its_exact_proof_set() -> None:

@@ -250,7 +250,8 @@ output "gateway_policy_resources" {
     model_armor_extension = var.gateway_extensions_enabled ? google_network_services_authz_extension.model_armor[0].id : null
     model_armor_policy    = var.gateway_extensions_enabled && var.gateway_model_armor_enabled ? google_network_security_authz_policy.model_armor[0].id : null
     iap_extension         = var.gateway_extensions_enabled ? google_network_services_authz_extension.iap[0].id : null
-    iap_policy            = var.gateway_extensions_enabled ? google_network_security_authz_policy.iap[0].id : null
+    iap_egress_policy     = var.gateway_extensions_enabled ? google_network_security_authz_policy.iap_egress[0].id : null
+    iap_ingress_policy    = var.gateway_extensions_enabled ? google_network_security_authz_policy.iap_ingress[0].id : null
   }
 }
 
