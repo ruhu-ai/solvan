@@ -145,6 +145,11 @@ Runtime deployment never supplies platform-reserved environment variables,
 including `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION`; Agent Runtime
 injects those values. Solvan-owned routing and policy values use `SOLVAN_*`
 names, while the documented Agent Runtime telemetry variables remain explicit.
+The general Vertex AI service agent used by the deployment control plane has a
+dedicated project role containing only `networkservices.agentGateways.get` and
+`networkservices.agentGateways.use`. That control-plane grant is distinct from
+the per-agent identity permissions and the Reasoning Engine runtime service
+agent's storage and Model Armor grants.
 
 ### 4.1 Cloud environment model
 

@@ -331,7 +331,7 @@ variable "gateway_model_armor_enabled" {
 }
 
 variable "agent_runtime_service_agent_bindings_enabled" {
-  description = "Bind the managed Agent Runtime service agent to Model Armor and runtime storage. Dev may disable this until the managed regional service identity is provisioned; staging must keep it enabled."
+  description = "Bind the managed Agent Platform and Agent Runtime service agents to the exact Gateway, Model Armor, and runtime-storage permissions they require. Dev may disable this until the managed service identities are provisioned; staging must keep it enabled."
   type        = bool
   default     = true
 }

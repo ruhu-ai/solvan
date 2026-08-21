@@ -91,6 +91,13 @@ def test_gateway_is_registry_governed_fail_closed_and_has_no_generic_mutation_ro
     assert "member   = local.agent_gateway_service_agent" in mcp_block
     assert 'member   = "allUsers"' not in mcp_block
     assert "Typed action-ID-only endpoint" in platform
+    binder_start = platform.index(
+        'resource "google_project_iam_custom_role" "agent_platform_gateway_binder"'
+    )
+    binder_block = platform[binder_start : platform.index("\n}", binder_start) + 2]
+    assert '"networkservices.agentGateways.get"' in binder_block
+    assert '"networkservices.agentGateways.use"' in binder_block
+    assert "member  = local.agent_platform_service_agent" in platform
     for forbidden in ("generic shell", "arbitrary http", "generic sql"):
         assert forbidden not in platform.lower()
 

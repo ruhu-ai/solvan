@@ -469,12 +469,39 @@ resource "google_agent_registry_service" "runtime_dependencies" {
 }
 
 locals {
-  agent_gateway_service_agent = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-dep.iam.gserviceaccount.com"
-  runtime_service_agent       = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-aiplatform-re.iam.gserviceaccount.com"
+  agent_gateway_service_agent  = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-dep.iam.gserviceaccount.com"
+  agent_platform_service_agent = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-aiplatform.iam.gserviceaccount.com"
+  runtime_service_agent        = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-aiplatform-re.iam.gserviceaccount.com"
   model_armor_callers = var.agent_runtime_service_agent_bindings_enabled ? toset([
     local.agent_gateway_service_agent,
     local.runtime_service_agent,
   ]) : toset([local.agent_gateway_service_agent])
+}
+
+resource "google_project_iam_custom_role" "agent_platform_gateway_binder" {
+  project     = var.project_id
+  role_id     = "solvanAgentPlatformGatewayBinder"
+  title       = "Solvan Agent Platform gateway binder"
+  description = "Exact Agent Gateway read/use permissions required by the Agent Runtime deployment control plane."
+  stage       = "GA"
+  permissions = [
+    "networkservices.agentGateways.get",
+    "networkservices.agentGateways.use",
+  ]
+}
+
+resource "google_project_iam_member" "agent_platform_gateway_binder" {
+  count = var.agent_runtime_service_agent_bindings_enabled ? 1 : 0
+
+  project = var.project_id
+  role    = google_project_iam_custom_role.agent_platform_gateway_binder.name
+  member  = local.agent_platform_service_agent
+
+  depends_on = [
+    google_network_services_agent_gateway.egress,
+    google_network_services_agent_gateway.ingress,
+    google_project_service.required["aiplatform.googleapis.com"],
+  ]
 }
 
 resource "google_project_iam_member" "model_armor_callout" {

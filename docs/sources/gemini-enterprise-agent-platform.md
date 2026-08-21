@@ -96,6 +96,14 @@ Verified facts and decisions:
   the general Vertex AI service agent. It receives object-creator and
   object-viewer roles on the regional Runtime bucket; it does not receive
   delete permission.
+- Agent Runtime creation validates an attached Agent Gateway through the general
+  Vertex AI service agent,
+  `service-{PROJECT_NUMBER}@gcp-sa-aiplatform.iam.gserviceaccount.com`. The
+  current IAM catalog assigns `networkservices.agentGateways.get` and
+  `networkservices.agentGateways.use` to that service agent role. Solvan also
+  binds those exact two permissions directly through a narrow project role so
+  gateway validation does not depend on propagation of a changing predefined
+  role; this is control-plane authority, not an Agent's runtime authority.
 - `cancel_query_job` is the documented cancellation path. Deadline handling
   must both fence late output in Cloud SQL and request provider cancellation;
   a prompt-level deadline alone is not enforcement.
