@@ -557,7 +557,6 @@ def grant_plan() -> tuple[WorkloadGrant, ...]:
         # binding, but no direct release-schema DML. Successful evidence
         # settlement is available only through relay_commit_success_v1.
         WorkloadGrant("relay_control", frozenset()),
-        WorkloadGrant("relay_maintenance", frozenset()),
         # These services have no release-schema permission by virtue of
         # existing.  The empty base grants merely create their IAM database
         # roles and bind them to an exact tenant scope; the target delivery
@@ -879,21 +878,6 @@ def relay_grant_plan() -> tuple[WorkloadGrant, ...]:
                     "relay_upload_grants",
                 }
             ),
-        ),
-        WorkloadGrant(
-            "relay_maintenance",
-            frozenset(
-                {
-                    "relay_enrollments",
-                    "collection_jobs",
-                    "relay_attempts",
-                    "relay_upload_grants",
-                    "relay_receipts",
-                    "relay_retention_controls",
-                }
-            ),
-            insert=frozenset({"relay_retention_controls"}),
-            update=frozenset({"collection_jobs", "relay_retention_controls"}),
         ),
         WorkloadGrant("probe", RELAY_TABLES),
     )

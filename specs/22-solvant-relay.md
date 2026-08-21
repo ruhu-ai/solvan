@@ -19,6 +19,13 @@ qualified adapter set as well as deployment, egress, ledger, and kill-switch
 evidence. This wording is not a
 production or customer deployment receipt.
 
+The current control-plane database identities are `relay_control` for governed
+leasing, acceptance, and retention state, plus `probe` for read-only release
+verification. There is no `relay_maintenance` executable or identity; a
+bootstrap must not create or grant an unused principal by that name. Adding a
+separate maintenance workload is a future behavior change requiring its own
+executable boundary, threat model, Terraform identity, and acceptance tests.
+
 Related: [tenant integration](13-tenant-integration.md),
 [security](05-security-governance.md),
 [governed Tool Catalog](16-governed-tool-catalog.md),

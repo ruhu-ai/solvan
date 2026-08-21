@@ -171,7 +171,7 @@ def test_database_grants_are_explicit_and_payments_cannot_read_control_plane() -
     assert "approvals" not in grants["github_provider"].select
     assert grants["relay_control"].select == frozenset()
     assert grants["relay_control"].insert == frozenset()
-    assert grants["relay_maintenance"].select == frozenset()
+    assert "relay_maintenance" not in grants
 
 
 def test_cloud_sql_iam_role_uses_service_account_database_username() -> None:
@@ -234,6 +234,7 @@ def test_target_schema_grants_are_explicit_and_never_given_to_model_agents() -> 
     )
     assert "relay_receipts" in relay["relay_control"].insert
     assert "relay_evidence_acceptances" in relay["relay_control"].insert
+    assert "relay_maintenance" not in relay
     assert set(relay).isdisjoint(
         {
             "evidence",
