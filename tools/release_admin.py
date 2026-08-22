@@ -7,6 +7,8 @@ import hashlib
 import json
 import os
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, cast
 from urllib.parse import quote, urlparse
@@ -41,6 +43,7 @@ from solvan.platform.memory_bank import (
     VertexMemoryAPI,
 )
 from tools.bootstrap_database import apply as apply_schema
+from tools.bootstrap_database import bind_bootstrap_role
 from tools.load_first_party_skill_packs import load as load_first_party_skill_packs
 from tools.load_first_party_skill_packs import release_commit
 from tools.runtime_scenario_jobs import inject_s3
@@ -69,6 +72,20 @@ def _scope() -> Scope:
         _required("SOLVAN_SCOPE_PROJECT_ID"),
         _required("SOLVAN_ENVIRONMENT_ID"),
     )
+
+
+@contextmanager
+def _catalog_publication_transaction(*, scope: Scope) -> Iterator[Any]:
+    """Bind the release owner to one scope only for the publication transaction."""
+
+    with connect_database() as connection, connection.transaction():
+        temporary_role = bind_bootstrap_role(connection, scope=scope)
+        yield connection
+        if temporary_role is not None:
+            connection.execute(
+                "DELETE FROM solvan.database_scope_bindings WHERE database_role=%s",
+                (temporary_role,),
+            )
 
 
 def _catalog_stage() -> str:
@@ -152,7 +169,7 @@ def publish_catalog() -> None:
     )
     approval_ref = gate.approval_ref
     evaluation_ref = gate.evaluation_ref
-    with connect_database() as connection, connection.transaction():
+    with _catalog_publication_transaction(scope=scope) as connection:
         store = PostgresToolCatalogStore(connection)
         for principal in catalog_principals(manifest_hash=manifest_hash):
             store.register_principal(principal)

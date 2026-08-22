@@ -383,6 +383,12 @@ The migration identity alone has Secret Accessor on that exact secret; no
 plaintext password appears in Terraform state or ordinary job environment
 configuration. IAM-authenticated runtime and probe identities do not receive
 this release-only credential.
+Before catalog writes begin, the release job creates the same exact,
+scope-derived temporary database binding used by schema bootstrap. Publication
+and removal of that binding occur in one transaction: success deletes it before
+commit, while any failure rolls the entire transaction back. The database
+administrator never receives a durable tenant binding and forced row-level
+security is never disabled or bypassed.
 
 Cloud Build provenance and the Google `built-by-cloud-build` Binary
 Authorization attestor gate every Cloud Run service and job image independently
