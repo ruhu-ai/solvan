@@ -1,0 +1,25 @@
+specs/07-implementation-deployment.md
+  s_36f3e3f4652fc0::t_ffad455cbacbfb 386-391
+specs/08-test-evaluation-acceptance.md
+  s_36f3e3f4652fc0::t_f466316ef8b31d 73-75
+tests/unit/test_release_admin.py
+  s_36f3e3f4652fc0::t_d46cb975f46a64 8-9,11-40,97-144
+tools/release_admin.py
+  s_36f3e3f4652fc0::t_a5d05dc82dc960 10-11,46,77-90,172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "37e14f9774ca4afc963a55c57489f98231051aaf",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
