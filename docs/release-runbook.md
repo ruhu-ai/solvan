@@ -24,6 +24,10 @@ Never use the Ruhu development project.
   GitHub token in tfvars, source, logs, or a release receipt:
 
   ```bash
+  gcloud projects add-iam-policy-binding <solvan-staging-project-id> \
+    --member serviceAccount:service-<project-number>@gcp-sa-cloudbuild.iam.gserviceaccount.com \
+    --role roles/secretmanager.admin
+
   gcloud builds connections create github solvan-staging-github \
     --project <solvan-staging-project-id> \
     --region europe-west1
@@ -32,9 +36,21 @@ Never use the Ruhu development project.
     --region europe-west1
   ```
 
-  The first command is incomplete until the approved human follows Google's
-  authorization link, installs the Cloud Build GitHub App, and the second
-  command reports `COMPLETE`.
+  Google requires the temporary Secret Manager role so its Cloud Build service
+  agent can create and bind the connection's managed OAuth secret. The
+  connection command is incomplete until the approved human follows Google's
+  authorization link, installs the Cloud Build GitHub App, and the describe
+  command reports `COMPLETE`. Immediately remove the temporary role after that
+  state is observed:
+
+  ```bash
+  gcloud projects remove-iam-policy-binding <solvan-staging-project-id> \
+    --member serviceAccount:service-<project-number>@gcp-sa-cloudbuild.iam.gserviceaccount.com \
+    --role roles/secretmanager.admin
+  ```
+
+  Do not leave this bootstrap role on the service agent and do not replace it
+  with a permanent application credential.
 - The GCS backend config and reviewed base tfvars are outside Git or contain no
   secrets. Copy `infra/terraform/environments/gcp/staging.tfbackend.example`
   and `staging.tfvars.example`; do not edit generated release tfvars. The
