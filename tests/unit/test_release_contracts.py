@@ -62,6 +62,27 @@ def test_cloud_run_service_graph_uses_deterministic_provider_audience() -> None:
     assert 'google_cloud_run_v2_service.service["github_provider"].uri' not in terraform
 
 
+def test_optional_antigravity_services_supply_fail_closed_otel_environment() -> None:
+    cloud_run = _text("infra/terraform/environments/gcp/cloud_run.tf")
+    resource_bounds = {
+        "antigravity_workspace": ('resource "google_cloud_run_v2_service" "workspace_sandbox"'),
+        "fixture_attester": (
+            'resource "google_cloud_run_v2_service_iam_member" "coordinator_fixture_attester"'
+        ),
+    }
+
+    for resource_name, end_marker in resource_bounds.items():
+        start = cloud_run.index(f'resource "google_cloud_run_v2_service" "{resource_name}"')
+        end = cloud_run.index(end_marker, start)
+        service = cloud_run[start:end]
+
+        assert 'name  = "SOLVAN_ENVIRONMENT"' in service
+        assert 'name  = "SOLVAN_GCP_PROJECT"' in service
+        assert 'name  = "SOLVAN_GCP_REGION"' in service
+        assert 'name  = "SOLVAN_OTEL_EXPORTER"' in service
+        assert 'value = "google_cloud"' in service
+
+
 def test_synthetic_fault_drill_is_opt_in_and_forbidden_in_production() -> None:
     variables = _text("infra/terraform/environments/gcp/variables.tf")
     cloud_run = _text("infra/terraform/environments/gcp/cloud_run.tf")

@@ -1974,6 +1974,14 @@ resource "google_cloud_run_v2_service" "antigravity_workspace" {
       }
 
       env {
+        name  = "SOLVAN_ENVIRONMENT"
+        value = var.environment
+      }
+      env {
+        name  = "SOLVAN_GCP_PROJECT"
+        value = var.project_id
+      }
+      env {
         name  = "GOOGLE_CLOUD_PROJECT"
         value = var.project_id
       }
@@ -2194,6 +2202,18 @@ resource "google_cloud_run_v2_service" "fixture_attester" {
         }
       }
 
+      env {
+        name  = "SOLVAN_ENVIRONMENT"
+        value = var.environment
+      }
+      env {
+        name  = "SOLVAN_GCP_PROJECT"
+        value = var.project_id
+      }
+      env {
+        name  = "SOLVAN_GCP_REGION"
+        value = var.region
+      }
       env {
         name  = "SOLVAN_ORGANIZATION_ID"
         value = var.organization_id
