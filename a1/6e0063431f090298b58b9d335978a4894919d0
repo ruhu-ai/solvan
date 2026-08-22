@@ -1,0 +1,27 @@
+docs/sources/gemini-enterprise-agent-platform.md
+  s_36f3e3f4652fc0::t_10e7b35f9ffd29 62-65
+infra/terraform/environments/gcp/cloud_run.tf
+  s_36f3e3f4652fc0::t_d569a8546ff209 2705-2717,2742,2788-2800,2834,2879-2891,2934
+specs/07-implementation-deployment.md
+  s_36f3e3f4652fc0::t_98afb8200d4f13 378-386
+specs/08-test-evaluation-acceptance.md
+  s_36f3e3f4652fc0::t_c3e41b539f9ef0 70-72
+tests/unit/test_release_contracts.py
+  s_36f3e3f4652fc0::t_1c6778d078453f 304-314
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "a16e0063431f090298b58b9d335978a4894919d0",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
