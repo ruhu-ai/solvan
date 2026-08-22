@@ -71,8 +71,6 @@ def parse_antigravity_terraform_outputs(
     outputs: dict[str, Any],
 ) -> AntigravityPreflightTopology | None:
     provider = _output(outputs, "antigravity_workspace_provider")
-    attester = _output(outputs, "synthetic_fixture_attester")
-    registry = _output(outputs, "antigravity_workspace_registry_binding")
     if not isinstance(provider, dict) or set(provider) != {
         "enabled",
         "service_name",
@@ -89,6 +87,11 @@ def parse_antigravity_terraform_outputs(
     }:
         raise ValueError("Antigravity provider Terraform output is malformed")
     if provider["enabled"] is False:
+        # Terraform omits root outputs whose value is null from `output -json`.
+        # The provider's explicit disabled flag is therefore the authority for
+        # whether its two conditional companion outputs may be absent.
+        attester = _optional_output(outputs, "synthetic_fixture_attester")
+        registry = _optional_output(outputs, "antigravity_workspace_registry_binding")
         if (
             provider["uri"] is not None
             or provider["service_name"] is not None
@@ -99,6 +102,8 @@ def parse_antigravity_terraform_outputs(
         return None
     if provider["enabled"] is not True:
         raise ValueError("Antigravity enabled flag is not Boolean")
+    attester = _output(outputs, "synthetic_fixture_attester")
+    registry = _output(outputs, "antigravity_workspace_registry_binding")
     if not isinstance(attester, dict) or set(attester) != {
         "uri",
         "service_account",
@@ -222,6 +227,15 @@ def _output(outputs: dict[str, Any], name: str) -> Any:
     item = outputs.get(name)
     if not isinstance(item, dict) or "value" not in item:
         raise ValueError(f"Terraform output {name} is missing")
+    return item["value"]
+
+
+def _optional_output(outputs: dict[str, Any], name: str) -> Any:
+    item = outputs.get(name)
+    if item is None:
+        return None
+    if not isinstance(item, dict) or "value" not in item:
+        raise ValueError(f"Terraform output {name} is malformed")
     return item["value"]
 
 

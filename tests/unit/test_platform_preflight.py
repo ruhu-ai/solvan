@@ -194,6 +194,16 @@ def test_preflight_pass_requires_exact_live_topology_and_all_proofs() -> None:
     assert parsed == receipt
 
 
+def test_disabled_antigravity_accepts_terraform_omitting_null_outputs() -> None:
+    output = terraform_output()
+    del output["synthetic_fixture_attester"]
+    del output["antigravity_workspace_registry_binding"]
+
+    topology = topology_from_terraform_output(output)
+
+    assert topology.antigravity is None
+
+
 def test_preflight_records_scoped_inline_model_armor_degradation_with_iap_enforced() -> None:
     output = terraform_output()
     output["gateway_policy_resources"]["value"]["model_armor_policy"] = None
