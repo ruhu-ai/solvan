@@ -201,6 +201,115 @@ def test_interrupted_agent_deployment_reuses_checkpoint_and_exact_remote() -> No
     assert resumed[0] == checkpoint[0]
 
 
+def test_resume_hydrates_provider_populated_create_time_without_recreating() -> None:
+    plan = build_plan(
+        project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="b" * 40,
+        staging_bucket="gs://solvan-runtime",
+        release_version="0.1.0",
+        egress_agent_gateway=(
+            "projects/solvan-demo/locations/europe-west1/agentGateways/solvan-staging-egress"
+        ),
+        ingress_agent_gateway=(
+            "projects/solvan-demo/locations/europe-west1/agentGateways/solvan-staging-ingress"
+        ),
+        selected_agents={"incident-supervisor"},
+        apply=True,
+    )
+    client = FakeAgentEngineClient()
+    initial = deploy(
+        plan,
+        client=client,
+        evidence_broker_url=None,
+        actuator_url=None,
+        verifier_url=None,
+    )
+    checkpoint = [{**initial[0], "create_time": None}]
+
+    resumed = deploy(
+        plan,
+        client=client,
+        evidence_broker_url=None,
+        actuator_url=None,
+        verifier_url=None,
+        existing_results=checkpoint,
+    )
+
+    assert resumed[0]["create_time"] == "2026-08-08T00:00:00+00:00"
+    assert len(client.calls) == 1
+
+
+def test_resume_refuses_changed_provider_create_time() -> None:
+    plan = build_plan(
+        project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="b" * 40,
+        staging_bucket="gs://solvan-runtime",
+        release_version="0.1.0",
+        egress_agent_gateway=(
+            "projects/solvan-demo/locations/europe-west1/agentGateways/solvan-staging-egress"
+        ),
+        ingress_agent_gateway=(
+            "projects/solvan-demo/locations/europe-west1/agentGateways/solvan-staging-ingress"
+        ),
+        selected_agents={"incident-supervisor"},
+        apply=True,
+    )
+    client = FakeAgentEngineClient()
+    initial = deploy(
+        plan,
+        client=client,
+        evidence_broker_url=None,
+        actuator_url=None,
+        verifier_url=None,
+    )
+    checkpoint = [{**initial[0], "create_time": "2026-08-09T00:00:00+00:00"}]
+
+    with pytest.raises(RuntimeError, match="differs from provider state"):
+        deploy(
+            plan,
+            client=client,
+            evidence_broker_url=None,
+            actuator_url=None,
+            verifier_url=None,
+            existing_results=checkpoint,
+        )
+
+
+def test_deploy_refuses_insufficient_runtime_capacity_before_create() -> None:
+    plan = build_plan(
+        project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="b" * 40,
+        staging_bucket="gs://solvan-runtime",
+        release_version="0.1.0",
+        egress_agent_gateway=(
+            "projects/solvan-demo/locations/europe-west1/agentGateways/solvan-staging-egress"
+        ),
+        ingress_agent_gateway=(
+            "projects/solvan-demo/locations/europe-west1/agentGateways/solvan-staging-ingress"
+        ),
+        selected_agents={"incident-supervisor"},
+        apply=True,
+    )
+    client = FakeAgentEngineClient()
+    client.resources = [
+        SimpleNamespace(api_resource=SimpleNamespace(labels={})) for _ in range(100)
+    ]
+
+    with pytest.raises(RuntimeError, match="insufficient Agent Runtime resource capacity"):
+        deploy(
+            plan,
+            client=client,
+            evidence_broker_url=None,
+            actuator_url=None,
+            verifier_url=None,
+        )
+
+    assert client.calls == []
+
+
 def test_agent_deployment_refuses_ambiguous_exact_remote_resources() -> None:
     plan = build_plan(
         project_id="solvan-demo",

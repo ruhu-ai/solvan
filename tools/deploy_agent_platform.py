@@ -84,6 +84,9 @@ class AgentEngineClient(Protocol):
     def list(self) -> Iterator[RemoteAgentResource]: ...
 
 
+AGENT_RUNTIME_RESOURCE_LIMIT = 100
+
+
 def _load_manifest() -> dict[str, Any]:
     value = yaml.safe_load(MANIFEST_PATH.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
@@ -249,15 +252,45 @@ def deploy(
     if unresolved - {target.agent_key for target in plan.targets}:
         raise ValueError("unresolved Agent Runtime attempt is outside the deployment plan")
 
+    remote_resources = list(client.list())
     remote_by_key: dict[str, list[RemoteAgentResource]] = {
         target.agent_key: [] for target in plan.targets
     }
-    for remote in client.list():
+    for remote in remote_resources:
         for target in plan.targets:
             expected_labels = _target_labels(plan, target)
             labels = _remote_labels(remote)
             if all(labels.get(key) == value for key, value in expected_labels.items()):
                 remote_by_key[target.agent_key].append(remote)
+
+    ambiguous = [
+        target.agent_key for target in plan.targets if len(remote_by_key[target.agent_key]) > 1
+    ]
+    if ambiguous:
+        raise RuntimeError(f"multiple exact Runtime resources exist for {ambiguous[0]}")
+    unresolved_missing = [
+        target.agent_key
+        for target in plan.targets
+        if target.agent_key in unresolved
+        and target.agent_key not in stored_by_key
+        and not remote_by_key[target.agent_key]
+    ]
+    if unresolved_missing:
+        raise RuntimeError(
+            f"interrupted {unresolved_missing[0]} create has no visible exact resource; "
+            "refusing a duplicate create"
+        )
+    missing_count = sum(
+        target.agent_key not in stored_by_key and not remote_by_key[target.agent_key]
+        for target in plan.targets
+    )
+    if len(remote_resources) + missing_count > AGENT_RUNTIME_RESOURCE_LIMIT:
+        raise RuntimeError(
+            "insufficient Agent Runtime resource capacity before create: "
+            f"existing={len(remote_resources)}, required_new={missing_count}, "
+            f"limit={AGENT_RUNTIME_RESOURCE_LIMIT}; remove superseded resources or "
+            "increase the regional quota"
+        )
 
     results: list[dict[str, Any]] = []
     for target in plan.targets:
@@ -268,26 +301,21 @@ def deploy(
             name = stored.get("immutable_resource_name")
             if not isinstance(name, str) or RESOURCE_PATTERN.fullmatch(name) is None:
                 raise RuntimeError(f"stored {target.agent_key} resource name is malformed")
-            result = _deployment_result(target, client.get(name=name), plan=plan)
-            if result != stored:
-                raise RuntimeError(f"stored {target.agent_key} result differs from provider state")
+            result = _reconcile_stored_result(
+                target.agent_key,
+                stored=stored,
+                observed=_deployment_result(target, client.get(name=name), plan=plan),
+            )
             results.append(result)
             if on_result is not None:
                 on_result(results)
             continue
         candidates = remote_by_key[target.agent_key]
-        if len(candidates) > 1:
-            raise RuntimeError(f"multiple exact Runtime resources exist for {target.agent_key}")
         if len(candidates) == 1:
             results.append(_deployment_result(target, candidates[0], plan=plan))
             if on_result is not None:
                 on_result(results)
             continue
-        if target.agent_key in unresolved:
-            raise RuntimeError(
-                f"interrupted {target.agent_key} create has no visible exact resource; "
-                "refusing a duplicate create"
-            )
         module = importlib.import_module(target.app_module)
         root_agent = getattr(module, "root_agent", None)
         if root_agent is None:
@@ -362,6 +390,29 @@ def deploy(
         if on_result is not None:
             on_result(results)
     return results
+
+
+def _reconcile_stored_result(
+    agent_key: str,
+    *,
+    stored: dict[str, Any],
+    observed: dict[str, Any],
+) -> dict[str, Any]:
+    stored_stable = {key: value for key, value in stored.items() if key != "create_time"}
+    observed_stable = {key: value for key, value in observed.items() if key != "create_time"}
+    if stored_stable != observed_stable:
+        raise RuntimeError(f"stored {agent_key} result differs from provider state")
+    stored_create_time = stored.get("create_time")
+    observed_create_time = observed.get("create_time")
+    if (
+        stored_create_time is not None
+        and observed_create_time is not None
+        and stored_create_time != observed_create_time
+    ):
+        raise RuntimeError(f"stored {agent_key} result differs from provider state")
+    if observed_create_time is None:
+        observed["create_time"] = stored_create_time
+    return observed
 
 
 def _deployment_result(
