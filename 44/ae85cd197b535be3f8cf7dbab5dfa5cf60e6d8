@@ -1,0 +1,61 @@
+specs/12-workspace-cognition-architecture.md
+  s_36f3e3f4652fc0::t_d65987a618c779 9
+Dockerfile.python
+  s_36f3e3f4652fc0::t_48ede6f33b50ce 5,16-17,21,24-29
+apps/antigravity_workspace/verify_runtime.py
+  s_36f3e3f4652fc0::t_6ca18334962964 9,20-23
+cloudbuild.yaml
+  s_36f3e3f4652fc0::t_7f564ea38c1d34 2-17,23,50,298,304-305
+config/architecture-exceptions.yaml
+  s_36f3e3f4652fc0::t_504b80e4218223 5,10,15,20,25,30,35,40,45,50,55,60
+docs/generated/repository-map.md
+  s_36f3e3f4652fc0::t_7cfc1d54bd622f 8-9,11,14,16-17,21,29-31,33,35,42,44,46,49
+docs/release-runbook.md
+  s_36f3e3f4652fc0::t_ac095c57fa83db 16,18,53-97,99
+infra/terraform/environments/gcp/cloud_build.tf
+  s_36f3e3f4652fc0::t_2eccbca0a48b59 1-43
+infra/terraform/environments/gcp/iam.tf
+  s_36f3e3f4652fc0::t_01f6ea2b42554b 28-41
+infra/terraform/environments/gcp/outputs.tf
+  s_36f3e3f4652fc0::t_fbea15ad25820c 86-96
+infra/terraform/environments/gcp/staging.tfvars.example
+  s_36f3e3f4652fc0::t_6b0825b5de8afb 14
+infra/terraform/environments/gcp/variables.tf
+  s_36f3e3f4652fc0::t_565b792144e022 105-115
+specs/05-security-governance.md
+  s_36f3e3f4652fc0::t_5d93a9a727db1c 797-798
+specs/07-implementation-deployment.md
+  s_36f3e3f4652fc0::t_38e10f736ff552 324-330,412-438
+tests/e2e/critical-path.spec.ts
+  s_36f3e3f4652fc0::t_08fef24e693505 1199-1217
+tests/integration/test_persistence.py
+  s_36f3e3f4652fc0::t_88cabff4f70ef3 9,4116-4119
+tests/unit/test_agent_platform_deploy.py
+  s_36f3e3f4652fc0::t_22a3f6beefe83e 16,23,28,53-60,66-67,99-100,117-118,150-269,275-276,302-303,345-346,378-379,421-422
+tests/unit/test_deploy_release.py
+  s_36f3e3f4652fc0::t_8240ad0e7e3732 5,24-41,57-58,68-304,468-477,479,494-501,516-569,638
+tests/unit/test_release_contracts.py
+  s_36f3e3f4652fc0::t_edbdff691c3db6 263,326-334,339-351
+tools/check_cloudbuild.py
+  s_36f3e3f4652fc0::t_40845d2625eddd 46,58-60,62-77,93,95-100,102-119,128-134
+tools/deploy_agent_platform.py
+  s_36f3e3f4652fc0::t_8e3d4688bd8c22 17,34-35,57-58,82-85,97-98,109-112,155,164-165,183-203,212-215,240-261,264-290,358,362-363,380,391-392,418-424,451-452,465,470-471,480,482-483,488-569,578-590,592-594,596-615,618
+tools/deploy_release.py
+  s_36f3e3f4652fc0::t_ce9b9fc7c555f7 24,32,92-93,214-215,227,396-507,556-613,635-643,659-676,684-692,695-697,802-807,819-820,832,1089-1105,1108-1109,1113-1127,1130-1140,1142-1143,1154-1182,1184-1271,1273-1274,1278-1281,1283-1314,1316-1382,1386-1404,1413-1455,1459,1462,1465-1475,1477-1483,1485-1486,1492,1494-1495,1499-1503,1505-1511,1513-1528,1531-1533,1536-1664,1679,1681,1686-1689,1700,1702,1708-1713,1717-1719
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "44ae85cd197b535be3f8cf7dbab5dfa5cf60e6d8",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
