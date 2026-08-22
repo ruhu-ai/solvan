@@ -11,6 +11,9 @@ environment_id   = "env_REPLACE_WITH_ULID"
 # Generated and overwritten by scripts/deploy for the exact immutable release.
 release_commit = "UNCONFIGURED"
 deployment_id  = "UNCONFIGURED"
+# A human GitHub administrator must first complete the regional Cloud Build
+# GitHub App connection named solvan-staging-github. Terraform then owns the
+# linked solvan-staging-release-source repository; no GitHub token belongs here.
 release_source_repository_uri = "https://github.com/OWNER/REPOSITORY.git"
 
 images = {

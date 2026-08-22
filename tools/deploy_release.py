@@ -90,6 +90,7 @@ BUILD_IAM_TARGETS = (
     "google_storage_bucket.build_source",
     "google_storage_bucket_iam_member.build_source_reader",
     "google_project_iam_member.release_build_approver",
+    "google_cloudbuildv2_repository.release_source",
     "google_cloudbuild_trigger.release_images",
 )
 BINARY_AUTH_TARGETS = ("google_binary_authorization_policy.release",)
@@ -553,11 +554,92 @@ def parse_fully_qualified_digest(value: Any, *, expected_repository: str) -> str
     return digest
 
 
+def verify_managed_source_connection(*, project_id: str, region: str) -> str:
+    """Require the human-authorized regional GitHub connection to be complete."""
+
+    connection_name = "solvan-staging-github"
+    expected_resource = f"projects/{project_id}/locations/{region}/connections/{connection_name}"
+    try:
+        raw = _run(
+            [
+                "gcloud",
+                "builds",
+                "connections",
+                "describe",
+                connection_name,
+                f"--project={project_id}",
+                f"--region={region}",
+                "--format=json",
+                "--quiet",
+            ]
+        )
+    except CommandFailure as exc:
+        raise CommandFailure(
+            "managed Cloud Build GitHub connection is absent or unreadable; "
+            "complete the documented human GitHub App bootstrap before deployment"
+        ) from exc
+    value = json.loads(raw)
+    installation = value.get("installationState") if isinstance(value, dict) else None
+    if (
+        not isinstance(value, dict)
+        or value.get("name") != expected_resource
+        or not isinstance(installation, dict)
+        or installation.get("stage") != "COMPLETE"
+    ):
+        raise CommandFailure(
+            "managed Cloud Build GitHub connection is not COMPLETE for the exact region"
+        )
+    return expected_resource
+
+
+def describe_managed_source_repository(
+    *, project_id: str, region: str, expected_repository_uri: str
+) -> tuple[str, str]:
+    """Return the exact linked repository after connection and URI validation."""
+
+    connection_resource = verify_managed_source_connection(
+        project_id=project_id,
+        region=region,
+    )
+    connection_name = connection_resource.rsplit("/", maxsplit=1)[-1]
+    repository_name = "solvan-staging-release-source"
+    expected_resource = f"{connection_resource}/repositories/{repository_name}"
+    raw = _run(
+        [
+            "gcloud",
+            "builds",
+            "repositories",
+            "describe",
+            repository_name,
+            f"--connection={connection_name}",
+            f"--project={project_id}",
+            f"--region={region}",
+            "--format=json",
+            "--quiet",
+        ]
+    )
+    value = json.loads(raw)
+    if (
+        not isinstance(value, dict)
+        or value.get("name") != expected_resource
+        or value.get("remoteUri") != expected_repository_uri
+    ):
+        raise CommandFailure(
+            "managed Cloud Build repository does not match the exact connected public source"
+        )
+    return connection_resource, expected_resource
+
+
 def describe_managed_build_trigger(
     *, project_id: str, region: str, expected_repository_uri: str
 ) -> dict[str, str]:
     """Return the exact approval-gated trigger only after its controls match."""
 
+    connection_resource, repository_resource = describe_managed_source_repository(
+        project_id=project_id,
+        region=region,
+        expected_repository_uri=expected_repository_uri,
+    )
     trigger_name = "solvan-staging-release-images"
     raw = _run(
         [
@@ -589,12 +671,14 @@ def describe_managed_build_trigger(
         or not isinstance(approval, dict)
         or approval.get("approvalRequired") is not True
         or not isinstance(source, dict)
-        or source.get("uri") != expected_repository_uri
+        or source.get("repository") != repository_resource
+        or source.get("uri") is not None
         or source.get("ref") != "refs/heads/main"
         or source.get("repoType") != "GITHUB"
         or not isinstance(build_file, dict)
         or build_file.get("path") != "cloudbuild.yaml"
-        or build_file.get("uri") != expected_repository_uri
+        or build_file.get("repository") != repository_resource
+        or build_file.get("uri") is not None
         or build_file.get("revision") != "refs/heads/main"
         or build_file.get("repoType") != "GITHUB"
         or not isinstance(substitutions, dict)
@@ -606,6 +690,8 @@ def describe_managed_build_trigger(
     return {
         "trigger_id": trigger_id,
         "trigger_name": trigger_name,
+        "connection_resource": connection_resource,
+        "repository_resource": repository_resource,
         "repository_uri": expected_repository_uri,
         "service_account": expected_service_account,
     }
@@ -1193,6 +1279,10 @@ def apply_release(
                     f"--project={plan.project_id}",
                     "--quiet",
                 ]
+            )
+            verify_managed_source_connection(
+                project_id=plan.project_id,
+                region=plan.region,
             )
             _terraform(
                 "apply",

@@ -86,11 +86,13 @@ output "release_images" {
 output "managed_release_build" {
   description = "Approval-gated Cloud Build trigger and dedicated build identity; not a release receipt."
   value = {
-    trigger_id        = google_cloudbuild_trigger.release_images.trigger_id
-    trigger_name      = google_cloudbuild_trigger.release_images.name
-    repository_uri    = var.release_source_repository_uri
-    service_account   = google_service_account.workload["build"].email
-    approval_required = true
+    trigger_id          = google_cloudbuild_trigger.release_images.trigger_id
+    trigger_name        = google_cloudbuild_trigger.release_images.name
+    connection_resource = local.release_source_connection
+    repository_resource = google_cloudbuildv2_repository.release_source.id
+    repository_uri      = google_cloudbuildv2_repository.release_source.remote_uri
+    service_account     = google_service_account.workload["build"].email
+    approval_required   = true
   }
 }
 

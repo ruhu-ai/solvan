@@ -83,10 +83,25 @@ def test_release_stops_at_managed_build_boundary_with_durable_checkpoints(
     monkeypatch.setattr(deploy_release, "_terraform", lambda *_args, **_kwargs: "")
     monkeypatch.setattr(
         deploy_release,
+        "verify_managed_source_connection",
+        lambda **_kwargs: (
+            "projects/solvan-demo/locations/europe-west1/connections/solvan-staging-github"
+        ),
+    )
+    monkeypatch.setattr(
+        deploy_release,
         "describe_managed_build_trigger",
         lambda **_kwargs: {
             "trigger_id": "11111111-1111-1111-1111-111111111111",
             "trigger_name": "solvan-staging-release-images",
+            "connection_resource": (
+                "projects/solvan-demo/locations/europe-west1/connections/solvan-staging-github"
+            ),
+            "repository_resource": (
+                "projects/solvan-demo/locations/europe-west1/"
+                "connections/solvan-staging-github/repositories/"
+                "solvan-staging-release-source"
+            ),
             "repository_uri": "https://github.com/ruhu-ai/solvan.git",
             "service_account": (
                 "projects/solvan-demo/serviceAccounts/"
@@ -152,6 +167,14 @@ def test_managed_build_resume_does_not_replay_completed_bootstrap_mutations(
     trigger = {
         "trigger_id": "11111111-1111-1111-1111-111111111111",
         "trigger_name": "solvan-staging-release-images",
+        "connection_resource": (
+            "projects/solvan-demo/locations/europe-west1/connections/solvan-staging-github"
+        ),
+        "repository_resource": (
+            "projects/solvan-demo/locations/europe-west1/"
+            "connections/solvan-staging-github/repositories/"
+            "solvan-staging-release-source"
+        ),
         "repository_uri": "https://github.com/ruhu-ai/solvan.git",
         "service_account": (
             "projects/solvan-demo/serviceAccounts/solvan-build@solvan-demo.iam.gserviceaccount.com"
@@ -528,6 +551,18 @@ def test_build_supply_chain_refuses_unverified_build(
 def test_managed_build_trigger_requires_approval_source_and_dedicated_identity(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    connection_resource = (
+        "projects/solvan-demo/locations/europe-west1/connections/solvan-staging-github"
+    )
+    repository_resource = f"{connection_resource}/repositories/solvan-staging-release-source"
+    connection = {
+        "name": connection_resource,
+        "installationState": {"stage": "COMPLETE"},
+    }
+    repository = {
+        "name": repository_resource,
+        "remoteUri": "https://github.com/ruhu-ai/solvan.git",
+    }
     trigger = {
         "id": "11111111-1111-1111-1111-111111111111",
         "name": "solvan-staging-release-images",
@@ -536,13 +571,13 @@ def test_managed_build_trigger_requires_approval_source_and_dedicated_identity(
         ),
         "approvalConfig": {"approvalRequired": True},
         "sourceToBuild": {
-            "uri": "https://github.com/ruhu-ai/solvan.git",
+            "repository": repository_resource,
             "ref": "refs/heads/main",
             "repoType": "GITHUB",
         },
         "gitFileSource": {
             "path": "cloudbuild.yaml",
-            "uri": "https://github.com/ruhu-ai/solvan.git",
+            "repository": repository_resource,
             "revision": "refs/heads/main",
             "repoType": "GITHUB",
         },
@@ -552,7 +587,15 @@ def test_managed_build_trigger_requires_approval_source_and_dedicated_identity(
             "_RELEASE_COMMIT": "UNCONFIGURED",
         },
     }
-    monkeypatch.setattr(deploy_release, "_run", lambda *_args, **_kwargs: json.dumps(trigger))
+
+    def fake_run(arguments: list[str], **_kwargs: object) -> str:
+        if arguments[1:3] == ["builds", "connections"]:
+            return json.dumps(connection)
+        if arguments[1:3] == ["builds", "repositories"]:
+            return json.dumps(repository)
+        return json.dumps(trigger)
+
+    monkeypatch.setattr(deploy_release, "_run", fake_run)
 
     result = deploy_release.describe_managed_build_trigger(
         project_id="solvan-demo",
@@ -561,12 +604,42 @@ def test_managed_build_trigger_requires_approval_source_and_dedicated_identity(
     )
 
     assert result["trigger_id"] == trigger["id"]
+    assert result["connection_resource"] == connection_resource
+    assert result["repository_resource"] == repository_resource
     trigger["approvalConfig"] = {"approvalRequired": False}
     with pytest.raises(CommandFailure, match="trigger does not match"):
         deploy_release.describe_managed_build_trigger(
             project_id="solvan-demo",
             region="europe-west1",
             expected_repository_uri="https://github.com/ruhu-ai/solvan.git",
+        )
+
+    trigger["approvalConfig"] = {"approvalRequired": True}
+    trigger["sourceToBuild"] = {
+        "uri": "https://github.com/ruhu-ai/solvan.git",
+        "ref": "refs/heads/main",
+        "repoType": "GITHUB",
+    }
+    with pytest.raises(CommandFailure, match="trigger does not match"):
+        deploy_release.describe_managed_build_trigger(
+            project_id="solvan-demo",
+            region="europe-west1",
+            expected_repository_uri="https://github.com/ruhu-ai/solvan.git",
+        )
+
+    repository["remoteUri"] = "https://github.com/untrusted/substitute.git"
+    with pytest.raises(CommandFailure, match="does not match the exact connected public source"):
+        deploy_release.describe_managed_source_repository(
+            project_id="solvan-demo",
+            region="europe-west1",
+            expected_repository_uri="https://github.com/ruhu-ai/solvan.git",
+        )
+    repository["remoteUri"] = "https://github.com/ruhu-ai/solvan.git"
+    connection["installationState"] = {"stage": "PENDING_USER_OAUTH"}
+    with pytest.raises(CommandFailure, match="not COMPLETE"):
+        deploy_release.verify_managed_source_connection(
+            project_id="solvan-demo",
+            region="europe-west1",
         )
 
 

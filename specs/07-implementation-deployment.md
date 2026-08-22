@@ -410,21 +410,28 @@ before mutation; exact digest selection and provenance validation remain
 independent controls, and no permissive Binary Authorization fallback exists.
 
 Release image construction uses one regional, manually invoked Cloud Build
-trigger managed by Terraform. The trigger fetches the public judging repository,
-requires Google Cloud Build approval before execution, and uses only the
-dedicated `solvan-build` service account. Its first step requires Cloud Build's
-resolved `COMMIT_SHA`, the operator-supplied `_RELEASE_COMMIT`, and the checked
-out `HEAD` to be identical. The deployment runner has no local `builds submit`
-path: its first invocation provisions and validates the managed trigger and
-stops at `AWAITING_MANAGED_BUILD`; a later exact resume accepts one immutable
-build UUID. Before any workload rolls, deployment independently requires the
-expected trigger ID, approved decision, build service account, resolved source
-commit, verified provenance, full image coverage, and immutable digest
-resolution. A changed plan or self-hashed checkpoint refuses resume. Every
-completed release phase is persisted immediately, so a late failure never
-justifies rebuilding or replaying completed mutations. This implements the
-artifact and provenance boundary required by `CCR-008` without granting the
-builder deployment or catalog-approval authority.
+trigger managed by Terraform. An approved human GitHub administrator first
+completes the regional Cloud Build GitHub App connection; no GitHub token is a
+Terraform or release input. Terraform owns the linked Cloud Build Repository
+resource, and both trigger source fields bind its fully qualified resource name
+rather than a bare GitHub URI. The release preflight requires the exact
+connection to be `COMPLETE`, then verifies the linked repository name, region,
+and remote URI before it accepts the trigger phase. The trigger fetches that
+public judging repository, requires Google Cloud Build approval before
+execution, and uses only the dedicated `solvan-build` service account. Its first
+step requires Cloud Build's resolved `COMMIT_SHA`, the operator-supplied
+`_RELEASE_COMMIT`, and the checked out `HEAD` to be identical. The deployment
+runner has no local `builds submit` path: its first invocation provisions and
+validates the managed trigger and stops at `AWAITING_MANAGED_BUILD`; a later
+exact resume accepts one immutable build UUID. Before any workload rolls,
+deployment independently requires the expected trigger ID, approved decision,
+build service account, resolved source commit, verified provenance, full image
+coverage, and immutable digest resolution. A changed plan or self-hashed
+checkpoint refuses resume. Every completed release phase is persisted
+immediately, so a late failure never justifies rebuilding or replaying completed
+mutations. This implements the artifact and provenance boundary required by
+`CCR-008` without granting the builder deployment or catalog-approval
+authority.
 
 The shared Python image installs locked third-party dependencies before copying
 application source and selects `APP_MODULE` only after the common project layer

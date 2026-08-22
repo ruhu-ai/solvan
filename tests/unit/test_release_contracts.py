@@ -324,10 +324,15 @@ def test_catalog_release_uses_google_native_approval_and_supply_chain_controls()
     assert '"projects/${var.project_id}/attestors/built-by-cloud-build"' in binary
     assert "requestedVerifyOption: VERIFIED" in cloud_build
     assert 'resource "google_cloudbuild_trigger" "release_images"' in managed_build
+    assert 'resource "google_cloudbuildv2_repository" "release_source"' in managed_build
+    assert 'deletion_policy = "PREVENT"' in managed_build
     assert "approval_required = true" in managed_build
     assert 'service_account = google_service_account.workload["build"].id' in managed_build
     assert "source_to_build {" in managed_build
     assert "git_file_source {" in managed_build
+    assert managed_build.count("repository = google_cloudbuildv2_repository.release_source.id") == 2
+    assert "uri       = var.release_source_repository_uri" not in managed_build
+    assert "verify_managed_source_connection(" in _text("tools/deploy_release.py")
     assert '_RELEASE_COMMIT = "UNCONFIGURED"' in managed_build
     assert 'role    = "roles/cloudbuild.builds.approver"' in iam
     assert "verify-release-commit" in cloud_build

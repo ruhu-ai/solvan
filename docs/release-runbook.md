@@ -16,6 +16,25 @@ Never use the Ruhu development project.
 - `gcloud`, Terraform, Cloud Build trigger access, billing, and the approved
   operator identities are configured for the dedicated Solvan staging project.
   The operator does not submit a local source archive or run Docker locally.
+- The regional Cloud Build GitHub App connection
+  `solvan-staging-github` exists in `europe-west1`, its
+  `installationState.stage` is `COMPLETE`, and the approved human GitHub
+  administrator has limited the installation to the public judging repository.
+  Create this connection once with Google's browser-mediated flow; never put a
+  GitHub token in tfvars, source, logs, or a release receipt:
+
+  ```bash
+  gcloud builds connections create github solvan-staging-github \
+    --project <solvan-staging-project-id> \
+    --region europe-west1
+  gcloud builds connections describe solvan-staging-github \
+    --project <solvan-staging-project-id> \
+    --region europe-west1
+  ```
+
+  The first command is incomplete until the approved human follows Google's
+  authorization link, installs the Cloud Build GitHub App, and the second
+  command reports `COMPLETE`.
 - The GCS backend config and reviewed base tfvars are outside Git or contain no
   secrets. Copy `infra/terraform/environments/gcp/staging.tfbackend.example`
   and `staging.tfvars.example`; do not edit generated release tfvars. The
@@ -50,9 +69,12 @@ After review, repeat with:
   --ack-dedicated-project <solvan-staging-project-id> --apply
 ```
 
-This first apply provisions and validates the regional managed-build trigger,
-its dedicated identity, exact IAM, and Artifact Registry. It then stops at a
-hash-bound `AWAITING_MANAGED_BUILD` checkpoint. Run the exact command printed in
+This first apply refuses before trigger creation unless the external GitHub
+connection is `COMPLETE`. Terraform then links the exact repository as a
+regional Cloud Build Repository resource, binds both trigger source fields to
+that resource, and provisions and validates the managed-build trigger, its
+dedicated identity, exact IAM, and Artifact Registry. It stops at a hash-bound
+`AWAITING_MANAGED_BUILD` checkpoint. Run the exact command printed in
 `next_required_gate`; its shape is:
 
 ```bash
