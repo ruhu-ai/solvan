@@ -375,6 +375,15 @@ each binding's `identity_ref` from the same Runtime receipt's system-attested
 principal; a pre-deployment placeholder or caller-supplied identity cannot
 survive into publication.
 
+When a deployment configures the versioned database-admin secret, every
+migration-identity release job that inherits the `postgres` database user —
+migration, catalog publication, calibration seed, and channel-health recording
+— receives Secret Manager version `1` through a Cloud Run secret reference.
+The migration identity alone has Secret Accessor on that exact secret; no
+plaintext password appears in Terraform state or ordinary job environment
+configuration. IAM-authenticated runtime and probe identities do not receive
+this release-only credential.
+
 Cloud Build provenance and the Google `built-by-cloud-build` Binary
 Authorization attestor gate every Cloud Run service and job image independently
 of catalog approval. Binary Authorization proves image admission; Cloud Deploy

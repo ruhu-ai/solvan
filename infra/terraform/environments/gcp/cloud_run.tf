@@ -2702,6 +2702,19 @@ resource "google_cloud_run_v2_job" "catalog_publication" {
           }
         }
 
+        dynamic "env" {
+          for_each = var.database_admin_secret_name == "UNCONFIGURED" ? [] : [1]
+          content {
+            name = "SOLVAN_DATABASE_PASSWORD"
+            value_source {
+              secret_key_ref {
+                secret  = var.database_admin_secret_name
+                version = "1"
+              }
+            }
+          }
+        }
+
         volume_mounts {
           name       = "cloudsql"
           mount_path = "/cloudsql"
@@ -2726,6 +2739,7 @@ resource "google_cloud_run_v2_job" "catalog_publication" {
     google_cloud_run_v2_job.database_migration,
     google_project_service.required["run.googleapis.com"],
     google_sql_user.workload_iam["migration"],
+    google_secret_manager_secret_iam_member.database_migration_admin_secret_accessor,
   ]
 }
 
@@ -2771,6 +2785,19 @@ resource "google_cloud_run_v2_job" "calibration_seed" {
           }
         }
 
+        dynamic "env" {
+          for_each = var.database_admin_secret_name == "UNCONFIGURED" ? [] : [1]
+          content {
+            name = "SOLVAN_DATABASE_PASSWORD"
+            value_source {
+              secret_key_ref {
+                secret  = var.database_admin_secret_name
+                version = "1"
+              }
+            }
+          }
+        }
+
         volume_mounts {
           name       = "cloudsql"
           mount_path = "/cloudsql"
@@ -2804,6 +2831,7 @@ resource "google_cloud_run_v2_job" "calibration_seed" {
   depends_on = [
     google_project_service.required["run.googleapis.com"],
     google_sql_user.workload_iam["migration"],
+    google_secret_manager_secret_iam_member.database_migration_admin_secret_accessor,
     google_storage_bucket_iam_member.evidence_migration_reader,
     google_storage_bucket_iam_member.runtime_migration_creator,
     google_storage_bucket_iam_member.runtime_migration_reader,
@@ -2845,6 +2873,19 @@ resource "google_cloud_run_v2_job" "channel_provider_health" {
           content {
             name  = env.key
             value = env.value
+          }
+        }
+
+        dynamic "env" {
+          for_each = var.database_admin_secret_name == "UNCONFIGURED" ? [] : [1]
+          content {
+            name = "SOLVAN_DATABASE_PASSWORD"
+            value_source {
+              secret_key_ref {
+                secret  = var.database_admin_secret_name
+                version = "1"
+              }
+            }
           }
         }
 
@@ -2890,6 +2931,7 @@ resource "google_cloud_run_v2_job" "channel_provider_health" {
     google_cloud_run_v2_job.database_migration,
     google_project_service.required["run.googleapis.com"],
     google_sql_user.workload_iam["migration"],
+    google_secret_manager_secret_iam_member.database_migration_admin_secret_accessor,
     google_storage_bucket_iam_member.evidence_migration_reader,
   ]
 }

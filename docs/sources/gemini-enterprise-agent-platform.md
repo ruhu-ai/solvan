@@ -59,6 +59,10 @@ Verified facts and decisions:
   Solvan grants the custom task only `run.operations.get` and
   `run.executions.get` in a project custom role instead of broad Cloud Run
   Viewer access.
+- Cloud Run recommends Secret Manager for job secrets and recommends pinning an
+  environment-variable secret to a numbered version. Solvan mounts database
+  admin secret version `1` only into migration-identity release jobs and grants
+  Secret Accessor only on that exact secret to their shared release identity.
 - Binary Authorization for Cloud Run verifies attestations on service and job
   images. The Google `built-by-cloud-build` attestor proves the image came from
   Cloud Build; it does not approve catalog data or replace Cloud Deploy.

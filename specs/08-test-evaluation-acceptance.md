@@ -67,6 +67,9 @@ competition slice. The section status matrix is:
 - the Cloud Deploy execution identity receives only `run.operations.get` and
   `run.executions.get` for observing its publication job, rather than general
   Cloud Run Viewer or execution-list access;
+- each migration-identity release job that selects the `postgres` database user
+  mounts pinned database-admin secret version `1` through Cloud Run, and no
+  runtime or probe identity receives that release-only secret;
 - every Cloud Run service and job enables the default Binary Authorization
   policy, which requires the Google `built-by-cloud-build` attestor.
 

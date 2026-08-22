@@ -301,6 +301,17 @@ def test_catalog_release_uses_google_native_approval_and_supply_chain_controls()
     assert 'google_service_account.workload["catalog_deploy"].member' in observer_binding
     assert 'role     = "roles/run.jobsExecutorWithOverrides"' in cloud_run
     assert 'member   = google_service_account.workload["catalog_deploy"].member' in cloud_run
+    for job_name in ("catalog_publication", "calibration_seed", "channel_provider_health"):
+        release_job = cloud_run.split(
+            f'resource "google_cloud_run_v2_job" "{job_name}"', maxsplit=1
+        )[1].split('\nresource "', maxsplit=1)[0]
+        assert 'name = "SOLVAN_DATABASE_PASSWORD"' in release_job
+        assert "secret  = var.database_admin_secret_name" in release_job
+        assert 'version = "1"' in release_job
+        assert (
+            "google_secret_manager_secret_iam_member."
+            "database_migration_admin_secret_accessor" in release_job
+        )
     catalog_reader = artifacts.split(
         'resource "google_artifact_registry_repository_iam_member" "catalog_deploy_reader"',
         maxsplit=1,
