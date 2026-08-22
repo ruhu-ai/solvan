@@ -62,6 +62,8 @@ competition slice. The section status matrix is:
   `user:` principals on the dedicated catalog delivery pipeline, with Google's
   rollout-target IAM condition restricted to the publication target, and
   grants no release identity that role;
+- Terraform grants the dedicated Cloud Deploy execution identity Artifact
+  Registry Reader on only the release repository, with no artifact write role;
 - every Cloud Run service and job enables the default Binary Authorization
   policy, which requires the Google `built-by-cloud-build` attestor.
 

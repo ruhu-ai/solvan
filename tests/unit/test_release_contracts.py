@@ -261,6 +261,7 @@ def test_catalog_publication_binds_every_immutable_agent_resource() -> None:
 
 def test_catalog_release_uses_google_native_approval_and_supply_chain_controls() -> None:
     cloud_deploy = _text("infra/terraform/environments/gcp/cloud_deploy.tf")
+    artifacts = _text("infra/terraform/environments/gcp/artifacts.tf")
     iam = _text("infra/terraform/environments/gcp/iam.tf")
     storage = _text("infra/terraform/environments/gcp/storage.tf")
     binary = _text("infra/terraform/environments/gcp/binary_authorization.tf")
@@ -286,6 +287,13 @@ def test_catalog_release_uses_google_native_approval_and_supply_chain_controls()
     assert "google_clouddeploy_target.catalog_publication.name" in approver
     assert 'role     = "roles/run.jobsExecutorWithOverrides"' in cloud_run
     assert 'member   = google_service_account.workload["catalog_deploy"].member' in cloud_run
+    catalog_reader = artifacts.split(
+        'resource "google_artifact_registry_repository_iam_member" "catalog_deploy_reader"',
+        maxsplit=1,
+    )[1].split("\n}\n", maxsplit=1)[0]
+    assert 'role       = "roles/artifactregistry.reader"' in catalog_reader
+    assert 'member     = google_service_account.workload["catalog_deploy"].member' in catalog_reader
+    assert "google_artifact_registry_repository.containers.repository_id" in catalog_reader
     assert "is_locked        = true" in storage
     assert '"projects/${var.project_id}/attestors/built-by-cloud-build"' in binary
     assert "requestedVerifyOption: VERIFIED" in cloud_build

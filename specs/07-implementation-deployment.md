@@ -343,6 +343,9 @@ Google's `clouddeploy.googleapis.com/rolloutTarget` IAM condition restricted to
 the publication target; the build, evaluation, release, migration, Agent, and
 Cloud Deploy execution identities receive no approval permission. The
 publication action runs only after Google records the rollout as approved.
+The dedicated Cloud Deploy execution identity receives Artifact Registry Reader
+only on the exact Solvan release repository so Google's custom-task runner can
+pull the digest-pinned task image; it receives no artifact write permission.
 
 Every catalog release source contains the exact subject descriptor and the
 minimal `skaffold/v4beta7` `Config` required by Google Cloud Deploy for custom

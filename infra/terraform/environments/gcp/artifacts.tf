@@ -6,6 +6,18 @@ resource "google_artifact_registry_repository_iam_member" "build_writer" {
   member     = google_service_account.workload["build"].member
 }
 
+# Cloud Deploy executes custom render/deploy task containers under this
+# dedicated identity. Google requires a custom service account to receive
+# Artifact Registry read access before it can pull a private task image. Scope
+# the predefined reader role to Solvan's one release repository, not the project.
+resource "google_artifact_registry_repository_iam_member" "catalog_deploy_reader" {
+  project    = var.project_id
+  location   = google_artifact_registry_repository.containers.location
+  repository = google_artifact_registry_repository.containers.repository_id
+  role       = "roles/artifactregistry.reader"
+  member     = google_service_account.workload["catalog_deploy"].member
+}
+
 resource "google_project_iam_member" "build_logs" {
   project = var.project_id
   role    = "roles/logging.logWriter"

@@ -50,6 +50,10 @@ Verified facts and decisions:
   publication target, using only individual human principals.
 - Cloud Deploy recommends a dedicated execution service account with
   `roles/clouddeploy.jobRunner` rather than the broad default Compute identity.
+- A custom execution service account must be granted access to private task
+  images. Artifact Registry documents `roles/artifactregistry.reader` for
+  downloading artifacts and supports granting it on one repository; Solvan
+  uses that repository-level binding for the Cloud Deploy execution identity.
 - Binary Authorization for Cloud Run verifies attestations on service and job
   images. The Google `built-by-cloud-build` attestor proves the image came from
   Cloud Build; it does not approve catalog data or replace Cloud Deploy.
