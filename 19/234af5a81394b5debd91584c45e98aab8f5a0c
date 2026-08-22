@@ -1,0 +1,24 @@
+tools/deploy_agent_platform.py
+  s_36f3e3f4652fc0::t_938e3cf73853f9 87-89,255,259,266-294,304-308,395-415
+  s_36f3e3f4652fc0::t_2294f7afdd13a9 416-417
+specs/05-security-governance.md
+  s_36f3e3f4652fc0::t_938e3cf73853f9 799
+tests/unit/test_agent_platform_deploy.py
+  s_36f3e3f4652fc0::t_83bfe8d09d30f0 204-312
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "19234af5a81394b5debd91584c45e98aab8f5a0c",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
