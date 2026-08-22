@@ -346,6 +346,11 @@ publication action runs only after Google records the rollout as approved.
 The dedicated Cloud Deploy execution identity receives Artifact Registry Reader
 only on the exact Solvan release repository so Google's custom-task runner can
 pull the digest-pinned task image; it receives no artifact write permission.
+Because Cloud Run job execution returns a Google long-running operation before
+the exact execution resource, that identity also receives a project custom role
+containing only `run.operations.get` and `run.executions.get`. The custom task
+must observe both resources through completion before it reports publication
+success to Cloud Deploy; it receives no general Cloud Run Viewer role.
 
 Every catalog release source contains the exact subject descriptor and the
 minimal `skaffold/v4beta7` `Config` required by Google Cloud Deploy for custom

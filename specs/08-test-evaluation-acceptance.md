@@ -64,6 +64,9 @@ competition slice. The section status matrix is:
   grants no release identity that role;
 - Terraform grants the dedicated Cloud Deploy execution identity Artifact
   Registry Reader on only the release repository, with no artifact write role;
+- the Cloud Deploy execution identity receives only `run.operations.get` and
+  `run.executions.get` for observing its publication job, rather than general
+  Cloud Run Viewer or execution-list access;
 - every Cloud Run service and job enables the default Binary Authorization
   policy, which requires the Google `built-by-cloud-build` attestor.
 

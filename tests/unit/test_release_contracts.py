@@ -285,6 +285,20 @@ def test_catalog_release_uses_google_native_approval_and_supply_chain_controls()
     assert "google_clouddeploy_delivery_pipeline.catalog.name" in approver
     assert 'api.getAttribute(\\"clouddeploy.googleapis.com/rolloutTarget\\"' in approver
     assert "google_clouddeploy_target.catalog_publication.name" in approver
+    run_observer = iam.split(
+        'resource "google_project_iam_custom_role" "catalog_run_execution_reader"',
+        maxsplit=1,
+    )[1].split("\n}\n", maxsplit=1)[0]
+    assert '"run.executions.get"' in run_observer
+    assert '"run.operations.get"' in run_observer
+    assert '"run.executions.list"' not in run_observer
+    assert '"run.operations.list"' not in run_observer
+    observer_binding = iam.split(
+        'resource "google_project_iam_member" "catalog_deploy_run_execution_reader"',
+        maxsplit=1,
+    )[1].split("\n}\n", maxsplit=1)[0]
+    assert "google_project_iam_custom_role.catalog_run_execution_reader.name" in observer_binding
+    assert 'google_service_account.workload["catalog_deploy"].member' in observer_binding
     assert 'role     = "roles/run.jobsExecutorWithOverrides"' in cloud_run
     assert 'member   = google_service_account.workload["catalog_deploy"].member' in cloud_run
     catalog_reader = artifacts.split(

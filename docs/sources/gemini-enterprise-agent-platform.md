@@ -54,6 +54,11 @@ Verified facts and decisions:
   images. Artifact Registry documents `roles/artifactregistry.reader` for
   downloading artifacts and supports granting it on one repository; Solvan
   uses that repository-level binding for the Cloud Deploy execution identity.
+- Cloud Run's jobs `run` method returns a Google long-running operation, and
+  Google documents polling that resource before reading the returned execution.
+  Solvan grants the custom task only `run.operations.get` and
+  `run.executions.get` in a project custom role instead of broad Cloud Run
+  Viewer access.
 - Binary Authorization for Cloud Run verifies attestations on service and job
   images. The Google `built-by-cloud-build` attestor proves the image came from
   Cloud Build; it does not approve catalog data or replace Cloud Deploy.

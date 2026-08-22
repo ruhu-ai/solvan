@@ -25,6 +25,28 @@ resource "google_project_iam_member" "catalog_deploy_job_runner" {
   member  = google_service_account.workload["catalog_deploy"].member
 }
 
+# Cloud Run jobs.run returns a Google long-running operation and then an exact
+# execution resource. The catalog custom task waits for both before reporting
+# success to Cloud Deploy. Grant only those two read permissions instead of the
+# broad predefined Cloud Run Viewer role.
+resource "google_project_iam_custom_role" "catalog_run_execution_reader" {
+  project     = var.project_id
+  role_id     = "solvanCatalogRunObserver"
+  title       = "Solvan catalog Cloud Run execution observer"
+  description = "Reads only the exact Cloud Run operation and execution started by catalog publication."
+  stage       = "GA"
+  permissions = [
+    "run.executions.get",
+    "run.operations.get",
+  ]
+}
+
+resource "google_project_iam_member" "catalog_deploy_run_execution_reader" {
+  project = var.project_id
+  role    = google_project_iam_custom_role.catalog_run_execution_reader.name
+  member  = google_service_account.workload["catalog_deploy"].member
+}
+
 resource "google_project_iam_custom_role" "catalog_deploy_reader" {
   project     = var.project_id
   role_id     = "solvanCatalogDeployReader"
