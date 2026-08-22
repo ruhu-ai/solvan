@@ -1,0 +1,35 @@
+docs/release-runbook.md
+  s_36f3e3f4652fc0::t_493af895c18c26 19-37,72-77
+infra/terraform/environments/gcp/cloud_build.tf
+  s_36f3e3f4652fc0::t_1bfb8323113d41 7-31,41-43,47-50,64
+infra/terraform/environments/gcp/outputs.tf
+  s_36f3e3f4652fc0::t_fb28505f9821d4 89-95
+infra/terraform/environments/gcp/staging.tfvars.example
+  s_36f3e3f4652fc0::t_d56a175c40f9e4 14-16
+specs/05-security-governance.md
+  s_36f3e3f4652fc0::t_89c49b768951c4 798
+specs/07-implementation-deployment.md
+  s_36f3e3f4652fc0::t_a9813e36fc6fa6 413-434
+tests/unit/test_deploy_release.py
+  s_36f3e3f4652fc0::t_33f8d5600661e1 84-90,97-104,170-177,554-565,574,580,590-598,607-608,617-644
+tests/unit/test_release_contracts.py
+  s_36f3e3f4652fc0::t_f7ae187f6eb3a4 327-328,333-335
+tools/deploy_release.py
+  s_36f3e3f4652fc0::t_7c6b6c18b0927a 93,557-632,638-642,674-675,680-681,693-694,1283-1286
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "f6a8d4ec0fac42ae4e3eebcc3b410130b96f2ba8",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
