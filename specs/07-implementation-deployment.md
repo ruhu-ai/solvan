@@ -986,7 +986,9 @@ known-good cleanup procedure are normative in
 Preflight records and verifies:
 
 - competition project and `europe-west1` placement;
-- required APIs, quotas, billing, and credits;
+- the exact Terraform-declared API set, quotas, billing, and credits; the set
+  includes Cloud KMS for release evidence and envelope operations and never
+  invents a separate Service Extensions API for Network Services resources;
 - billing budget notifications at $75 and $120 (notification, not a hard cap);
 - API, coordinator, actuator, and `payments-api` minimum instances set to 1
   only for dry-run/recording and returned to 0 after; smallest viable Cloud

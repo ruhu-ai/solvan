@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import replace
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 
@@ -19,6 +21,20 @@ COMMIT = "a" * 40
 PROJECT = "solvan-demo"
 PROJECT_NUMBER = "123456789012"
 REGION = "europe-west1"
+
+
+def test_required_api_contract_matches_terraform_service_set() -> None:
+    locals_text = (
+        Path(__file__).resolve().parents[2] / "infra/terraform/environments/gcp/locals.tf"
+    ).read_text(encoding="utf-8")
+    service_block = locals_text.split("services = toset(compact([", maxsplit=1)[1].split(
+        "]))", maxsplit=1
+    )[0]
+    terraform_services = frozenset(re.findall(r'"([a-z0-9]+\.googleapis\.com)"', service_block))
+
+    assert terraform_services == _REQUIRED_APIS
+    assert "cloudkms.googleapis.com" in _REQUIRED_APIS
+    assert "serviceextensions.googleapis.com" not in _REQUIRED_APIS
 
 
 def terraform_output() -> dict[str, object]:
