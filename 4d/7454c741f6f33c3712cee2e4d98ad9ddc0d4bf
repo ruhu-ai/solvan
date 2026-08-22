@@ -1,0 +1,27 @@
+src/solvan/persistence/tool_catalog_store.py
+  s_36f3e3f4652fc0::t_49acbeec73bcd1 244-245,249-255,265-280
+  s_36f3e3f4652fc0::t_8e9b9de8f0e8e0 281
+tests/unit/test_tool_catalog.py
+  s_36f3e3f4652fc0::t_49acbeec73bcd1 46,443-467
+  s_36f3e3f4652fc0::t_c7005a4cae26e7 468-469
+tests/integration/test_tool_catalog_persistence.py
+  s_36f3e3f4652fc0::t_49acbeec73bcd1 311-334
+specs/16-governed-tool-catalog.md
+  s_36f3e3f4652fc0::t_49acbeec73bcd1 173-178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "4d7454c741f6f33c3712cee2e4d98ad9ddc0d4bf",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
