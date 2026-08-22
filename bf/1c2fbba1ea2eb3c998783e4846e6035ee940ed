@@ -1,0 +1,24 @@
+tests/unit/test_platform_preflight.py
+  s_36f3e3f4652fc0::t_666368ff3c99ce 197-206
+src/solvan/platform/antigravity_preflight.py
+  s_36f3e3f4652fc0::t_666368ff3c99ce 90-94,105-106,233-238
+  s_36f3e3f4652fc0::t_85b009cfc44e91 239-241
+scripts/check-browser
+  s_36f3e3f4652fc0::t_666368ff3c99ce 47,52-57,68-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "bf1c2fbba1ea2eb3c998783e4846e6035ee940ed",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
