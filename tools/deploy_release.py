@@ -758,7 +758,19 @@ def start_catalog_delivery(
     pipeline = delivery["delivery_pipeline"]
     evaluation_target = delivery["evaluation_target"]
     publication_target = delivery["publication_target"]
-    release = f"catalog-{commit[:12]}-{hashlib.sha256(plan.deployment_id.encode()).hexdigest()[:8]}"
+    # Cloud Deploy's automatic rollout IDs have the form
+    # ``<release>-to-<target>-0001`` and resource IDs are limited to 63
+    # characters. Keep the immutable release ID concise enough for both
+    # ordered targets, and refuse before mutation if a configured target ever
+    # exceeds that bound.
+    release = f"cat-{commit[:10]}-{hashlib.sha256(plan.deployment_id.encode()).hexdigest()[:5]}"
+    for target in (evaluation_target, publication_target):
+        automatic_rollout_id = f"{release}-to-{target}-0001"
+        if len(automatic_rollout_id) > 63:
+            raise CommandFailure(
+                "Cloud Deploy automatic rollout ID would exceed the 63-character limit: "
+                f"{automatic_rollout_id}"
+            )
     annotations = {
         "solvan-catalog-subject": delivery["catalog_subject_hash"],
         "solvan-deployment-id": plan.deployment_id,
@@ -807,6 +819,7 @@ def start_catalog_delivery(
                     f"--region={plan.region}",
                     f"--delivery-pipeline={pipeline}",
                     f"--source={source}",
+                    "--enable-initial-rollout",
                     "--annotations="
                     + ",".join(f"{key}={value}" for key, value in sorted(annotations.items())),
                     "--quiet",

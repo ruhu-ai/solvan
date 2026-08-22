@@ -389,6 +389,11 @@ def test_catalog_release_supplies_minimal_skaffold_for_custom_targets(
 
     def fake_run(arguments: list[str], **_kwargs: object) -> str:
         if arguments[1:4] == ["deploy", "releases", "create"]:
+            release_id = arguments[4]
+            assert release_id == "cat-bbbbbbbbbb-a36dc"
+            assert "--enable-initial-rollout" in arguments
+            assert len(f"{release_id}-to-solvan-demo-catalog-evaluation-0001") <= 63
+            assert len(f"{release_id}-to-{publication_target}-0001") <= 63
             source_argument = next(item for item in arguments if item.startswith("--source="))
             source = Path(source_argument.split("=", maxsplit=1)[1])
             assert (source / "skaffold.yaml").read_text(encoding="utf-8") == (
@@ -418,3 +423,42 @@ def test_catalog_release_supplies_minimal_skaffold_for_custom_targets(
     )
 
     assert result["publication_approval_state"] == "NEEDS_APPROVAL"
+
+
+def test_catalog_release_refuses_automatic_rollout_id_over_google_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = build_plan(
+        project_id="solvan-demo",
+        deployment_id="demo-20260821",
+        release_version="0.1.0",
+        backend_config=tmp_path / "backend",
+        base_tfvars=tmp_path / "tfvars",
+        work_dir=tmp_path / "release",
+        remote="origin",
+        calibration_receipt_uri=None,
+        calibration_receipt_hash=None,
+        apply=False,
+    )
+    monkeypatch.setattr(
+        deploy_release,
+        "_run_allowing",
+        lambda *_args, **_kwargs: pytest.fail("release lookup must not run"),
+    )
+
+    with pytest.raises(deploy_release.CommandFailure, match="63-character limit"):
+        deploy_release.start_catalog_delivery(
+            plan=plan,
+            commit="b" * 40,
+            outputs={
+                "catalog_delivery": {
+                    "value": {
+                        "delivery_pipeline": "solvan-demo-catalog",
+                        "evaluation_target": "evaluation-" + "x" * 50,
+                        "publication_target": "solvan-demo-catalog-publication",
+                        "catalog_subject_hash": "sha256:" + "a" * 64,
+                        "network_policy_hash": "sha256:" + "c" * 64,
+                    }
+                }
+            },
+        )

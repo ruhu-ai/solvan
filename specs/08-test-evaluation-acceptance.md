@@ -50,6 +50,9 @@ competition slice. The section status matrix is:
   digest changes;
 - evaluation refuses an incomplete/extra network-policy rule, a mutation Tool
   in a model-facing profile, or a non-exact profile reference;
+- release creation uses a concise immutable ID, explicitly enables Google's
+  initial rollout, and refuses before mutation when either generated rollout
+  ID would exceed Google's 63-character resource-ID limit;
 - publication refuses a missing, failed, foreign-target, foreign-release, or
   UID-mismatched evaluation rollout;
 - publication refuses a pending/rejected approval, an unexpected target or

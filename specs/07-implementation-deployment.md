@@ -348,7 +348,11 @@ Every catalog release source contains the exact subject descriptor and the
 minimal `skaffold/v4beta7` `Config` required by Google Cloud Deploy for custom
 targets whose render and deploy tasks are defined by the registered custom
 target type. The release harness creates both files in the same bounded source
-directory and invokes release creation before that directory is discarded.
+directory and invokes release creation before that directory is discarded. It
+uses a concise digest-derived release ID, explicitly enables Google's initial
+rollout, and verifies before release creation that Cloud Deploy's generated
+`<release>-to-<target>-0001` IDs fit Google's 63-character resource-ID limit
+for both ordered targets.
 
 The catalog-publication release job receives the exact immutable resource name
 for all six Runtime agents together with their evaluated tool bindings. It

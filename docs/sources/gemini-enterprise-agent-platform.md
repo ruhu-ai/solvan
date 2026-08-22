@@ -37,6 +37,11 @@ Verified facts and decisions:
   Skaffold configuration. When the registered custom target type defines the
   actions, Google's quickstart uses only `apiVersion: skaffold/v4beta7` and
   `kind: Config`; Solvan packages that minimal file with its subject descriptor.
+- Cloud Deploy creates a rollout for the first target by default unless release
+  creation uses `--disable-initial-rollout`. Rollout resource IDs have a
+  63-character limit; Solvan therefore uses a concise digest-derived release ID,
+  explicitly enables the initial rollout, and validates the generated IDs for
+  both ordered targets before creating the release.
 - A target with `requireApproval=true` admits approval only from a principal
   holding `roles/clouddeploy.approver`; Google documents granting that role on
   the delivery pipeline with the
