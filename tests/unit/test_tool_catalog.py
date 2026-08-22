@@ -43,6 +43,7 @@ from solvan.application.tool_catalog import (
     ToolProfileRevision,
     ToolRevision,
 )
+from solvan.persistence.tool_catalog_store import PostgresToolCatalogStore
 from tools.generate_alert_hash_vectors import _replacement, _set_path
 
 HASH = f"sha256:{'1' * 64}"
@@ -437,6 +438,33 @@ def test_default_catalog_is_exact_complete_and_requires_connections() -> None:
         "metric_correlate@1",
     )
     assert alert_profile.runtime_region == "POLICY_BOUND"
+
+
+def test_later_release_gate_reuses_only_identical_tool_revision_material() -> None:
+    original = catalog_tools(
+        network_policy_hash=HASH,
+        approval_ref="approval://catalog/1",
+        evaluation_ref="evaluation://catalog/1",
+    )[0]
+    later_release = original.model_copy(
+        update={
+            "approval_ref": "approval://catalog/2",
+            "evaluation_ref": "evaluation://catalog/2",
+        }
+    )
+
+    assert PostgresToolCatalogStore._same_tool_revision_material(
+        later_release,
+        content_hash=original.content_hash,
+        approval_ref=original.approval_ref,
+        evaluation_ref=original.evaluation_ref,
+    )
+    assert not PostgresToolCatalogStore._same_tool_revision_material(
+        later_release.model_copy(update={"description": "changed immutable meaning"}),
+        content_hash=original.content_hash,
+        approval_ref=original.approval_ref,
+        evaluation_ref=original.evaluation_ref,
+    )
 
 
 def _ddl_source_connection_pairs() -> set[tuple[str, str]]:

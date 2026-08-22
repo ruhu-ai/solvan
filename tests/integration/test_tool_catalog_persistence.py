@@ -308,6 +308,30 @@ def test_revision_key_cannot_be_republished_with_different_material(connection) 
         store.publish_tool(changed)
 
 
+def test_identical_revision_republication_keeps_original_governance_refs(connection) -> None:
+    store = PostgresToolCatalogStore(connection)
+    original = _tool()
+    store.register_principal(_principal())
+    store.publish_tool(original)
+
+    store.publish_tool(
+        original.model_copy(
+            update={
+                "approval_ref": "approval://tool/later-release",
+                "evaluation_ref": "evaluation://tool/later-release",
+            }
+        )
+    )
+
+    persisted = connection.execute(
+        """SELECT approval_ref, evaluation_ref, content_hash
+             FROM solvan_operability.tool_revisions
+            WHERE tool_key=%s AND version=%s""",
+        (original.tool_key, original.version),
+    ).fetchone()
+    assert persisted == (original.approval_ref, original.evaluation_ref, original.content_hash)
+
+
 def _guidance() -> GuidanceRevision:
     return GuidanceRevision.model_validate(
         {

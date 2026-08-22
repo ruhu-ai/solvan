@@ -170,6 +170,12 @@ Rules:
   must have succeeded on the same frozen release before a distinct human may
   approve the publication target; an opaque, caller-authored URI or a mutable
   object name is not governance evidence;
+- a later application release that does not change a Tool revision reuses the
+  existing immutable revision and its original approval/evaluation references.
+  Its new Cloud Deploy release and rollout remain separate release evidence;
+  they never rewrite the Tool revision. Reuse is allowed only when recomputing
+  the candidate with the persisted references reproduces the exact stored
+  content hash;
 - `use_cases`, `anti_use_cases`, output semantics, retrieval controls, and
   failure classes are bounded, versioned data used by validators and
   evaluations; they are never concatenated into a privileged instruction

@@ -241,11 +241,18 @@ class PostgresToolCatalogStore(
                 },
             )
             cursor.execute(
-                """SELECT content_hash FROM solvan_operability.tool_revisions
+                """SELECT content_hash, approval_ref, evaluation_ref
+                    FROM solvan_operability.tool_revisions
                     WHERE tool_key = %s AND version = %s""",
                 (revision.tool_key, revision.version),
             )
-            if cursor.fetchone() != (revision.content_hash,):
+            existing_revision = cursor.fetchone()
+            if existing_revision is None or not self._same_tool_revision_material(
+                revision,
+                content_hash=str(existing_revision[0]),
+                approval_ref=cast(str | None, existing_revision[1]),
+                evaluation_ref=cast(str | None, existing_revision[2]),
+            ):
                 raise CatalogError("a Tool revision already has different immutable material")
             for requester in revision.allowed_requester_keys:
                 cursor.execute(
@@ -254,6 +261,23 @@ class PostgresToolCatalogStore(
                        VALUES (%s,%s,%s) ON CONFLICT DO NOTHING""",
                     (revision.tool_key, revision.version, requester),
                 )
+
+    @staticmethod
+    def _same_tool_revision_material(
+        revision: ToolRevision,
+        *,
+        content_hash: str,
+        approval_ref: str | None,
+        evaluation_ref: str | None,
+    ) -> bool:
+        """Accept only an exact revision or the same material under a later release gate."""
+
+        if revision.content_hash == content_hash:
+            return True
+        persisted_governance = revision.model_copy(
+            update={"approval_ref": approval_ref, "evaluation_ref": evaluation_ref}
+        )
+        return persisted_governance.content_hash == content_hash
 
     @staticmethod
     def _supersedes_version(revision: ToolRevision) -> str | None:
