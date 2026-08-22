@@ -1,0 +1,24 @@
+tests/unit/test_platform_preflight.py
+  s_36f3e3f4652fc0::t_3695a803b38c60 4,7,26-38
+  s_36f3e3f4652fc0::t_604a1670667024 39
+src/solvan/platform/preflight.py
+  s_36f3e3f4652fc0::t_3695a803b38c60 90
+specs/07-implementation-deployment.md
+  s_36f3e3f4652fc0::t_3695a803b38c60 989-991
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "c629019eadabd3343be988539eda7c62c27d857f",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
