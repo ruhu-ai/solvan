@@ -102,6 +102,17 @@ variable "deployment_id" {
   }
 }
 
+variable "release_source_repository_uri" {
+  description = "Public judging repository used only by the approval-gated managed release-image trigger."
+  type        = string
+  default     = "https://github.com/ruhu-ai/solvan.git"
+
+  validation {
+    condition     = can(regex("^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\\.git$", var.release_source_repository_uri))
+    error_message = "release_source_repository_uri must be a canonical public GitHub HTTPS .git URI."
+  }
+}
+
 variable "images" {
   description = "Immutable, digest-pinned container images. Tags are rejected."
   type = object({

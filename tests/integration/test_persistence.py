@@ -6,6 +6,7 @@ import signal
 import subprocess
 import sys
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
@@ -4112,6 +4113,10 @@ def test_completed_investigation_deterministically_authorizes_pool_recycle() -> 
             final_incident = cursor.fetchone()
         assert final_incident == ("VERIFYING_MITIGATION", 1, True)
 
+        # The profile deliberately requires a non-zero observation window.
+        # Wait beyond that exact bound before asking the reservation query to
+        # admit verification; otherwise this test races PostgreSQL's clock.
+        time.sleep(0.01)
         with connection.transaction():
             verification_lease = workflow.acquire_lease(
                 scope=SCOPE,

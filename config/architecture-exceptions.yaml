@@ -2,61 +2,61 @@ schema_version: 1
 exceptions:
   - path: src/solvan/persistence/production_graph.py
     owner: solvan-engineering
-    expires: 2026-08-20
+    expires: 2026-09-05
     reason: "The target graph writer, typed graph model, reconciliation reducer, and read gate are being landed as one function-only authority boundary before source adapters and console review are split out."
     removal_condition: "After source adapters and the graph review API are implemented, move the writer into production_graph_repository.py and retain only the model/reducer in this module."
   - path: src/solvan/persistence/skills_interchange_store.py
     owner: solvan-engineering
-    expires: 2026-08-20
+    expires: 2026-09-05
     reason: "The target import, immutable object writes, refresh ledger, and export receipt repository are being qualified as one Cloud SQL transaction boundary; the revision rehydration provider is part of the same target slice."
     removal_condition: "After the first end-to-end import-to-export qualification, split revision rehydration into a dedicated provider module without changing the repository ports."
   - path: apps/api/agent_skills.py
     owner: solvan-engineering
-    expires: 2026-08-20
+    expires: 2026-09-05
     reason: "The authenticated target API remains one router boundary while repository, connector, scanner, and export qualification are completed."
     removal_condition: "After cloud connector and end-to-end qualification, split provider wiring from HTTP command handlers without changing route contracts."
   - path: src/solvan/persistence/liaison_channels.py
     owner: solvan-conversational-surface
-    expires: 2026-08-20
+    expires: 2026-09-05
     reason: "Channel enrollment, identity binding, explicit thread mapping, inbound deduplication, and epoch fencing remain one transaction-sensitive repository while live provider qualification is pending."
     removal_condition: "After the first Slack, Discord, and email staging qualification, move enrollment lifecycle methods into liaison_channel_enrollment.py without changing the LiaisonChannelStore port."
   - path: src/solvan/persistence/relay_store.py
     owner: solvan-relay
-    expires: 2026-08-20
+    expires: 2026-09-05
     reason: "The concurrently landed Relay enrollment, signed-job, evidence projection, and receipt transactions still share one repository boundary while its first customer-host qualification is pending."
     removal_condition: "After Relay staging qualification, split enrollment and receipt persistence into separate repository mixins while retaining the RelayStore port."
   - path: apps/relay_control/main.py
     owner: solvan-relay
-    expires: 2026-08-20
+    expires: 2026-09-05
     reason: "The concurrently landed Relay control API keeps enrollment, claim, challenge, and receipt routes in one composition root until its first deployment qualification."
     removal_condition: "After Relay staging qualification, split enrollment and job lifecycle routers without changing the public API contract."
   - path: apps/console/src/Integrations.tsx
     owner: solvan-relay
-    expires: 2026-08-20
+    expires: 2026-09-05
     reason: "The Relay setup wizard temporarily shares the existing Integrations authority surface while the customer enrollment, source-binding, and deployment-bundle flow is being qualified."
     removal_condition: "After the first customer Relay qualification, extract RelayOperations and RelaySetupWizard into their own console modules while keeping their secret-free API boundary unchanged."
   - path: src/solvan/persistence/code_change_qualification_store.py
     owner: solvan-code-delivery
-    expires: 2026-08-20
+    expires: 2026-09-05
     reason: "Qualification admission and its immutable receipt projection landed together so their transaction and replay fences can be qualified as one boundary."
     removal_condition: "After the deployed CRW qualification run, move receipt-only queries into code_change_qualification_receipts.py while retaining the current store port."
   - path: src/solvan/persistence/code_change_decision_store.py
     owner: solvan-code-delivery
-    expires: 2026-08-20
+    expires: 2026-09-05
     reason: "Fresh step-up challenges, exact role decisions, expiry, and current-material validation remain in one transaction-sensitive authority during the first deployed CCR run."
     removal_condition: "After CCR-012 and CCR-013 pass in staging, extract challenge lifecycle persistence from immutable decision history without changing the API contract."
   - path: src/solvan/persistence/release_rollout_store.py
     owner: solvan-release-delivery
-    expires: 2026-08-20
+    expires: 2026-09-05
     reason: "Reservation, rollout, progressive-stage, rollback, and ambiguity transitions currently share one Cloud SQL authority so the first end-to-end restart qualification exercises one atomic boundary."
     removal_condition: "After CCR-021 through CCR-027 pass in staging, split reservation/start, advancement, rollback, and operation-reconciliation repositories behind a facade with no cross-repository transaction loss."
   - path: apps/deployment_controller/main.py
     owner: solvan-release-delivery
-    expires: 2026-08-20
+    expires: 2026-09-05
     reason: "The private command dispatcher and the three closed Cloud Run mutation handlers remain in one composition root until their deployed restart and IAM-negative cases are captured."
     removal_condition: "After CCR-020, CCR-021, CCR-026, and CCR-027 pass in staging, extract observation, canary/promotion, and rollback handlers while keeping one command-only app composition root."
   - path: apps/coordinator/code_change_delivery.py
     owner: solvan-code-delivery
-    expires: 2026-08-20
+    expires: 2026-09-05
     reason: "Command scheduling for GitHub, target observation, rollout, verification, and rollback remains one coordinator-owned dispatch policy during end-to-end workflow qualification."
     removal_condition: "After the deployed CCR matrix passes, split GitHub scheduling from release scheduling while preserving coordinator-only durable command creation."

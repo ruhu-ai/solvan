@@ -83,6 +83,17 @@ output "release_images" {
   value       = var.images
 }
 
+output "managed_release_build" {
+  description = "Approval-gated Cloud Build trigger and dedicated build identity; not a release receipt."
+  value = {
+    trigger_id        = google_cloudbuild_trigger.release_images.trigger_id
+    trigger_name      = google_cloudbuild_trigger.release_images.name
+    repository_uri    = var.release_source_repository_uri
+    service_account   = google_service_account.workload["build"].email
+    approval_required = true
+  }
+}
+
 output "scenario_identities" {
   description = "Non-agent, mutually asymmetric fault-drill identities; null unless the isolated drill is enabled."
   value = {

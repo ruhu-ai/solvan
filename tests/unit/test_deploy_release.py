@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -20,6 +21,24 @@ from tools.deploy_release import (
 )
 
 
+def _apply_plan(tmp_path: Path) -> deploy_release.ReleasePlan:
+    return replace(
+        build_plan(
+            project_id="solvan-demo",
+            deployment_id="demo-20260822",
+            release_version="0.1.0",
+            backend_config=tmp_path / "staging.backend.hcl",
+            base_tfvars=tmp_path / "staging.tfvars",
+            work_dir=tmp_path / "release",
+            remote="origin",
+            calibration_receipt_uri=None,
+            calibration_receipt_hash=None,
+            apply=False,
+        ),
+        mutation_mode="APPLY",
+    )
+
+
 def test_release_plan_is_non_mutating_by_default(tmp_path: Path) -> None:
     plan = build_plan(
         project_id="solvan-demo",
@@ -35,7 +54,8 @@ def test_release_plan_is_non_mutating_by_default(tmp_path: Path) -> None:
     )
     assert plan.mutation_mode == "PLAN_ONLY"
     assert len(IMAGE_NAMES) == 30
-    assert "build_release_images" in plan.phases
+    assert "accept_managed_cloud_build" in plan.phases
+    assert "build_release_images" not in plan.phases
     assert plan.phases[-1] == "emit_deployed_unverified_receipt"
     generated = initial_release_variables(plan, commit="a" * 40)
     assert generated["release_commit"] == "a" * 40
@@ -43,6 +63,243 @@ def test_release_plan_is_non_mutating_by_default(tmp_path: Path) -> None:
     assert generated["scheduler_paused"] is True
     assert generated["fault_drill_enabled"] is True
     assert set(generated["images"]) == set(IMAGE_NAMES)
+
+
+def test_release_stops_at_managed_build_boundary_with_durable_checkpoints(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = _apply_plan(tmp_path)
+    commands: list[list[str]] = []
+    monkeypatch.setattr(
+        deploy_release,
+        "verify_release_source",
+        lambda **_kwargs: ("b" * 40, "https://github.com/ruhu-ai/solvan.git"),
+    )
+    monkeypatch.setattr(
+        deploy_release,
+        "_run",
+        lambda arguments, **_kwargs: commands.append(list(arguments)) or "",
+    )
+    monkeypatch.setattr(deploy_release, "_terraform", lambda *_args, **_kwargs: "")
+    monkeypatch.setattr(
+        deploy_release,
+        "describe_managed_build_trigger",
+        lambda **_kwargs: {
+            "trigger_id": "11111111-1111-1111-1111-111111111111",
+            "trigger_name": "solvan-staging-release-images",
+            "repository_uri": "https://github.com/ruhu-ai/solvan.git",
+            "service_account": (
+                "projects/solvan-demo/serviceAccounts/"
+                "solvan-build@solvan-demo.iam.gserviceaccount.com"
+            ),
+        },
+    )
+    receipt = deploy_release.apply_release(
+        plan,
+        acknowledgement="solvan-demo",
+        managed_build_id=None,
+        resume=False,
+    )
+
+    assert receipt["status"] == "AWAITING_MANAGED_BUILD"
+    assert receipt["phases_completed"] == list(plan.phases[:4])
+    assert all(arguments[1:3] != ["builds", "submit"] for arguments in commands)
+    persisted = json.loads(
+        (Path(plan.work_dir) / "deployment-receipt.json").read_text(encoding="utf-8")
+    )
+    assert persisted["receipt_sha256"].startswith("sha256:")
+    assert persisted["phases_completed"] == list(plan.phases[:4])
+
+
+def test_release_interruption_preserves_last_completed_phase(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = _apply_plan(tmp_path)
+    monkeypatch.setattr(
+        deploy_release,
+        "verify_release_source",
+        lambda **_kwargs: ("b" * 40, "https://github.com/ruhu-ai/solvan.git"),
+    )
+    monkeypatch.setattr(deploy_release, "_run", lambda *_args, **_kwargs: "")
+    monkeypatch.setattr(
+        deploy_release,
+        "_terraform",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(KeyboardInterrupt()),
+    )
+
+    with pytest.raises(KeyboardInterrupt):
+        deploy_release.apply_release(
+            plan,
+            acknowledgement="solvan-demo",
+            managed_build_id=None,
+            resume=False,
+        )
+
+    persisted = json.loads(
+        (Path(plan.work_dir) / "deployment-receipt.json").read_text(encoding="utf-8")
+    )
+    assert persisted["status"] == "INTERRUPTED"
+    assert persisted["phases_completed"] == list(plan.phases[:2])
+    assert persisted["error"] == "KeyboardInterrupt: operator interrupted release"
+
+
+def test_managed_build_resume_does_not_replay_completed_bootstrap_mutations(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = _apply_plan(tmp_path)
+    work_dir = Path(plan.work_dir)
+    receipt_path = work_dir / "deployment-receipt.json"
+    trigger = {
+        "trigger_id": "11111111-1111-1111-1111-111111111111",
+        "trigger_name": "solvan-staging-release-images",
+        "repository_uri": "https://github.com/ruhu-ai/solvan.git",
+        "service_account": (
+            "projects/solvan-demo/serviceAccounts/solvan-build@solvan-demo.iam.gserviceaccount.com"
+        ),
+    }
+    receipt = deploy_release._new_release_receipt(plan)
+    for phase in plan.phases[:4]:
+        updates = None
+        if phase == "verify_clean_published_commit":
+            updates = {
+                "release_commit": "b" * 40,
+                "remote_url": "https://github.com/ruhu-ai/solvan.git",
+            }
+        elif phase == "create_managed_cloud_build_trigger_identity_and_exact_iam":
+            updates = {"managed_build_trigger": trigger}
+        deploy_release._complete_release_phase(
+            receipt=receipt,
+            receipt_path=receipt_path,
+            phase=phase,
+            updates=updates,
+        )
+    receipt["status"] = "AWAITING_MANAGED_BUILD"
+    deploy_release._write_release_receipt(receipt_path, receipt)
+    deploy_release._atomic_json(
+        work_dir / "release.auto.tfvars.json",
+        deploy_release.initial_release_variables(plan, commit="b" * 40),
+    )
+    monkeypatch.setattr(
+        deploy_release,
+        "verify_release_source",
+        lambda **_kwargs: ("b" * 40, "https://github.com/ruhu-ai/solvan.git"),
+    )
+    monkeypatch.setattr(deploy_release, "_run", lambda *_args, **_kwargs: "")
+    monkeypatch.setattr(
+        deploy_release,
+        "_terraform",
+        lambda *_args, **_kwargs: pytest.fail("completed Terraform bootstrap replayed"),
+    )
+    monkeypatch.setattr(deploy_release, "describe_managed_build_trigger", lambda **_kwargs: trigger)
+    monkeypatch.setattr(
+        deploy_release,
+        "resolve_images",
+        lambda **_kwargs: (_ for _ in ()).throw(CommandFailure("stop after build handoff")),
+    )
+
+    with pytest.raises(CommandFailure, match="stop after build handoff"):
+        deploy_release.apply_release(
+            plan,
+            acknowledgement="solvan-demo",
+            managed_build_id="22222222-2222-2222-2222-222222222222",
+            resume=True,
+        )
+
+    persisted = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert persisted["status"] == "FAILED"
+    assert persisted["build_id"] == "22222222-2222-2222-2222-222222222222"
+    assert persisted["phases_completed"] == list(plan.phases[:5])
+
+
+def test_resume_refuses_tampered_checkpoint(tmp_path: Path) -> None:
+    plan = _apply_plan(tmp_path)
+    receipt_path = Path(plan.work_dir) / "deployment-receipt.json"
+    receipt = deploy_release._new_release_receipt(plan)
+    deploy_release._complete_release_phase(
+        receipt=receipt,
+        receipt_path=receipt_path,
+        phase=plan.phases[0],
+    )
+    receipt["status"] = "INTERRUPTED"
+    deploy_release._write_release_receipt(receipt_path, receipt)
+
+    resumed = deploy_release._resume_release_receipt(receipt_path, plan=plan)
+    assert resumed["attempts"] == 2
+    persisted = json.loads(receipt_path.read_text(encoding="utf-8"))
+    persisted["phases_completed"] = []
+    receipt_path.write_text(json.dumps(persisted), encoding="utf-8")
+    with pytest.raises(CommandFailure, match="digest"):
+        deploy_release._resume_release_receipt(receipt_path, plan=plan)
+
+
+def test_catalog_approval_resume_finishes_the_same_ordered_checkpoint(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = _apply_plan(tmp_path)
+    work_dir = Path(plan.work_dir)
+    receipt_path = work_dir / "deployment-receipt.json"
+    outputs = {"release_jobs": {"value": {"seed": None}}}
+    (work_dir / "terraform-output.json").parent.mkdir(parents=True, exist_ok=True)
+    (work_dir / "terraform-output.json").write_text(json.dumps(outputs), encoding="utf-8")
+    receipt = deploy_release._new_release_receipt(plan)
+    gate_index = plan.phases.index("request_human_catalog_publication_approval")
+    for phase in plan.phases[: gate_index + 1]:
+        updates = None
+        if phase == "verify_clean_published_commit":
+            updates = {
+                "release_commit": "b" * 40,
+                "remote_url": "https://github.com/ruhu-ai/solvan.git",
+            }
+        elif phase == "bind_runtime_resources_revisions_and_principals":
+            updates = {"terraform_output_sha256": deploy_release._canonical_sha256(outputs)}
+        elif phase == "evaluate_catalog_with_cloud_deploy":
+            updates = {
+                "catalog_delivery": {
+                    "delivery_pipeline": "solvan-demo-catalog",
+                    "release": "cat-bbbbbbbbbb-1111",
+                    "publication_rollout": (
+                        "projects/solvan-demo/locations/europe-west1/"
+                        "deliveryPipelines/solvan-demo-catalog/releases/release/"
+                        "rollouts/publication"
+                    ),
+                }
+            }
+        deploy_release._complete_release_phase(
+            receipt=receipt,
+            receipt_path=receipt_path,
+            phase=phase,
+            updates=updates,
+        )
+    receipt["status"] = "AWAITING_HUMAN_CATALOG_PUBLICATION_APPROVAL"
+    deploy_release._write_release_receipt(receipt_path, receipt)
+    monkeypatch.setattr(
+        deploy_release,
+        "verify_release_source",
+        lambda **_kwargs: ("b" * 40, "https://github.com/ruhu-ai/solvan.git"),
+    )
+    monkeypatch.setattr(deploy_release, "quiesce_schedulers", lambda **_kwargs: ())
+    monkeypatch.setattr(
+        deploy_release,
+        "_catalog_rollouts",
+        lambda **_kwargs: [
+            {
+                "name": "rollouts/publication",
+                "approvalState": "APPROVED",
+                "state": "SUCCEEDED",
+            }
+        ],
+    )
+    monkeypatch.setattr(
+        deploy_release,
+        "_run",
+        lambda *_args, **_kwargs: pytest.fail("no calibration seed is configured"),
+    )
+
+    result = deploy_release.resume_after_catalog_approval(plan, acknowledgement="solvan-demo")
+
+    assert result["status"] == "DEPLOYED_UNVERIFIED_SCHEDULERS_PAUSED"
+    assert result["phases_completed"] == list(plan.phases)
+    assert result["attempts"] == 2
 
 
 def test_every_running_tick_is_paused_before_any_image_rolls(tmp_path: Path) -> None:
@@ -208,7 +465,18 @@ def test_build_supply_chain_requires_verified_provenance_and_project_attestor(
             return json.dumps(
                 {
                     "status": "SUCCESS",
+                    "buildTriggerId": "11111111-1111-1111-1111-111111111111",
+                    "serviceAccount": (
+                        "projects/solvan-demo/serviceAccounts/"
+                        "solvan-build@solvan-demo.iam.gserviceaccount.com"
+                    ),
+                    "approval": {
+                        "state": "APPROVED",
+                        "result": {"decision": "APPROVED"},
+                    },
+                    "sourceProvenance": {"resolvedGitSource": {"revision": "b" * 40}},
                     "options": {"requestedVerifyOption": "VERIFIED"},
+                    "substitutions": {"_RELEASE_COMMIT": "b" * 40},
                     "results": {
                         "images": [
                             {
@@ -223,7 +491,14 @@ def test_build_supply_chain_requires_verified_provenance_and_project_attestor(
 
     monkeypatch.setattr(deploy_release, "_run", fake_run)
     deploy_release.verify_build_supply_chain(
-        project_id="solvan-demo", build_id="build-1", images={"api": image}
+        project_id="solvan-demo",
+        build_id="build-1",
+        expected_commit="b" * 40,
+        expected_trigger_id="11111111-1111-1111-1111-111111111111",
+        expected_service_account=(
+            "projects/solvan-demo/serviceAccounts/solvan-build@solvan-demo.iam.gserviceaccount.com"
+        ),
+        images={"api": image},
     )
     assert calls[-1][1:5] == ["container", "binauthz", "attestors", "describe"]
 
@@ -238,7 +513,60 @@ def test_build_supply_chain_refuses_unverified_build(
     )
     with pytest.raises(CommandFailure, match="verified-provenance"):
         deploy_release.verify_build_supply_chain(
-            project_id="solvan-demo", build_id="build-1", images={}
+            project_id="solvan-demo",
+            build_id="build-1",
+            expected_commit="b" * 40,
+            expected_trigger_id="11111111-1111-1111-1111-111111111111",
+            expected_service_account=(
+                "projects/solvan-demo/serviceAccounts/"
+                "solvan-build@solvan-demo.iam.gserviceaccount.com"
+            ),
+            images={},
+        )
+
+
+def test_managed_build_trigger_requires_approval_source_and_dedicated_identity(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    trigger = {
+        "id": "11111111-1111-1111-1111-111111111111",
+        "name": "solvan-staging-release-images",
+        "serviceAccount": (
+            "projects/solvan-demo/serviceAccounts/solvan-build@solvan-demo.iam.gserviceaccount.com"
+        ),
+        "approvalConfig": {"approvalRequired": True},
+        "sourceToBuild": {
+            "uri": "https://github.com/ruhu-ai/solvan.git",
+            "ref": "refs/heads/main",
+            "repoType": "GITHUB",
+        },
+        "gitFileSource": {
+            "path": "cloudbuild.yaml",
+            "uri": "https://github.com/ruhu-ai/solvan.git",
+            "revision": "refs/heads/main",
+            "repoType": "GITHUB",
+        },
+        "substitutions": {
+            "_REGION": "europe-west1",
+            "_REPOSITORY": "solvan",
+            "_RELEASE_COMMIT": "UNCONFIGURED",
+        },
+    }
+    monkeypatch.setattr(deploy_release, "_run", lambda *_args, **_kwargs: json.dumps(trigger))
+
+    result = deploy_release.describe_managed_build_trigger(
+        project_id="solvan-demo",
+        region="europe-west1",
+        expected_repository_uri="https://github.com/ruhu-ai/solvan.git",
+    )
+
+    assert result["trigger_id"] == trigger["id"]
+    trigger["approvalConfig"] = {"approvalRequired": False}
+    with pytest.raises(CommandFailure, match="trigger does not match"):
+        deploy_release.describe_managed_build_trigger(
+            project_id="solvan-demo",
+            region="europe-west1",
+            expected_repository_uri="https://github.com/ruhu-ai/solvan.git",
         )
 
 
@@ -307,6 +635,7 @@ def test_runtime_deploy_binds_workspace_agent_to_coordinator_broker(
     monkeypatch.setattr(deploy_release, "_run", fake_run)
     result = deploy_release._deploy_agents(
         plan=plan,
+        commit="b" * 40,
         outputs={
             "agent_gateway_resources": {
                 "value": {

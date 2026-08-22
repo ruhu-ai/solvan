@@ -6,6 +6,7 @@ import argparse
 import importlib
 import importlib.metadata
 import logging
+import sys
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,10 @@ EXPECTED_LINUX_WHEEL_HASH = (
 )
 FORBIDDEN_DISTRIBUTIONS = ("google-adk", "google-cloud-aiplatform")
 LOGGER = logging.getLogger(__name__)
+ROOT = Path(__file__).resolve().parents[2]
+for import_root in (ROOT, ROOT / "src"):
+    if str(import_root) not in sys.path:
+        sys.path.insert(0, str(import_root))
 
 
 def _configuration_smoke() -> None:

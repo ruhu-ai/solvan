@@ -794,6 +794,8 @@ trace ID, and timestamp.
 | unintended stage authority or ambiguous audit trail | exact stage-specific role, fresh step-up authentication, immutable principal attribution, and no inferred role overlap | `CCR-012` |
 | duplicate PR, merge, rollout, promotion, or rollback | durable prepared/issued/reconciling operation fence, provider idempotency key, lease, and reconcile-only crash recovery | `CCR-006`, `CCR-007` |
 | forged or substituted release artifact | registered builder identity/build definition, source tree, artifact subject, SBOM, provenance predicate, signer key-version verification | `CCR-008` |
+| local or replayed release build, changed trigger substitution, or wrong source commit | approval-gated managed trigger, dedicated build identity, three-way commit equality, trigger/build/approval/source-provenance revalidation, immutable build ID and digest set | `CCR-008` |
+| interrupted Agent Runtime create produces duplicate institutional agents | deployment/commit/material labels, per-agent durable checkpoint, exact remote reconciliation, refuse replacement while an interrupted create is unresolved | `PR-031`, `PR-033` |
 | forged catalog evaluation or self-approved publication | Cloud Deploy ordered evaluation/publication targets, successful evaluation rollout, target-scoped individual approver IAM, exact release/rollout UID re-read, Audit Log evidence | `PR-031`, `PR-040` |
 | producer or deployer promotes its own release | distinct verifier identity/process/artifact root, decision-bound profile, sole signed promotion receipt | `CCR-009` |
 | rollback to the wrong release or state | frozen predeploy candidate/assignment, fresh target observation, exact rollback decision and separate effect fence | `CCR-010` |

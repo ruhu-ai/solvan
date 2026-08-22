@@ -1196,8 +1196,25 @@ test("integrations expose credential posture, observed capability, and the actua
   await expect(graph.getByText("Not discovered")).toBeVisible();
   await expect(graph.getByText(/No discovery has run/)).toBeVisible();
 
-  await expect(page.getByRole("heading", { name: "0 registered" })).toBeVisible();
-  await expect(page.getByText(/No estate is connected/)).toBeVisible();
+  // The development database is intentionally persistent, so this gate must
+  // prove both valid states instead of assuming nobody has exercised estate
+  // registration in the worktree. An empty projection says so explicitly; a
+  // populated projection exposes one typed credential posture per connection.
+  const registeredHeading = page.getByRole("heading", { name: /^\d+ registered$/ });
+  await expect(registeredHeading).toBeVisible();
+  const registeredCount = Number.parseInt((await registeredHeading.textContent()) ?? "", 10);
+  expect(Number.isNaN(registeredCount)).toBe(false);
+  const connectionCards = page.locator(".connection-grid > .connection-card");
+  await expect(connectionCards).toHaveCount(registeredCount);
+  if (registeredCount === 0) {
+    await expect(page.getByText(/No estate is connected/)).toBeVisible();
+  } else {
+    for (const card of await connectionCards.all()) {
+      await expect(
+        card.getByText(/Federated · short-lived|Stored key · long-lived|No credential held/),
+      ).toHaveCount(1);
+    }
+  }
 
   // The GitHub projection is visible but cannot grant merge authority. The
   // section is named for the source rather than for release delivery, because a

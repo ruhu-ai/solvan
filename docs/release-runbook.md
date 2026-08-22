@@ -13,8 +13,9 @@ Never use the Ruhu development project.
 
 - `scripts/check` and `scripts/check-contracts` pass from the exact candidate.
 - The working tree is clean and the full SHA exists on the judging remote.
-- `gcloud`, Terraform, Docker/Cloud Build access, billing, and the approved
+- `gcloud`, Terraform, Cloud Build trigger access, billing, and the approved
   operator identities are configured for the dedicated Solvan staging project.
+  The operator does not submit a local source archive or run Docker locally.
 - The GCS backend config and reviewed base tfvars are outside Git or contain no
   secrets. Copy `infra/terraform/environments/gcp/staging.tfbackend.example`
   and `staging.tfvars.example`; do not edit generated release tfvars. The
@@ -49,10 +50,53 @@ After review, repeat with:
   --ack-dedicated-project <solvan-staging-project-id> --apply
 ```
 
-Apply writes `.solvan/releases/<deployment-id>/deployment-receipt.json`,
+This first apply provisions and validates the regional managed-build trigger,
+its dedicated identity, exact IAM, and Artifact Registry. It then stops at a
+hash-bound `AWAITING_MANAGED_BUILD` checkpoint. Run the exact command printed in
+`next_required_gate`; its shape is:
+
+```bash
+gcloud builds triggers run solvan-staging-release-images \
+  --project <solvan-staging-project-id> \
+  --region europe-west1 \
+  --sha <full-published-sha> \
+  --substitutions _RELEASE_COMMIT=<full-published-sha>
+```
+
+Approve that exact pending build in Cloud Build. Record its immutable build
+UUID, wait for `SUCCESS`, then advance the same deployment checkpoint:
+
+```bash
+scripts/deploy \
+  <the-identical-arguments-from-the-first-apply> \
+  --managed-build-id <cloud-build-uuid> \
+  --ack-dedicated-project <solvan-staging-project-id> \
+  --resume
+```
+
+Resume rejects a changed plan, source commit, trigger, build identity, approval
+decision, resolved source SHA, provenance, image set, or prior phase digest. It
+does not rebuild. It checkpoints each mutation and each accepted Agent Runtime
+resource. If an Agent Runtime create was interrupted before Google exposed its
+resource, resume refuses a replacement create until that exact labeled resource
+is visible; it never creates a duplicate merely because the client timed out.
+
+The deployment then stops again at
+`AWAITING_HUMAN_CATALOG_PUBLICATION_APPROVAL`. Approve only the exact Cloud
+Deploy publication rollout named by `next_required_gate`, then run:
+
+```bash
+scripts/deploy \
+  <the-identical-arguments-from-the-first-apply> \
+  --ack-dedicated-project <solvan-staging-project-id> \
+  --resume-after-catalog-approval
+```
+
+The final continuation revalidates the published source, scheduler pause,
+ordered rollout, Terraform output digest, and receipt digest. A successful
+result writes `.solvan/releases/<deployment-id>/deployment-receipt.json`,
 immutable image digests, Agent Runtime/IAP receipts, generated tfvars, and final
-Terraform output. A successful result remains
-`DEPLOYED_UNVERIFIED_SCHEDULERS_PAUSED`.
+Terraform output, and remains `DEPLOYED_UNVERIFIED_SCHEDULERS_PAUSED`.
 
 ## 3. Qualify the optional Antigravity provider
 

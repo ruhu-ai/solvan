@@ -25,6 +25,20 @@ resource "google_project_iam_member" "catalog_deploy_job_runner" {
   member  = google_service_account.workload["catalog_deploy"].member
 }
 
+# Build approval is deliberately distinct from trigger invocation and from the
+# build identity itself. The predefined role contains only the approval action;
+# the later deployment still rejects any build that is not source-, trigger-,
+# identity-, commit-, and provenance-bound.
+resource "google_project_iam_member" "release_build_approver" {
+  for_each = var.approver_principals
+
+  project = var.project_id
+  role    = "roles/cloudbuild.builds.approver"
+  member  = each.value
+
+  depends_on = [google_project_service.required["cloudbuild.googleapis.com"]]
+}
+
 # Cloud Run jobs.run returns a Google long-running operation and then an exact
 # execution resource. The catalog custom task waits for both before reporting
 # success to Cloud Deploy. Grant only those two read permissions instead of the

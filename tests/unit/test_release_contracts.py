@@ -260,6 +260,7 @@ def test_catalog_publication_binds_every_immutable_agent_resource() -> None:
 
 
 def test_catalog_release_uses_google_native_approval_and_supply_chain_controls() -> None:
+    managed_build = _text("infra/terraform/environments/gcp/cloud_build.tf")
     cloud_deploy = _text("infra/terraform/environments/gcp/cloud_deploy.tf")
     artifacts = _text("infra/terraform/environments/gcp/artifacts.tf")
     iam = _text("infra/terraform/environments/gcp/iam.tf")
@@ -322,8 +323,30 @@ def test_catalog_release_uses_google_native_approval_and_supply_chain_controls()
     assert "is_locked        = true" in storage
     assert '"projects/${var.project_id}/attestors/built-by-cloud-build"' in binary
     assert "requestedVerifyOption: VERIFIED" in cloud_build
+    assert 'resource "google_cloudbuild_trigger" "release_images"' in managed_build
+    assert "approval_required = true" in managed_build
+    assert 'service_account = google_service_account.workload["build"].id' in managed_build
+    assert "source_to_build {" in managed_build
+    assert "git_file_source {" in managed_build
+    assert '_RELEASE_COMMIT = "UNCONFIGURED"' in managed_build
+    assert 'role    = "roles/cloudbuild.builds.approver"' in iam
+    assert "verify-release-commit" in cloud_build
+    assert 'test "${COMMIT_SHA}" = "${_RELEASE_COMMIT}"' in cloud_build
     assert "verify_build_supply_chain(" in _text("tools/deploy_release.py")
     assert cloud_run.count("binary_authorization {") == 14
+
+
+def test_shared_python_image_installs_dependencies_before_source_and_app_selection() -> None:
+    dockerfile = _text("Dockerfile.python")
+    dependency_install = "uv sync --frozen --no-dev --no-editable --no-install-project ${UV_EXTRAS}"
+
+    assert dockerfile.index(dependency_install) < dockerfile.index("COPY src ./src")
+    assert dockerfile.index("COPY specs/artifacts ./specs/artifacts") < dockerfile.index(
+        "ARG APP_MODULE"
+    )
+    assert dockerfile.index("uv sync --frozen --no-dev --no-editable ${UV_EXTRAS}") < (
+        dockerfile.index("ARG APP_MODULE")
+    )
 
 
 def test_governed_tool_bindings_derive_only_identity_from_runtime_receipts() -> None:

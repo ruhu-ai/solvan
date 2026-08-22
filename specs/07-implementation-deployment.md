@@ -321,8 +321,13 @@ Agent callbacks enforce:
 ## 8. Runtime deployment and versioning
 
 Agents deploy from source or container through supported Agent Platform tooling.
-Names include semantic version and build identity. Because native Runtime
-revision traffic splitting is Preview and incompatible with Gateway attachment,
+Names and labels include the exact deployment ID, full release commit, agent
+manifest hash, and runtime-requirements hash. The deployer writes a self-hashed
+checkpoint after every accepted resource. On interruption, a stored resource is
+re-read and revalidated; an in-flight agent with no visible exact resource
+blocks replacement creation until reconciliation, preventing a client timeout
+from becoming a duplicate Runtime deployment. Because native Runtime revision
+traffic splitting is Preview and incompatible with Gateway attachment,
 the release uses:
 
 1. deploy new immutable agent resource;
@@ -403,6 +408,33 @@ project attestor before it applies the policy or rolls a workload. If the
 Preview attestor is absent or unavailable, the tested degradation is to stop
 before mutation; exact digest selection and provenance validation remain
 independent controls, and no permissive Binary Authorization fallback exists.
+
+Release image construction uses one regional, manually invoked Cloud Build
+trigger managed by Terraform. The trigger fetches the public judging repository,
+requires Google Cloud Build approval before execution, and uses only the
+dedicated `solvan-build` service account. Its first step requires Cloud Build's
+resolved `COMMIT_SHA`, the operator-supplied `_RELEASE_COMMIT`, and the checked
+out `HEAD` to be identical. The deployment runner has no local `builds submit`
+path: its first invocation provisions and validates the managed trigger and
+stops at `AWAITING_MANAGED_BUILD`; a later exact resume accepts one immutable
+build UUID. Before any workload rolls, deployment independently requires the
+expected trigger ID, approved decision, build service account, resolved source
+commit, verified provenance, full image coverage, and immutable digest
+resolution. A changed plan or self-hashed checkpoint refuses resume. Every
+completed release phase is persisted immediately, so a late failure never
+justifies rebuilding or replaying completed mutations. This implements the
+artifact and provenance boundary required by `CCR-008` without granting the
+builder deployment or catalog-approval authority.
+
+The shared Python image installs locked third-party dependencies before copying
+application source and selects `APP_MODULE` only after the common project layer
+is complete. Cloud Build may import one mutable `python-layer-cache:v1` image
+written by the same dedicated build identity, and publishes the current API
+image to that cache tag after a successful build. That tag is build acceleration
+only: no release variable, Terraform resource, provenance acceptance, or
+deployment receipt may select it. All deployable outputs remain tagged by the
+immutable Cloud Build UUID, resolved to digests, and covered by the accepted
+build's verified provenance.
 
 The Antigravity SDK provider is not a Runtime or Managed Agents deployment.
 Cloud Build resolves the locked Linux wheel by hash, runs import and SDK-agent

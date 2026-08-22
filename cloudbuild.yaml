@@ -1,9 +1,26 @@
 steps:
+  - id: verify-release-commit
+    name: gcr.io/cloud-builders/git
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        test -n "${COMMIT_SHA}"
+        test "${COMMIT_SHA}" = "${_RELEASE_COMMIT}"
+        test "$(git rev-parse HEAD)" = "${_RELEASE_COMMIT}"
+  - id: pull-python-layer-cache
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        docker pull "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/python-layer-cache:${_PYTHON_CACHE_TAG}" || true
   - id: build-alert-ingress
     name: gcr.io/cloud-builders/docker
     args:
       - build
       - --file=Dockerfile.python
+      - --cache-from=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/python-layer-cache:${_PYTHON_CACHE_TAG}
       - --build-arg=APP_MODULE=apps.alert_ingress.main:app
       - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/alert-ingress:${BUILD_ID}
       - .
@@ -30,6 +47,7 @@ steps:
       - --file=Dockerfile.python
       - --build-arg=APP_MODULE=apps.api.main:app
       - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/api:${BUILD_ID}
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/python-layer-cache:${_PYTHON_CACHE_TAG}
       - .
   - id: build-coordinator
     name: gcr.io/cloud-builders/docker
@@ -277,11 +295,14 @@ images:
   - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/email-liaison:${BUILD_ID}
   - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/relay-control:${BUILD_ID}
   - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/solvant-relay:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/python-layer-cache:${_PYTHON_CACHE_TAG}
 
 serviceAccount: projects/${PROJECT_ID}/serviceAccounts/solvan-build@${PROJECT_ID}.iam.gserviceaccount.com
 substitutions:
   _REGION: europe-west1
   _REPOSITORY: solvan
+  _RELEASE_COMMIT: UNCONFIGURED
+  _PYTHON_CACHE_TAG: v1
 options:
   dynamicSubstitutions: true
   logging: CLOUD_LOGGING_ONLY

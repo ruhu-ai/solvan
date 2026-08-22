@@ -13,17 +13,19 @@ from tools.deploy_agent_platform import ROOT, build_plan, deploy
 class FakeAgentEngineClient:
     def __init__(self) -> None:
         self.calls: list[dict[str, Any]] = []
+        self.resources: list[Any] = []
 
     def create(self, *, agent: Any, config: dict[str, Any]) -> Any:
         self.calls.append({"agent": agent, "config": config, "cwd": Path.cwd()})
         agent_key = str(config["labels"]["agent"])
         engine_id = agent_key.replace("-", "_")
         gateway_config = config["agent_gateway_config"]
-        return SimpleNamespace(
+        remote = SimpleNamespace(
             api_resource=SimpleNamespace(
                 name=(f"projects/solvan-demo/locations/europe-west1/reasoningEngines/{engine_id}"),
                 display_name=config["display_name"],
                 create_time=datetime(2026, 8, 8, tzinfo=UTC),
+                labels=config["labels"],
                 spec=SimpleNamespace(
                     effective_identity=(
                         "agents.global.project-123456789.system.id.goog/resources/"
@@ -48,11 +50,21 @@ class FakeAgentEngineClient:
                 ),
             )
         )
+        self.resources.append(remote)
+        return remote
+
+    def get(self, *, name: str) -> Any:
+        return next(item for item in self.resources if item.api_resource.name == name)
+
+    def list(self) -> Any:
+        return iter(self.resources)
 
 
 def test_plan_is_read_only_and_selects_only_implemented_agents() -> None:
     plan = build_plan(
         project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         staging_bucket="gs://solvan-runtime",
         release_version="0.1.0",
         egress_agent_gateway=(
@@ -84,6 +96,8 @@ def test_plan_rejects_unknown_agent() -> None:
     with pytest.raises(ValueError, match="not implemented"):
         build_plan(
             project_id="solvan-demo",
+            deployment_id="demo-20260822",
+            release_commit="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
             staging_bucket="gs://solvan-runtime",
             release_version="0.1.0",
             egress_agent_gateway=(
@@ -100,6 +114,8 @@ def test_plan_rejects_unknown_agent() -> None:
 def test_deploy_wraps_adk_agent_and_requires_attested_identity() -> None:
     plan = build_plan(
         project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         staging_bucket="gs://solvan-runtime",
         release_version="0.1.0",
         egress_agent_gateway=(
@@ -131,11 +147,133 @@ def test_deploy_wraps_adk_agent_and_requires_attested_identity() -> None:
     assert Path.cwd() == original_cwd
     assert "agent_gateway_config" in client.calls[0]["config"]
     assert client.calls[0]["agent"]._tmpl_attrs["app"].name == "solvan_incident_supervisor"
+    assert client.calls[0]["config"]["labels"]["deployment"] == "demo-20260822"
+    assert client.calls[0]["config"]["labels"]["commit"] == "b" * 40
+
+
+def test_interrupted_agent_deployment_reuses_checkpoint_and_exact_remote() -> None:
+    plan = build_plan(
+        project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="b" * 40,
+        staging_bucket="gs://solvan-runtime",
+        release_version="0.1.0",
+        egress_agent_gateway=(
+            "projects/solvan-demo/locations/europe-west1/agentGateways/solvan-staging-egress"
+        ),
+        ingress_agent_gateway=(
+            "projects/solvan-demo/locations/europe-west1/agentGateways/solvan-staging-ingress"
+        ),
+        selected_agents={"execution-agent", "incident-supervisor"},
+        apply=True,
+    )
+    client = FakeAgentEngineClient()
+    checkpoint: list[dict[str, Any]] = []
+
+    def interrupt_after_first(results: list[dict[str, Any]]) -> None:
+        checkpoint[:] = results
+        if len(results) == 1:
+            raise KeyboardInterrupt
+
+    with pytest.raises(KeyboardInterrupt):
+        deploy(
+            plan,
+            client=client,
+            evidence_broker_url=None,
+            actuator_url="https://actuator.example",
+            verifier_url=None,
+            on_result=interrupt_after_first,
+        )
+    assert len(checkpoint) == 1
+    assert len(client.calls) == 1
+
+    resumed = deploy(
+        plan,
+        client=client,
+        evidence_broker_url=None,
+        actuator_url="https://actuator.example",
+        verifier_url=None,
+        existing_results=checkpoint,
+    )
+
+    assert len(resumed) == 2
+    assert len(client.calls) == 2
+    assert resumed[0] == checkpoint[0]
+
+
+def test_agent_deployment_refuses_ambiguous_exact_remote_resources() -> None:
+    plan = build_plan(
+        project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="b" * 40,
+        staging_bucket="gs://solvan-runtime",
+        release_version="0.1.0",
+        egress_agent_gateway=(
+            "projects/solvan-demo/locations/europe-west1/agentGateways/solvan-staging-egress"
+        ),
+        ingress_agent_gateway=(
+            "projects/solvan-demo/locations/europe-west1/agentGateways/solvan-staging-ingress"
+        ),
+        selected_agents={"incident-supervisor"},
+        apply=True,
+    )
+    client = FakeAgentEngineClient()
+    first = deploy(
+        plan,
+        client=client,
+        evidence_broker_url=None,
+        actuator_url=None,
+        verifier_url=None,
+    )
+    assert len(first) == 1
+    client.resources.append(client.resources[0])
+
+    with pytest.raises(RuntimeError, match="multiple exact Runtime resources"):
+        deploy(
+            plan,
+            client=client,
+            evidence_broker_url=None,
+            actuator_url=None,
+            verifier_url=None,
+        )
+
+
+def test_resume_refuses_duplicate_create_while_interrupted_attempt_is_unresolved() -> None:
+    plan = build_plan(
+        project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="b" * 40,
+        staging_bucket="gs://solvan-runtime",
+        release_version="0.1.0",
+        egress_agent_gateway=(
+            "projects/solvan-demo/locations/europe-west1/agentGateways/solvan-staging-egress"
+        ),
+        ingress_agent_gateway=(
+            "projects/solvan-demo/locations/europe-west1/agentGateways/solvan-staging-ingress"
+        ),
+        selected_agents={"incident-supervisor"},
+        apply=True,
+    )
+    client = FakeAgentEngineClient()
+
+    with pytest.raises(RuntimeError, match="refusing a duplicate create"):
+        deploy(
+            plan,
+            client=client,
+            evidence_broker_url=None,
+            actuator_url=None,
+            verifier_url=None,
+            unresolved_agents={"incident-supervisor"},
+        )
+
+    assert client.calls == []
 
 
 def test_read_agent_requires_https_evidence_broker() -> None:
     plan = build_plan(
         project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         staging_bucket="gs://solvan-runtime",
         release_version="0.1.0",
         egress_agent_gateway=(
@@ -161,6 +299,8 @@ def test_read_agent_requires_https_evidence_broker() -> None:
 def test_read_agent_receives_fixed_identity_and_broker_configuration() -> None:
     plan = build_plan(
         project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         staging_bucket="gs://solvan-runtime",
         release_version="0.1.0",
         egress_agent_gateway=(
@@ -202,6 +342,8 @@ def test_read_agent_receives_fixed_identity_and_broker_configuration() -> None:
 def test_execution_agent_receives_only_the_actuator_endpoint() -> None:
     plan = build_plan(
         project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         staging_bucket="gs://solvan-runtime",
         release_version="0.1.0",
         egress_agent_gateway=(
@@ -233,6 +375,8 @@ def test_execution_agent_receives_only_the_actuator_endpoint() -> None:
 def test_workspace_agent_requires_and_receives_only_the_tool_broker() -> None:
     plan = build_plan(
         project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         staging_bucket="gs://solvan-runtime",
         release_version="0.1.0",
         egress_agent_gateway=(
@@ -274,6 +418,8 @@ def test_workspace_agent_requires_and_receives_only_the_tool_broker() -> None:
 def test_verification_agent_receives_only_the_verifier_endpoint() -> None:
     plan = build_plan(
         project_id="solvan-demo",
+        deployment_id="demo-20260822",
+        release_commit="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         staging_bucket="gs://solvan-runtime",
         release_version="0.1.0",
         egress_agent_gateway=(

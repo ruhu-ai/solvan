@@ -11,6 +11,7 @@ environment_id   = "env_REPLACE_WITH_ULID"
 # Generated and overwritten by scripts/deploy for the exact immutable release.
 release_commit = "UNCONFIGURED"
 deployment_id  = "UNCONFIGURED"
+release_source_repository_uri = "https://github.com/OWNER/REPOSITORY.git"
 
 images = {
   api              = "europe-west1-docker.pkg.dev/PROJECT/solvan/api@sha256:REPLACE"
