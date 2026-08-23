@@ -1853,6 +1853,17 @@ resource "google_cloud_run_v2_service" "service" {
           value = split("@", var.images.antigravity_workspace)[1]
         }
       }
+      # The provider verifies its own artifact digest at startup
+      # (apps/antigravity_workspace/main.py from_environment); only the
+      # coordinator had this value, so every provider preflight 500ed with
+      # "missing Antigravity provider settings" (staging-20260823-09).
+      dynamic "env" {
+        for_each = each.key == "antigravity" ? [1] : []
+        content {
+          name  = "SOLVAN_ANTIGRAVITY_ARTIFACT_DIGEST"
+          value = split("@", var.images.antigravity_workspace)[1]
+        }
+      }
       dynamic "env" {
         for_each = each.key == "coordinator" ? [1] : []
         content {

@@ -251,7 +251,18 @@ class GeminiMemoryBank:
     def _managed_scope(self, exact_scope: MemoryScope) -> dict[str, str]:
         if exact_scope.region != self._config.location:
             raise MemoryBankUnavailable("Memory scope is outside the regional engine")
-        return exact_scope.canonical_dict()
+        # Vertex Memory Bank rejects a scope of more than five key-value
+        # pairs (400 INVALID_ARGUMENT, observed live on staging-20260823-09),
+        # and the exact scope carries six dimensions. Classification and
+        # region are folded into one composite pair: every dimension is still
+        # present and exact-matched -- create, retrieve, and the echo
+        # validation all pass through this one encoding -- so isolation
+        # narrows to the same six-dimensional cell it always did.
+        value = exact_scope.canonical_dict()
+        classification = value.pop("classification")
+        region = value.pop("region")
+        value["governance"] = f"{classification}/{region}"
+        return value
 
     @staticmethod
     def _receipt(item: PlatformMemory, exact_scope: MemoryScope) -> MemoryBankReceipt:

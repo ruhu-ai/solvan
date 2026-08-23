@@ -347,6 +347,16 @@ def deploy(
             # receipts and enforced nowhere: the client derived its own URL
             # from the location and the receipts wrote a table lookup.
             "GOOGLE_VERTEX_BASE_URL": plan.model_endpoint,
+            # The engines egress through the Agent Gateway, which terminates
+            # TLS with a CA the platform injects into the container's system
+            # trust store -- but Python clients verify against certifi's
+            # bundled roots and fail with "self-signed certificate in
+            # certificate chain" (staging-20260823-09, after the mTLS pin
+            # moved the failure from storage.mtls to plain storage). Point
+            # every Python TLS stack at the system bundle the platform
+            # actually maintains.
+            "REQUESTS_CA_BUNDLE": "/etc/ssl/certs/ca-certificates.crt",
+            "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
             "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
             "OTEL_SEMCONV_STABILITY_OPT_IN": "gen_ai_latest_experimental",
             "ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS": "false",

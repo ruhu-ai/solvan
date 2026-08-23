@@ -437,6 +437,8 @@ def test_read_agent_receives_fixed_identity_and_broker_configuration() -> None:
         "SOLVAN_MODEL_ENDPOINT": "https://aiplatform.eu.rep.googleapis.com",
         "GOOGLE_API_USE_MTLS_ENDPOINT": "never",
         "GOOGLE_VERTEX_BASE_URL": "https://aiplatform.eu.rep.googleapis.com",
+        "REQUESTS_CA_BUNDLE": "/etc/ssl/certs/ca-certificates.crt",
+        "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
         "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
         "OTEL_SEMCONV_STABILITY_OPT_IN": "gen_ai_latest_experimental",
         "ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS": "false",

@@ -24,6 +24,15 @@ CONFIG = MemoryBankConfiguration("solvan-demo", "europe-west1", "supervisor-v1")
 RESOURCE = f"{CONFIG.engine_resource}/memories/memory-1"
 
 
+def api_scope() -> dict[str, str]:
+    """The five-pair form the platform sends: Vertex caps scope at five
+    key-value pairs, so classification and region ride one composite."""
+
+    value = EXACT_SCOPE.canonical_dict()
+    value["governance"] = f"{value.pop('classification')}/{value.pop('region')}"
+    return value
+
+
 class FakeMemoryAPI:
     def __init__(self, memories: tuple[PlatformMemory, ...] = ()) -> None:
         self.memories = memories
@@ -58,16 +67,14 @@ def test_reconcile_before_create_is_idempotent_for_exact_fact() -> None:
 
 
 def test_recall_labels_memory_untrusted_and_keeps_resource_id() -> None:
-    api = FakeMemoryAPI(
-        (PlatformMemory(RESOURCE, "Historical fact", EXACT_SCOPE.canonical_dict(), "1"),)
-    )
+    api = FakeMemoryAPI((PlatformMemory(RESOURCE, "Historical fact", api_scope(), "1"),))
     hints = GeminiMemoryBank(config=CONFIG, api=api).retrieve_exact(exact_scope=EXACT_SCOPE)
     assert hints[0].trust_label == "UNTRUSTED_HISTORICAL_CONTEXT"
     assert hints[0].memory_resource == RESOURCE
 
 
 def test_non_exact_scope_from_platform_fails_closed() -> None:
-    wrong = {**EXACT_SCOPE.canonical_dict(), "environment_id": "env_other"}
+    wrong = {**api_scope(), "environment_id": "env_other"}
     api = FakeMemoryAPI((PlatformMemory(RESOURCE, "Fact", wrong, "1"),))
     with pytest.raises(MemoryBankUnavailable, match="non-exact"):
         GeminiMemoryBank(config=CONFIG, api=api).retrieve_exact(exact_scope=EXACT_SCOPE)
@@ -77,7 +84,7 @@ def test_vertex_adapter_unwraps_current_retrieve_pager_shape() -> None:
     sdk_memory = SimpleNamespace(
         name=RESOURCE,
         fact="Verified fact",
-        scope=EXACT_SCOPE.canonical_dict(),
+        scope=api_scope(),
         update_time="2026-08-08T12:00:00Z",
     )
 
@@ -85,7 +92,7 @@ def test_vertex_adapter_unwraps_current_retrieve_pager_shape() -> None:
         def retrieve(self, **kwargs):
             assert kwargs == {
                 "name": CONFIG.engine_resource,
-                "scope": EXACT_SCOPE.canonical_dict(),
+                "scope": api_scope(),
             }
             return iter((SimpleNamespace(memory=sdk_memory),))
 
@@ -93,12 +100,12 @@ def test_vertex_adapter_unwraps_current_retrieve_pager_shape() -> None:
     api._memories = Memories()  # type: ignore[attr-defined]
     assert api.retrieve(
         name=CONFIG.engine_resource,
-        scope=EXACT_SCOPE.canonical_dict(),
+        scope=api_scope(),
     ) == (
         PlatformMemory(
             RESOURCE,
             "Verified fact",
-            EXACT_SCOPE.canonical_dict(),
+            api_scope(),
             "2026-08-08T12:00:00Z",
         ),
     )
@@ -110,7 +117,7 @@ def test_semantic_search_preserves_resource_distance_and_exact_scope() -> None:
             PlatformMemory(
                 RESOURCE,
                 "Historical fact",
-                EXACT_SCOPE.canonical_dict(),
+                api_scope(),
                 "1",
                 0.125,
             ),
@@ -134,7 +141,7 @@ def test_vertex_semantic_search_fails_whole_iteration_not_partial_results() -> N
     sdk_memory = SimpleNamespace(
         name=RESOURCE,
         fact="Verified fact",
-        scope=EXACT_SCOPE.canonical_dict(),
+        scope=api_scope(),
         update_time="2026-08-08T12:00:00Z",
     )
 
@@ -153,7 +160,7 @@ def test_vertex_semantic_search_fails_whole_iteration_not_partial_results() -> N
     with pytest.raises(MemoryBankUnavailable, match="iteration"):
         api.search(
             name=CONFIG.engine_resource,
-            scope=EXACT_SCOPE.canonical_dict(),
+            scope=api_scope(),
             query="connection exhaustion",
             top_k=5,
         )
