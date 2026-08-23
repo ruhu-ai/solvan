@@ -1,0 +1,19 @@
+tools/bootstrap_database.py
+  s_ea9b9b24df1c46::t_7f93ea98dbb13f 296-303
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "c525cda9167fe9a67b8bd5e79c0b39b5838d2330",
+  "prompts": {},
+  "sessions": {
+    "s_ea9b9b24df1c46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ed42e522-bb61-497e-9d39-2096114957f1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
