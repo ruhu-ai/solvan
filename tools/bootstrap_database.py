@@ -293,9 +293,14 @@ def grant_plan() -> tuple[WorkloadGrant, ...]:
         ),
         WorkloadGrant(
             "coordinator",
-            CORE_TABLES,
-            insert=coordinator_write,
-            update=coordinator_write,
+            # The workspace lifecycle is coordinator-only and its tables sit
+            # outside CORE_TABLES, so the coordinator had no grant on them at
+            # all: the first staging call to workspaces:rehydration-candidate
+            # failed with InsufficientPrivilege (staging-20260823-08). Every
+            # other table the workspace flow touches is already core.
+            CORE_TABLES | frozenset({"workspaces", "workspace_checkpoints"}),
+            insert=coordinator_write | frozenset({"workspaces", "workspace_checkpoints"}),
+            update=coordinator_write | frozenset({"workspaces"}),
             delete=frozenset({"scheduled_wakeups"}),
             sequence_usage=True,
         ),
