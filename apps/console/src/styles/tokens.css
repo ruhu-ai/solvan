@@ -3,35 +3,36 @@
   --gray-25: #f5f6f7;
   --gray-50: #eef0f2;
   --gray-100: #e8eaed;
-  --gray-200: #d8dce1;
+  --gray-150: #dfe0e1;
   --gray-300: #9aa1aa;
+  --gray-400: #929397;
   --gray-500: #5b616b;
   --gray-700: #363940;
   --gray-950: #17191c;
-  --blue-50: #eaf1fd;
+  --blue-50: #d3e1f7;
+  /* Pale tint. Not a status role: tools/generate_brand_assets.py draws the
+     mark's dot from this step, so it is a brand value and moves deliberately. */
   --blue-200: #c4d6f7;
+  --blue-300: #6593e3;
   --blue-600: #2563eb;
-  --blue-700: #1d4ed8;
-  --green-50: #e9f5ee;
-  --green-200: #b7dfc6;
-  --green-600: #137a4a;
-  --green-700: #0e5c38;
-  --amber-50: #fbf3e4;
-  --amber-200: #edd8ac;
-  --amber-600: #a15c00;
-  --amber-700: #7a4600;
-  --red-50: #fbeae8;
-  --red-200: #f2c4be;
+  --blue-700: #0550d1;
+  --blue-800: #043b9b;
+  --green-50: #d4e4dc;
+  --green-300: #679f83;
+  --green-600: #176d42;
+  --green-700: #115131;
+  --amber-50: #e9ded6;
+  --amber-300: #b08d6d;
+  --amber-600: #7b3f0a;
+  --amber-700: #5b2f07;
+  --red-50: #f3dbd9;
+  --red-300: #d27c76;
   --red-600: #b42318;
-  --red-700: #8a1a12;
-  --violet-50: #f1edfb;
-  --violet-200: #d8ccf3;
-  --violet-600: #6941c6;
-  --violet-700: #4f2fa3;
-  --teal-50: #e8f4f2;
-  --teal-200: #b9dfda;
-  --teal-600: #0f766e;
-  --teal-700: #0a544e;
+  --red-700: #851a12;
+  --violet-50: #e7dcef;
+  --violet-300: #aa85c6;
+  --violet-600: #6d2e9e;
+  --violet-700: #512275;
 
   --bg: var(--gray-25);
   --surface: var(--gray-0);
@@ -44,62 +45,83 @@
   --text-disabled: var(--gray-300);
   --text-on-action: var(--gray-0);
   --border: var(--gray-100);
-  --border-strong: var(--gray-200);
+  --border-strong: var(--gray-400);
   --action-primary: var(--gray-950);
   --action-primary-hover: var(--gray-700);
   --link: var(--blue-600);
   --link-hover: var(--blue-700);
   --focus-ring: var(--blue-600);
   --status-success-bg: var(--green-50);
-  --status-success-border: var(--green-200);
+  --status-success-border: var(--green-300);
   --status-success-fg: var(--green-600);
   --status-success-strong: var(--green-700);
   --status-warning-bg: var(--amber-50);
-  --status-warning-border: var(--amber-200);
+  --status-warning-border: var(--amber-300);
   --status-warning-fg: var(--amber-600);
   --status-warning-strong: var(--amber-700);
   --status-danger-bg: var(--red-50);
-  --status-danger-border: var(--red-200);
+  --status-danger-border: var(--red-300);
   --status-danger-fg: var(--red-600);
   --status-danger-strong: var(--red-700);
   --status-info-bg: var(--blue-50);
-  --status-info-border: var(--blue-200);
+  --status-info-border: var(--blue-300);
   --status-info-fg: var(--blue-700);
-  --status-info-strong: var(--blue-700);
+  --status-info-strong: var(--blue-800);
   --status-agent-bg: var(--violet-50);
-  --status-agent-border: var(--violet-200);
+  --status-agent-border: var(--violet-300);
   --status-agent-fg: var(--violet-600);
   --status-agent-strong: var(--violet-700);
-  --status-neutral-bg: var(--gray-50);
-  --status-neutral-border: var(--gray-200);
+  --status-neutral-bg: var(--gray-150);
+  --status-neutral-border: var(--gray-400);
   --status-neutral-fg: var(--gray-700);
   --status-neutral-strong: var(--gray-950);
-  --provenance-bg: var(--teal-50);
-  --provenance-border: var(--teal-200);
-  --provenance-fg: var(--teal-600);
-  --provenance-strong: var(--teal-700);
-  --chart-1: var(--blue-600);
+  /* Provenance is no longer a hue. Teal sat ΔE 6.0 from success in light and
+     6.2 in dark — a collision that survived the theme fork — and section 3.5
+     requires precisely that an evidence chip never read as a verification
+     verdict. Seven hued classes was also one past the point where adjacent
+     classes blur. A source chip is now marked by its form, not its colour. */
+  --provenance-bg: var(--gray-150);
+  --provenance-border: var(--gray-400);
+  --provenance-fg: var(--gray-700);
+  --provenance-strong: var(--gray-950);
+  --chart-1: var(--gray-950);
   --chart-marker: var(--gray-500);
   --chart-threshold: var(--red-600);
-  --chart-window: var(--amber-200);
+  --chart-window: var(--amber-50);
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
-  /* The type scale, as complete `font` shorthands because that is how the
-     stylesheets consume it. Sixty-eight declarations across three files read
-     these and none of them was defined, so every one was an invalid
-     declaration the browser dropped and the element silently inherited
-     whatever its parent had. The sizes are the ones the console already sets
-     by hand where it does not use a token, so defining them restores the
-     intended hierarchy rather than introducing a new one. */
-  --type-h2: 600 20px/28px var(--font-sans);
-  --type-h3: 600 16px/22px var(--font-sans);
-  --type-body: 400 14px/20px var(--font-sans);
+  /* The type scale of specification 10 section 4.2, as complete `font`
+     shorthands because that is how the stylesheets consume it. Each step is a
+     triplet — size / line / weight — and a component takes all three: a
+     heading at body line-height breaks vertical rhythm as surely as a wrong
+     size. Six steps were missing entirely, which is why a hundred and
+     forty-nine sizes were set by hand at the call site, and `--type-h2` and
+     `--type-h3` disagreed with both the specification and this stylesheet's
+     own base element rules, so an `h2` was 16px everywhere except the two
+     places that used the token and got 20px. */
+  --type-h1: 650 22px/30px var(--font-sans);
+  --type-title: 650 18px/26px var(--font-sans);
+  --type-h2: 600 16px/24px var(--font-sans);
+  --type-h3: 600 14px/20px var(--font-sans);
+  --type-body: 400 14px/21px var(--font-sans);
   --type-body-sm: 400 13px/19px var(--font-sans);
-  --type-small: 500 12px/16px var(--font-sans);
-  --type-micro: 650 11px/16px var(--font-sans);
-  --type-mono: 400 12px/18px var(--font-mono);
+  --type-button: 500 13px/19px var(--font-sans);
+  --type-small: 400 12px/17px var(--font-sans);
+  --type-micro: 500 11px/15px var(--font-sans);
+  --type-eyebrow: 650 11px/16px var(--font-sans);
+  --type-mono: 400 13px/19px var(--font-mono);
+  /* Metadata set in mono — freshness stamps, digests in a matrix cell, diff
+     bodies. Without a small step these sites paired `font-family: mono` with a
+     hand-set size, and a `font:` shorthand after a `font-family` silently
+     resets the family back to sans. */
+  --type-mono-sm: 400 12px/18px var(--font-mono);
+  --type-metric: 650 26px/32px var(--font-sans);
+  --type-metric-sm: 650 18px/24px var(--font-sans);
+  /* Uppercase marks a signpost, never content, and it always carries this
+     tracking; leaving it to the call site is how it drifted to four values. */
+  --tracking-eyebrow: 0.06em;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -108,12 +130,26 @@
   --space-6: 24px;
   --space-8: 32px;
   --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-xs: 4px;
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+  --icon-size: 16px;
+  --icon-size-sm: 13px;
   /* Cool near-black, matching the ground. A warm-tinted shadow over a cool
      surface reads as dirt rather than depth. */
   --shadow-overlay: 0 18px 48px rgb(9 11 14 / 18%);
+  /* The rest of the elevation ladder. Four raised surfaces were each carrying
+     their own literal, and one of them was slate-tinted rather than cool, so
+     the console had four unrelated shadows and one wrong-temperature one. */
+  --shadow-raised: 0 1px 2px rgb(9 11 14 / 10%);
+  --shadow-menu: 0 8px 24px rgb(9 11 14 / 16%);
+  --shadow-drawer: -18px 0 40px rgb(9 11 14 / 12%);
+  /* One scrim. There were four: 32%, 42%, 55% and a slate 58%. */
+  --scrim: rgb(9 11 14 / 55%);
   --sidebar-width: 240px;
   --rail-width: 310px;
 }
@@ -123,34 +159,40 @@
     --gray-25: #0b0c0e;
     --gray-50: #101114;
     --gray-100: #262930;
-    --gray-200: #363a42;
+    --gray-150: #2d3034;
     --gray-300: #5e646c;
+    --gray-400: #63666a;
     --gray-500: #9aa1ab;
     --gray-700: #c4c8ce;
     --gray-950: #e6e8eb;
-    --blue-50: #19243a;
+    --blue-50: #26303d;
     --blue-200: #2d4670;
+    --blue-300: #496888;
     --blue-600: #7aa5f5;
-    --blue-700: #9bbaf4;
-    --green-50: #142a20;
-    --green-200: #28583f;
+    --blue-700: #7bb8f4;
+    --blue-800: #9dcaf7;
+    --green-50: #1f332e;
+    --green-300: #337156;
     --green-600: #4cc38a;
-    --green-700: #82d9ad;
-    --amber-50: #302414;
-    --amber-200: #654a1d;
+    --green-700: #7bd3a8;
+    --amber-50: #352f22;
+    --amber-300: #7e612f;
     --amber-600: #dfa640;
-    --amber-700: #efc06a;
-    --red-50: #321b18;
-    --red-200: #67342f;
-    --red-600: #e5695c;
-    --red-700: #f0998f;
-    --violet-50: #261d37;
-    --violet-200: #4d3b70;
-    --violet-600: #a78be8;
-    --violet-700: #c4b0f1;
-    --teal-50: #142a27;
-    --teal-200: #285953;
-    --teal-600: #4fbdb0;
-    --teal-700: #80d3c9;
+    --amber-700: #e7bd72;
+    --red-50: #42282a;
+    --red-300: #a24b46;
+    --red-600: #f7695f;
+    --red-700: #f99089;
+    --violet-50: #362a45;
+    --violet-300: #7e52a3;
+    --violet-600: #c077f8;
+    --violet-700: #d09afa;
   --text-on-action: var(--gray-25);
+  /* Dark elevation is carried by lightness, but overlays still need a shadow
+     to separate from the ground; the light values are invisible over #0B0C0E. */
+  --shadow-overlay: 0 18px 48px rgb(0 0 0 / 55%);
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-menu: 0 8px 24px rgb(0 0 0 / 46%);
+  --shadow-drawer: -18px 0 40px rgb(0 0 0 / 52%);
+  --scrim: rgb(3 4 6 / 68%);
 }

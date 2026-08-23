@@ -1,6 +1,6 @@
 # Solvan design system
 
-Status: required approval-path subset; remaining system is target
+Status: required; token, contrast, type-scale and palette-separation checks are enforced by `tools/check_design_system.py` in `scripts/check`
 Related: [UI/UX](06-ui-ux.md)
 
 Research provenance: token architecture and enforcement adapted from the
@@ -48,8 +48,12 @@ Primitives keep their **scale position** across themes: `--gray-0` is always
 theme; the semantic layer does not — a new theme forks ~30 primitives, not
 ~80 semantic tokens.
 
-Components use semantic tokens only. The approval-path token/contrast check is
-required; repository-wide raw hex/rgb rejection is a target after MSR.
+Components use semantic tokens only. `tools/check_design_system.py` enforces
+all of it in `scripts/check`: every `var()` resolves, colour literals appear
+only in `tokens.css`, sizes and weights come from the scale, the semantic
+contrast pairs hold in both themes, and the status hues stay separable. The
+check exists because prose did not prevent six undefined tokens, eighteen raw
+literals and a hundred and forty-nine hand-set sizes from accumulating.
 
 Anti-patterns:
 
@@ -95,18 +99,21 @@ inherited rather than chosen.
 | `--gray-25` | `#F5F6F7` | canvas |
 | `--gray-50` | `#EEF0F2` | sunk/muted surface, mono chips |
 | `--gray-100` | `#E8EAED` | default border |
-| `--gray-200` | `#D8DCE1` | strong border |
+| `--gray-150` | `#DFE0E1` | neutral status tint |
 | `--gray-300` | `#9AA1AA` | disabled text/icon |
+| `--gray-400` | `#929397` | strong border, control edge |
 | `--gray-500` | `#5B616B` | muted text |
 | `--gray-700` | `#363940` | secondary text |
 | `--gray-950` | `#17191C` | primary ink, primary action fill |
-| `--blue-600` | `#2563EB` | link, focus ring, info |
-| `--blue-700` | `#1D4ED8` | link hover, info text on tint |
-| `--green-600` | `#137A4A` | verified/safe success |
-| `--amber-600` | `#A15C00` | warning, approval wait |
+| `--blue-200` | `#C4D6F7` | brand mark dot — not a status role |
+| `--blue-300` | `#6593E3` | info border |
+| `--blue-600` | `#2563EB` | link, focus ring |
+| `--blue-700` | `#0550D1` | info text on tint |
+| `--blue-800` | `#043B9B` | info `strong` |
+| `--green-600` | `#176D42` | verified/safe success |
+| `--amber-600` | `#7B3F0A` | warning, approval wait |
 | `--red-600` | `#B42318` | critical, denied, failed |
-| `--violet-600` | `#6941C6` | agent/runtime activity |
-| `--teal-600` | `#0F766E` | evidence provenance |
+| `--violet-600` | `#6D2E9E` | agent/runtime activity |
 
 ### 3.2 Dark primitives
 
@@ -141,17 +148,18 @@ than to the ground.
 | `--gray-25` | `#0B0C0E` (canvas) |
 | `--gray-50` | `#101114` |
 | `--gray-100` | `#262930` |
-| `--gray-200` | `#363A42` |
+| `--gray-150` | `#2D3034` |
+| `--gray-200` | `#63666A` |
 | `--gray-300` | `#5E646C` |
 | `--gray-500` | `#9AA1AB` |
 | `--gray-700` | `#C4C8CE` |
 | `--gray-950` | `#E6E8EB` |
 | `--blue-600` | `#7AA5F5` |
+| `--blue-700` | `#7BB8F4` |
 | `--green-600` | `#4CC38A` |
 | `--amber-600` | `#DFA640` |
-| `--red-600` | `#E5695C` |
-| `--violet-600` | `#A78BE8` |
-| `--teal-600` | `#4FBDB0` |
+| `--red-600` | `#F7695F` |
+| `--violet-600` | `#C077F8` |
 
 ### 3.3 Semantic roles
 
@@ -194,21 +202,69 @@ dark mode.
 Pick a status, take its four tokens — `bg`, `border`, `fg`, `strong` — no
 exceptions. A pill needing a fifth variation is a different status.
 
-Light-theme tuples:
+Light-theme tuples. Every tuple is derived, not chosen: the tint is the
+foreground blended toward the surface until it clears **1.32:1** against the
+card, the border until it clears **3.05:1**, and the `strong` step is the
+foreground a quarter of the way to ink. The previous tints sat at 1.09–1.16
+against the card, which meant a pill was identified almost entirely by its
+text colour and flattened first under video compression.
 
 | Status | bg | border | fg | strong |
 |---|---|---|---|---|
-| success | `#E9F5EE` | `#B7DFC6` | `#137A4A` | `#0E5C38` |
-| warning | `#FBF3E4` | `#EDD8AC` | `#A15C00` | `#7A4600` |
-| danger | `#FBEAE8` | `#F2C4BE` | `#B42318` | `#8A1A12` |
-| info | `#EAF1FD` | `#C4D6F7` | `#1D4ED8` | `#1E40AF` |
-| agent | `#F1EDFB` | `#D8CCF3` | `#6941C6` | `#4F2FA3` |
-| neutral | `#F4F3F0` | `#D6D3CC` | `#57534A` | `#2E2B26` |
-| provenance | `#E8F4F2` | `#B9DFDA` | `#0F766E` | `#0A544E` |
+| success | `#D4E4DC` | `#679F83` | `#176D42` | `#115131` |
+| warning | `#E9DED6` | `#B08D6D` | `#7B3F0A` | `#5B2F07` |
+| danger | `#F3DBD9` | `#D27C76` | `#B42318` | `#851A12` |
+| info | `#D3E1F7` | `#6593E3` | `#0550D1` | `#043B9B` |
+| agent | `#E7DCEF` | `#AA85C6` | `#6D2E9E` | `#512275` |
+| neutral | `#DFE0E1` | `#929397` | `#363940` | `#17191C` |
+| provenance | `#DFE0E1` | `#929397` | `#363940` | `#17191C` |
 
-Dark-theme tuples are defined in `tokens.css` at the same positions
-(deep-tone bg, one-step-lighter border, light fg/strong) and pass the same
-contrast suite.
+Dark-theme tuples are defined in `tokens.css` at the same positions and are
+derived the same way against the `#17191D` raised surface.
+
+**The border position is `-300`, not `-200`.** A status border must clear
+3.05:1 against the card; a `-200` tint must not, and the two were the same
+token. Raising the border therefore darkened the brand mark's dot, which
+`tools/generate_brand_assets.py` draws from `--blue-200`. They are now separate
+positions, and `--blue-200` exists solely for the brand.
+
+`--border-strong` resolves to `--gray-400` at 3.07:1. It was `#D8DCE1` at
+1.38:1, and it is the only boundary identifying `.secondary-button` and
+`.icon-button`, whose fill equals the card — a non-text contrast failure on
+real controls, not a stylistic preference.
+
+### 3.6 Hue separation is checked, not judged
+
+`tools/check_design_system.py` holds every pair of status foregrounds to an
+OKLab ΔE floor — 15 under normal vision, 6 under simulated protanopia and
+deuteranopia (Machado-Oliveira-Fernandes 2009, severity 1.0) — in both themes,
+and requires each hue to clear an OKLCH chroma of 0.10 so it does not read
+grey. The check runs in `scripts/check`.
+
+Two pairs are permanently exempt, and the reasoning is recorded so it is not
+relitigated:
+
+- **danger against warning**, and **danger against success**. Both were
+  searched exhaustively. No amber exists that clears ΔE 15 from this red while
+  its foreground still clears 4.5:1 on a tint dark enough to separate from the
+  card — a legible amber at that depth is a brown, and a dark brown sits beside
+  a dark red in OKLab. The search is infeasible at every tint separation from
+  1.10 to 1.32. Under deuteranopia red and green converge by construction; the
+  only palettes that satisfy the floor turn success cyan and danger orange,
+  which reads as a warning.
+
+The exemption is admissible **only because colour is never the whole signal**:
+every status renders through `StatusBadge`, which pairs the tuple with a glyph
+and a written label. If a status is ever rendered as colour alone, the
+exemption stops being valid and the floor applies.
+
+**Provenance is no longer a hue.** Teal sat ΔE 6.0 from success in light and
+6.2 in dark — a collision that survived the theme fork, against the rule below
+that an evidence chip must never read as a verification verdict. Seven hued
+classes was also one past the point where adjacent classes blur. A source chip
+now takes the neutral tuple and is marked by **form**: square corners and a
+3px leading rule, against the status pill. Shape survives both themes, video
+compression, and every colour vision deficiency.
 
 Assignments that must not drift:
 
@@ -232,7 +288,7 @@ Assignments that must not drift:
   that a transition is in progress.
 - **`--provenance-*` is deliberately not `--status-success-*`:** an evidence
   chip citing a verified-fresh source must not read as an approval or a
-  verification verdict.
+  verification verdict. This is now carried by form rather than hue — see 3.6.
 
 ## 4. Typography
 
@@ -250,8 +306,11 @@ remote origins, and at these sizes a bundled face is indistinguishable from
 the system stack on the demo recording. Bundling Inter later is a P3
 enhancement gated on license inclusion; it must not change any token value.
 
-Numerals in metrics, tables, and timelines use
-`font-variant-numeric: tabular-nums`.
+Numerals use `font-variant-numeric: tabular-nums` **in columns that must
+align vertically** — table rows, axis ticks, timeline stamps. A large
+standalone figure does not: tabular gives every digit the width of a `0`, so a
+value like `121` reads loose at metric size. Stat-tile and hero figures take
+the font's proportional figures.
 
 ### 4.2 Scale — triplet steps
 
@@ -274,6 +333,7 @@ except a glance metric.
 | `--type-micro` | 11/15 | 500 | timestamps, counts, axis labels |
 | `--type-eyebrow` | 11/16 | 650 | uppercase labels, +0.06em tracking |
 | `--type-mono` | 13/19 | 400 | IDs, digests, versions, resources |
+| `--type-mono-sm` | 12/18 | 400 | mono metadata: freshness, matrix cells, diff bodies |
 | `--type-metric` | 26/32 | 650 | overview glance figures, tabular |
 | `--type-metric-sm` | 18/24 | 650 | in-card figures, tabular |
 
@@ -312,7 +372,17 @@ Status icon vocabulary (paired with color, never replacing text):
 - verified: check-circle;
 - blocked/denied: shield-x;
 - inconclusive: circle-help;
-- terminal states: square variant — a distinct shape from in-flight circles.
+- terminal states: square variant — a distinct shape from in-flight circles
+  (`SquareCheck` / `SquareX`, both present in the bundled set).
+
+Lucide is the set. It was re-evaluated against Phosphor and kept: the bundled
+package carries 2,022 icons to Phosphor's 1,248 and covers this vocabulary
+whole, the console has standardised on `strokeWidth={1.75}` across every call
+site where Phosphor bakes stroke into a weight axis, and no finding in the
+design audit traced to the icon set. Phosphor's weight axis would be the
+reason to switch, and only if state is ever encoded by weight systematically;
+the backup channel for the exempt CVD pairs in 3.6 is texture, not icon
+weight.
 
 ## 6. Inline semantic chips
 
@@ -365,8 +435,41 @@ carries its `SourceChip`s and a trace link.
 
 ## 8. Charts
 
+**Status: specified, not implemented.** `--chart-1`, `--chart-marker`,
+`--chart-threshold` and `--chart-window` are defined and unreferenced.
+
+The blocker is not the drawing, and it is not that numbers are absent.
+Verification observations are persisted as `signal_results_json`
+(`specs/artifacts/schema.sql`) and already reach the console:
+`apps/api/incident_projection.py` reads them and projects an `intervals` list.
+The blocker is the **shape**. `CloudMonitoringReader.observe()` returns a
+`MetricObservation` — one scalar for the whole window — because that is what
+verification needs to ask of a signal: did it clear its comparator over the
+window. The verifier records one such value per `signal_key` at window end.
+Nothing anywhere holds a time-ordered sequence of points, so an annotated
+timeseries has no x-axis to draw against. The projection then stringifies
+`value` and drops `observed_at`, which would have to change too.
+
+Four things are therefore open, in order: a series-returning read alongside the
+aggregating one; a contract in specification 4 for where the points live and
+who may read them; a projection that passes numbers and timestamps through
+reader-filtered rather than pre-formatted; then the component. Building the
+component first would mean rendering points the console had invented, which
+section 6 of specification 6 prohibits outright.
+
+The **table** half of the requirement below — every chart has an equivalent
+table and a one-sentence summary — is already reachable from the existing
+`intervals` projection, and does not wait on any of this.
+
+`--chart-1` resolves to ink, not blue. A series must not wear a status colour,
+and blue was already carrying link, focus ring and the info status.
+
 Deterministic inline SVG with semantic labels. No chart runtime, no canvas,
-no network.
+no network. The hover layer ships with the chart, not after it: a crosshair
+snapping to the nearest x, one readout listing every series, the same detail on
+keyboard focus as on pointer hover, and hit targets larger than the painted
+mark. Series and category names arrive from connector responses and are
+untrusted, so they are inserted as text nodes and never as markup.
 
 - **Annotated timeseries** is the primary form: series in `--chart-1`; event
   markers (`deploy`, `action executed`, `verification start`) as labeled
@@ -389,9 +492,13 @@ Base unit: 4 px. Scale `1, 2, 3, 4, 5, 6, 8, 10, 12, 16` maps to 4–64 px.
 
 - card padding: 16–20 px;
 - page gutters: 24 px desktop, 16 px narrow;
-- radius: `--radius-xs` 4 (chips), `--radius-sm` 6 (controls),
+- radius: `--radius-xs` 4 (chips, source tags), `--radius-sm` 6 (controls),
   `--radius-md` 8 (cards), `--radius-lg` 12 (dialogs/drawers),
-  `--radius-pill` 999;
+  `--radius-pill` 999 (status badges);
+- elevation tokens: `--shadow-raised` (active tab/segment),
+  `--shadow-menu` (popover, floating pill), `--shadow-drawer` (side drawer),
+  `--shadow-overlay` (dialog); one `--scrim` for every backdrop. Dark forks all
+  five, because the light values are invisible over `#0B0C0E`;
 - shadows are subtle and reserved for overlays/raised drawers
   (`--shadow-overlay`); borders define ordinary hierarchy.
 

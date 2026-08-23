@@ -7,6 +7,9 @@ import {
   CircleDot,
   Info,
   ShieldX,
+  Square,
+  SquareCheck,
+  SquareX,
   TriangleAlert,
 } from "lucide-react";
 import type { PlatformEvidence, PlatformHealth, StatusTone } from "./types";
@@ -35,12 +38,37 @@ export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?:
   return <header className="page-header"><div>{eyebrow && <p className="eyebrow">{eyebrow}</p>}<h1>{title}</h1><p>{description}</p></div>{actions && <div className="page-actions">{actions}</div>}</header>;
 }
 
-export function StatusBadge({ label, tone = "neutral", machine }: { label: string; tone?: StatusTone; machine?: string }): React.JSX.Element {
-  return <span className={`status-badge status-${tone}`} title={machine ?? label}><span aria-hidden="true">{statusIcon(tone)}</span>{label}</span>;
+/** A status badge. The tone is never the whole signal: the glyph and the label
+ *  carry the meaning too, which is what makes the two exempt colour-vision
+ *  pairs in specification 10 section 3.6 admissible. Do not render a status as
+ *  colour alone.
+ *
+ *  `terminal` selects the square glyph specification 10 section 5 reserves for
+ *  states that have stopped moving, so a settled state is a different SHAPE
+ *  from one still in flight rather than only a different word.
+ *
+ *  `machine` stays on `title`. Exposing it as visually-hidden text instead
+ *  would reach keyboard and touch users, but it also joins the badge's text
+ *  content, and the critical path asserts both `getByTitle` and an exact
+ *  `getByText` against these badges. Widening the affordance is a change to a
+ *  tested contract and to specification 6, not a detail to alter in passing.
+ */
+export function StatusBadge({ label, tone = "neutral", machine, terminal = false }: { label: string; tone?: StatusTone; machine?: string; terminal?: boolean }): React.JSX.Element {
+  return (
+    <span className={`status-badge status-${tone}`} title={machine ?? label}>
+      <span aria-hidden="true">{statusIcon(tone, terminal)}</span>
+      {label}
+    </span>
+  );
 }
 
-export function statusIcon(tone: StatusTone): React.JSX.Element {
+export function statusIcon(tone: StatusTone, terminal = false): React.JSX.Element {
   const common = { size: 13, strokeWidth: 1.75, "aria-hidden": true } as const;
+  if (terminal) {
+    if (tone === "success") return <SquareCheck {...common} />;
+    if (tone === "danger") return <SquareX {...common} />;
+    return <Square {...common} />;
+  }
   if (tone === "success") return <CircleCheck {...common} />;
   if (tone === "danger") return <ShieldX {...common} />;
   if (tone === "warning") return <TriangleAlert {...common} />;

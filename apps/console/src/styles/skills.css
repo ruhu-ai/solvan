@@ -1,0 +1,89 @@
+/* The Agent Skills catalogue, detail page and content viewer.
+   Split out of app.css: it is a self-contained surface, it was the largest
+   single block in that file, and it was where the design system had drifted
+   furthest — three of the console's `font-weight: 550` declarations, both
+   off-scale 12.5px sizes and four of the six undefined tokens lived here. */
+
+.skills-catalog-shell { display: grid; gap: 16px; }
+.skills-catalog-heading { align-items: flex-start; }
+.skills-catalog-heading h2 { margin-bottom: 4px; }
+.skills-catalog-heading p { margin: 0; max-width: 64ch; }
+.skills-catalog-heading .button { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.skills-catalog-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; padding-top: 4px; border-top: 1px solid var(--border); }
+.skills-catalog-toolbar label { display: grid; }
+.skills-catalog-toolbar select, .skills-search input { min-height: 38px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); font: inherit; }
+.skills-catalog-toolbar select { padding: 0 30px 0 10px; }
+.skills-search { position: relative; min-width: min(390px, 100%); flex: 1 1 260px; }
+.skills-search svg { position: absolute; top: 10px; left: 11px; color: var(--text-muted); }
+.skills-search input { width: 100%; padding: 0 12px 0 36px; }
+.skills-view-toggle { display: inline-flex; margin-left: auto; padding: 3px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface-muted); }
+.skills-view-toggle button { display: grid; width: 32px; height: 30px; place-items: center; border: 0; border-radius: var(--radius-xs); background: transparent; color: var(--text-secondary); cursor: pointer; }
+.skills-view-toggle button:hover, .skills-view-toggle button.active { background: var(--surface); color: var(--text-primary); box-shadow: var(--shadow-raised); }
+.skills-result-count { margin: 0; color: var(--text-muted); font: var(--type-small); }
+.skills-catalog-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.skills-group { display: grid; gap: 10px; }
+.skills-group + .skills-group { margin-top: 6px; }
+.skills-group-title { margin: 6px 2px 0; color: var(--text-muted); font: var(--type-small); font-weight: 650; letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; }
+.skills-attention-filter { display: inline-flex; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-md); }
+.skills-attention-filter button { padding: 7px 12px; border: 0; background: transparent; color: var(--text-secondary); font: var(--type-small); font-weight: 600; cursor: pointer; }
+.skills-attention-filter button + button { border-left: 1px solid var(--border); }
+.skills-attention-filter button.active { background: var(--surface-sunk); color: var(--text-primary); }
+.skill-detail-page { padding: 18px 22px; }
+.skill-detail-back { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px; padding: 6px 10px 6px 6px; border: 0; border-radius: var(--radius-md); background: transparent; color: var(--text-secondary); font: var(--type-button); font-weight: 600; cursor: pointer; }
+.skill-detail-back:hover { background: var(--surface-sunk); color: var(--text-primary); }
+.skill-content-viewer { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.skill-content-files { display: flex; flex-direction: column; gap: 4px; }
+.skill-content-files button { display: flex; align-items: center; gap: 7px; padding: 8px 10px; border: 1px solid transparent; border-radius: var(--radius-md); background: transparent; color: var(--text-secondary); font: var(--type-small); font-weight: 600; text-align: left; cursor: pointer; }
+.skill-content-files button.active { border-color: var(--border); background: var(--surface, transparent); color: var(--text-primary); font-weight: 600; }
+.skill-content-pane { position: relative; min-width: 0; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; }
+.skill-content-toolbar { position: absolute; top: 10px; right: 10px; display: inline-flex; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.skill-content-toolbar button { display: inline-flex; padding: 6px 9px; border: 0; background: transparent; color: var(--text-secondary); cursor: pointer; }
+.skill-content-toolbar button + button { border-left: 1px solid var(--border); }
+.skill-content-toolbar button.active { color: var(--text-primary); background: var(--surface-sunk); }
+.skill-content-toolbar button:disabled { opacity: 0.4; cursor: default; }
+.skill-content-rendered { max-height: 420px; overflow-y: auto; padding-right: 40px; font: var(--type-body-sm); }
+.skill-content-rendered h4 { margin: 14px 0 6px; font: var(--type-body-sm); font-weight: 600; }
+.skill-content-rendered h5 { margin: 12px 0 4px; font: var(--type-small); font-weight: 600; }
+.skill-content-rendered p { margin: 6px 0; color: var(--text-secondary); }
+.skill-content-rendered ul, .skill-content-rendered ol { margin: 6px 0; padding-left: 20px; color: var(--text-secondary); }
+.skill-content-rendered code { padding: 1px 4px; border-radius: var(--radius-xs); background: var(--surface-sunk); font: var(--type-small); }
+.skill-content-source { max-height: 420px; margin: 0; overflow: auto; padding-right: 40px; counter-reset: skill-line; font: var(--type-small); white-space: pre-wrap; word-break: break-word; }
+.skill-source-line { display: block; }
+.skill-source-line::before { display: inline-block; width: 2.4em; margin-right: 12px; color: var(--text-muted); counter-increment: skill-line; content: counter(skill-line); text-align: right; user-select: none; }
+@media (max-width: 900px) { .skill-content-viewer { grid-template-columns: 1fr; } .skill-content-files { flex-direction: row; flex-wrap: wrap; } }
+/* The explicit track is required: a <button> grid container sizes an implicit
+   `auto` track to max-content, so the long source ref overflowed the card. */
+.skill-card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; padding: 16px; border: 1px solid var(--border); text-align: left; cursor: pointer; transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease; }
+.skill-card:hover, .skill-card:focus-visible, .skill-card.selected { border-color: var(--border-strong); transform: translateY(-1px); }
+.skill-card-heading { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: start; min-height: 48px; }
+.skill-source-icon { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-muted); color: var(--text-secondary); }
+.skill-card-heading h3 { margin: 3px 0 0; color: var(--text-primary); font: var(--type-body); font-weight: 600; }
+.skill-card-heading .eyebrow { margin: 0; overflow: hidden; color: var(--text-muted); text-overflow: ellipsis; white-space: nowrap; }
+.skill-card-description { display: -webkit-box; min-height: 38px; margin: 0; overflow: hidden; color: var(--text-secondary); font: var(--type-small); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.skill-card-source, .skill-card-meta { display: flex; justify-content: space-between; gap: 10px; padding-top: 10px; border-top: 1px solid var(--border); font: var(--type-small); font-weight: 600; }
+.skill-card-source span, .skill-card-meta span { color: var(--text-muted); }
+.skill-card-source strong, .skill-card-meta strong { max-width: 68%; overflow: hidden; color: var(--text-primary); font-weight: 600; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+.skill-card-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--text-secondary); font: var(--type-small); font-weight: 650; }
+.skill-card-footer .skill-open { margin-left: auto; color: var(--link); font-weight: 650; }
+.skills-catalog-list { grid-template-columns: 1fr; }
+.skills-catalog-list .skill-card { grid-template-columns: minmax(210px, 1.4fr) minmax(220px, 1fr) minmax(180px, .8fr); align-items: center; gap: 18px; }
+.skills-catalog-list .skill-card-description { min-height: 0; }
+.skills-catalog-list .skill-card-source, .skills-catalog-list .skill-card-meta { padding-top: 0; border-top: 0; }
+.skills-empty-state { display: grid; place-items: center; gap: 7px; padding: 42px 20px; color: var(--text-secondary); text-align: center; }
+.skills-empty-state strong { color: var(--text-primary); }
+.skill-detail { display: grid; gap: 16px; }
+.skill-detail .section-heading { align-items: flex-start; }
+.skill-detail .section-heading p { margin: 4px 0 0; }
+.skill-detail-status { display: flex; flex-wrap: wrap; gap: 8px; }
+.skill-detail-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 0; padding-top: 14px; border-top: 1px solid var(--border); }
+.skill-detail-facts > div { min-width: 0; }
+.skill-detail-facts dd { overflow-wrap: anywhere; }
+
+/* Provenance is recorded, not led with. An operator acts on what a skill does
+   and who may run it; the release pin, digest and classification stay one
+   click away rather than crowding the page that answers the first question.
+   Focus is handled by the global summary:focus-visible rule. */
+.skill-detail-provenance { border-top: 1px solid var(--border); margin-top: 20px; padding-top: 12px; }
+.skill-detail-provenance > summary { cursor: pointer; font: var(--type-small); font-weight: 600; letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; color: var(--text-muted); }
+.skill-detail-provenance > dl { margin-top: 14px; }
+.skill-detail-provenance > p { margin-top: 14px; color: var(--text-muted); font: var(--type-body-sm); }

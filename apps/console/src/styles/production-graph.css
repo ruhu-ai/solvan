@@ -13,12 +13,12 @@
 .graph-review-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
 .graph-review-columns > div, .graph-findings { padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-sm); }
 .graph-review-columns ul, .graph-findings ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.graph-review-columns li { display: flex; align-items: center; justify-content: space-between; gap: 14px; color: var(--text-secondary); font-size: 12px; text-transform: capitalize; }
+.graph-review-columns li { display: flex; align-items: center; justify-content: space-between; gap: 14px; color: var(--text-secondary); font: var(--type-small); text-transform: capitalize; }
 .graph-review-columns li strong { color: var(--text-primary); font-variant-numeric: tabular-nums; }
 .graph-findings li { display: grid; gap: 3px; padding-top: 8px; border-top: 1px solid var(--border); }
 .graph-findings li:first-child { padding-top: 0; border-top: 0; }
-.graph-findings li strong { color: var(--text-primary); font-size: 12px; text-transform: capitalize; }
-.graph-findings li span { color: var(--text-secondary); font-family: var(--font-mono); font-size: 11px; overflow-wrap: anywhere; }
+.graph-findings li strong { color: var(--text-primary); font: var(--type-small); font-weight: 600; text-transform: capitalize; }
+.graph-findings li span { color: var(--text-secondary); font: var(--type-mono-sm); overflow-wrap: anywhere; }
 .graph-review .approval-footer { margin: 0 calc(var(--space-5) * -1) calc(var(--space-5) * -1); border-radius: 0 0 var(--radius-md) var(--radius-md); }
 
 @media (max-width: 720px) {

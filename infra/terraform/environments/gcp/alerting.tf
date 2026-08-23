@@ -26,6 +26,11 @@ resource "google_monitoring_notification_channel" "operations" {
 # `solvan.control.refused:<REASON_CODE>`. The reason codes are enumerated in
 # `apps/actuator/local_policy.py` and appear nowhere else in the log stream.
 #
+# A `condition_threshold` filter must restrict `resource.type`; naming only the
+# metric is rejected by the API at create time with HTTP 400, which is how both
+# of these first failed to deploy. The actuator writes these entries from Cloud
+# Run, so the log-based metrics carry `cloud_run_revision`.
+#
 # Unverified until a staging run: how the OTel Cloud Logging exporter projects
 # this record — specifically whether `logName` is the configured
 # `solvan-control-plane` and whether severity maps to WARNING. Both are asserted
@@ -88,7 +93,10 @@ resource "google_monitoring_alert_policy" "actuator_kill_switch_engaged" {
     display_name = "a mutation was refused by the local kill switch"
 
     condition_threshold {
-      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.actuator_kill_switch_engaged.name}\""
+      filter = join(" AND ", [
+        "resource.type=\"cloud_run_revision\"",
+        "metric.type=\"logging.googleapis.com/user/${google_logging_metric.actuator_kill_switch_engaged.name}\"",
+      ])
       comparison      = "COMPARISON_GT"
       threshold_value = 0
       duration        = "0s"
@@ -129,7 +137,10 @@ resource "google_monitoring_alert_policy" "actuator_local_control_refusal" {
     display_name = "local policy refused a mutation"
 
     condition_threshold {
-      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.actuator_local_control_refusal.name}\""
+      filter = join(" AND ", [
+        "resource.type=\"cloud_run_revision\"",
+        "metric.type=\"logging.googleapis.com/user/${google_logging_metric.actuator_local_control_refusal.name}\"",
+      ])
       comparison      = "COMPARISON_GT"
       threshold_value = 0
       duration        = "0s"

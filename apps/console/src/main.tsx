@@ -9,6 +9,7 @@ import "./styles/code-change.css";
 import "./styles/incident.css";
 import "./styles/operability.css";
 import "./styles/settings.css";
+import "./styles/skills.css";
 import "./styles/states.css";
 import "./styles/responsive.css";
 

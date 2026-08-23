@@ -14,7 +14,7 @@
   .sidebar-open { transform: translateX(0); }
   .workspace { margin-left: 0; }
   .menu-button { display: grid !important; }
-  .scrim { position: fixed; z-index: 30; inset: 0; display: block; width: 100%; height: 100%; border: 0; background: rgb(9 11 14 / 42%); }
+  .scrim { position: fixed; z-index: 30; inset: 0; display: block; width: 100%; height: 100%; border: 0; background: var(--scrim); }
   .sidebar { z-index: 50; }
   .topbar { padding: 0 18px; }
   .content-with-aside { grid-template-columns: 1fr; }
@@ -31,7 +31,7 @@
   .settings-layout { grid-template-columns: 1fr; }
   .settings-nav { display: none; }
   .settings-mobile-section { display: grid; gap: 5px; margin-bottom: var(--space-4); }
-  .settings-mobile-section label { color: var(--text-muted); font-size: 11px; font-weight: 600; }
+  .settings-mobile-section label { color: var(--text-muted); font: var(--type-micro); font-weight: 600; }
 }
 
 @media (max-width: 640px) {
@@ -77,13 +77,13 @@
   .responsive-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
   .responsive-table tr { padding: 10px; border-bottom: 1px solid var(--border); }
   .responsive-table td { display: grid; grid-template-columns: minmax(110px, 40%) minmax(0, 1fr); gap: 10px; padding: 7px; border: 0; }
-  .responsive-table td::before { color: var(--text-muted); font-size: 11px; font-weight: 650; text-transform: uppercase; content: attr(data-label); }
+  .responsive-table td::before { color: var(--text-muted); font: var(--type-eyebrow); text-transform: uppercase; content: attr(data-label); }
 }
 
 @media (max-width: 640px) {
   /* Stacked, the matrix becomes one block per Agent: the row header reads as
      its heading and each cell is labelled with its destination. */
-  .capability-matrix th[scope="row"] { padding: 7px; font-size: 14px; font-weight: 650; }
+  .capability-matrix th[scope="row"] { padding: 7px; font: var(--type-h3); }
   .capability-cell.empty { text-align: left; }
 }
 
@@ -94,12 +94,12 @@
    it and the provider named only on the control that goes there. */
 .sign-in-stack { display: grid; justify-items: center; gap: 0; width: min(440px, 100%); }
 .sign-in-mark { display: grid; width: 56px; height: 56px; place-items: center; border-radius: 50%; background: var(--action-primary); color: var(--text-on-action); }
-.sign-in-wordmark { margin: 12px 0 0; font-size: 15px; font-weight: 600; letter-spacing: 0.01em; }
-.sign-in-stack h1 { margin: 14px 0 0; font-size: 28px; line-height: 36px; letter-spacing: -0.02em; text-align: center; }
+.sign-in-wordmark { margin: 12px 0 0; font: var(--type-h2); letter-spacing: 0.01em; }
+.sign-in-stack h1 { margin: 14px 0 0; font: var(--type-metric); letter-spacing: -0.02em; text-align: center; }
 .sign-in-card { display: grid; gap: 14px; width: 100%; margin-top: 26px; padding: 28px; }
-.sign-in-action { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 13px 20px; border: 1px solid var(--border-strong, var(--border-subtle)); border-radius: 999px; background: var(--surface-raised, #fff); color: var(--text-primary); font-size: 15px; font-weight: 600; text-decoration: none; }
+.sign-in-action { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 13px 20px; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); background: var(--surface); color: var(--text-primary); font: var(--type-h2); text-decoration: none; }
 .sign-in-action:hover { background: var(--surface-muted); }
 
-.sign-in-development { margin: 0; padding: 9px 11px; border: 1px solid var(--status-warning-border); border-radius: var(--radius-sm); background: var(--status-warning-bg); color: var(--status-warning-strong); font-size: 12px; line-height: 18px; }
-.operator-sign-out { color: var(--danger, #b42318); }
-.operator-note { margin: 0 0 4px; color: var(--text-muted); font-size: 12px; line-height: 1.45; }
+.sign-in-development { margin: 0; padding: 9px 11px; border: 1px solid var(--status-warning-border); border-radius: var(--radius-sm); background: var(--status-warning-bg); color: var(--status-warning-strong); font: var(--type-small); }
+.operator-sign-out { color: var(--status-danger-fg); }
+.operator-note { margin: 0 0 4px; color: var(--text-muted); font: var(--type-small); }

@@ -40,12 +40,18 @@ Competition navigation:
 ```text
 Overview
 Chat
+Alerts
 Incidents
 Reliability Cases
+Integrations
 Agent Fleet
 Release Evidence
 Settings
 ```
+
+`Alerts` is the triage surface of specification 21; `Integrations` is the
+estate-connection surface of specification 13. Both ship, and both were absent
+from this list.
 
 Incident detail has five tabs:
 

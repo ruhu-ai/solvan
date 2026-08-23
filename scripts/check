@@ -24,6 +24,7 @@ uv run python tools/check_approval_audience.py
 uv run python tools/check_challenge_coverage.py
 uv run python tools/check_ruhu_profile.py
 uv run python tools/check_cloudbuild.py
+uv run python tools/check_design_system.py
 PYTHONPATH="$ROOT/src:$ROOT" uv run --project apps/antigravity_workspace --frozen \
   python apps/antigravity_workspace/verify_runtime.py \
   --lock=apps/antigravity_workspace/uv.lock

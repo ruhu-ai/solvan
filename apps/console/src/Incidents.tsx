@@ -176,7 +176,11 @@ export function IncidentStateBadge({ state }: { state: string }): React.JSX.Elem
       : state === "AWAITING_APPROVAL" || state === "ESCALATED"
         ? "warning"
         : "agent";
-  return <StatusBadge label={labels[state] ?? state} tone={tone} machine={state} />;
+  // A settled state takes the square glyph of specification 10 section 5, so it
+  // is a different shape from one still in flight. MITIGATED is not terminal:
+  // the service is restored but the repair is still open.
+  const terminal = state === "RESOLVED" || state === "CLOSED";
+  return <StatusBadge label={labels[state] ?? state} tone={tone} machine={state} terminal={terminal} />;
 }
 
 export function IncidentsList({ incidents, openIncident }: { incidents: Incident[]; openIncident: (id: string) => void }): React.JSX.Element {

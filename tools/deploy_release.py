@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import json
 import re
+import signal
 import subprocess
 import sys
 import tempfile
@@ -1754,7 +1755,28 @@ def resume_after_catalog_approval(
         raise
 
 
+def _install_interrupt_handlers() -> None:
+    """Route a hang-up or a termination request through the interrupt path.
+
+    Only SIGINT reached the handler that writes ``INTERRUPTED``. A closed
+    terminal sends SIGHUP and a ``kill`` sends SIGTERM, neither of which Python
+    turns into an exception, so the process died with the receipt still at
+    ``IN_PROGRESS`` -- a status `_resume_release_receipt` refuses. The
+    deployment was then unresumable and its ID permanently spent, stranding
+    every completed phase behind it, including an accepted managed build worth
+    thirty images. Raising ``KeyboardInterrupt`` reuses the durable-checkpoint
+    path that already exists rather than adding a second one beside it.
+    """
+
+    def _interrupt(signal_number: int, _frame: object) -> None:
+        raise KeyboardInterrupt(f"release received signal {signal_number}")
+
+    for received in (signal.SIGHUP, signal.SIGTERM):
+        signal.signal(received, _interrupt)
+
+
 def main() -> int:
+    _install_interrupt_handlers()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", required=True)
     parser.add_argument("--deployment-id", required=True)

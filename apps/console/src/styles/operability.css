@@ -64,8 +64,8 @@
 .connect-guide-link .text-button { min-height: 0; padding: 0; text-align: left; }
 .connect-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: var(--space-3); padding: 0 var(--space-4) var(--space-3); }
 .connect-fields > * { min-width: 0; }
-.connect-fields label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; line-height: 16px; color: var(--text-secondary); }
-.connect-fields input, .connect-fields select { min-height: 34px; padding: 6px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); font-size: 13px; line-height: 19px; }
+.connect-fields label { display: flex; flex-direction: column; gap: 4px; font: var(--type-small); color: var(--text-secondary); }
+.connect-fields input, .connect-fields select { min-height: 34px; padding: 6px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); font: var(--type-body-sm); }
 .connect-fields input:focus-visible, .connect-fields select:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
 
 /* Setup forms elsewhere on this page carried class names with no rules behind
@@ -78,14 +78,10 @@
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: var(--space-3); }
 .form-grid > * { min-width: 0; }
 label.field-label { display: grid; gap: 4px; min-width: 0; }
-.connect-form input, .connect-form select, .form-grid input, .form-grid select, label.field-label input, label.field-label select {
-  width: 100%; min-height: 34px; padding: 6px 10px; border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary);
-  font-family: inherit; font-size: 13px; font-weight: 400; line-height: 19px;
-}
+.connect-form input, .connect-form select, .form-grid input, .form-grid select, label.field-label input, label.field-label select { width: 100%; min-height: 34px; padding: 6px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); font-family: inherit; font: var(--type-body-sm); }
 /* Digests, resource paths, and receipt references are compared character by
    character; proportional type makes that harder than it needs to be. */
-.connect-form input, .form-grid input, label.field-label input { font-family: var(--font-mono); font-size: 12px; }
+.connect-form input, .form-grid input, label.field-label input { font: var(--type-mono-sm); }
 .connect-form input:focus-visible, .connect-form select:focus-visible,
 .form-grid input:focus-visible, .form-grid select:focus-visible,
 label.field-label input:focus-visible, label.field-label select:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
@@ -103,7 +99,7 @@ label.field-label input:focus-visible, label.field-label select:focus-visible { 
 .choice-option { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-2); align-items: start; font: var(--type-body-sm); color: var(--text-secondary); }
 /* This form's shared input rule sizes and borders text controls, which would
    otherwise be inherited by a native radio and render it as a small box. */
-.choice-option input[type="radio"], .choice-option input[type="checkbox"] { appearance: auto; accent-color: var(--accent); width: auto; min-height: 0; margin: 3px 0 0; padding: 0; border: none; border-radius: 0; background: none; }
+.choice-option input[type="radio"], .choice-option input[type="checkbox"] { appearance: auto; accent-color: var(--action-primary); width: auto; min-height: 0; margin: 3px 0 0; padding: 0; border: none; border-radius: 0; background: none; }
 .choice-option input[type="radio"]:focus-visible, .choice-option input[type="checkbox"]:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
 .choice-option:has(input:disabled) { color: var(--text-muted); }
 .choice-option > span { display: grid; gap: 2px; min-width: 0; }

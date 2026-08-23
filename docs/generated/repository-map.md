@@ -5,21 +5,21 @@ Generator: `tools/generate_repository_map.py`
 
 ## Top-level areas
 
-- `apps/`: 288 tracked-source file(s)
+- `apps/`: 289 tracked-source file(s)
 - `src/`: 359 tracked-source file(s)
 - `config/`: 6 tracked-source file(s)
 - `infra/`: 36 tracked-source file(s)
 - `scripts/`: 31 tracked-source file(s)
-- `tools/`: 49 tracked-source file(s)
-- `tests/`: 240 tracked-source file(s)
+- `tools/`: 50 tracked-source file(s)
+- `tests/`: 241 tracked-source file(s)
 - `evals/`: 5 tracked-source file(s)
 - `specs/`: 148 tracked-source file(s)
-- `docs/`: 126 tracked-source file(s)
+- `docs/`: 127 tracked-source file(s)
 
 ## File types
 
 - `.antigravity`: 1
-- `.css`: 10
+- `.css`: 11
 - `.csv`: 1
 - `.example`: 7
 - `.hcl`: 1
@@ -28,11 +28,11 @@ Generator: `tools/generate_repository_map.py`
 - `.js`: 1
 - `.json`: 17
 - `.lock`: 2
-- `.md`: 180
+- `.md`: 181
 - `.mjs`: 1
 - `.pdf`: 18
 - `.png`: 3
-- `.py`: 857
+- `.py`: 859
 - `.python`: 1
 - `.release`: 1
 - `.service`: 1
