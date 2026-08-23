@@ -110,15 +110,26 @@ output "approval_token_audience" {
 }
 
 output "service_uris" {
+  # Cloud Run exposes both deterministic and generated default URLs. Release
+  # topology, IAM audiences, and evidence receipts bind the deterministic
+  # regional form; the provider's `uri` attribute may return the generated
+  # `*.a.run.app` alias instead.
   value = merge(
-    { for key, service in google_cloud_run_v2_service.service : key => service.uri },
-    { console = google_cloud_run_v2_service.console.uri },
-    { workspace_sandbox = google_cloud_run_v2_service.workspace_sandbox.uri },
+    {
+      for key, service in google_cloud_run_v2_service.service : key => format(
+        "https://%s-%s.%s.run.app",
+        service.name,
+        data.google_project.current.number,
+        var.region,
+      )
+    },
+    { console = local.console_url },
+    { workspace_sandbox = local.workspace_sandbox_url },
     var.antigravity_demo_enabled ? {
-      antigravity_workspace = google_cloud_run_v2_service.antigravity_workspace[0].uri
+      antigravity_workspace = local.antigravity_workspace_url
     } : {},
     var.github_release_enabled ? {
-      github_provider = try(google_cloud_run_v2_service.service["github_provider"].uri, null)
+      github_provider = local.github_provider_url
     } : {},
   )
   sensitive = true
@@ -128,7 +139,7 @@ output "workspace_sandbox" {
   description = "Regional no-egress repair-validation service and its identity fence."
   value = {
     service_name        = google_cloud_run_v2_service.workspace_sandbox.name
-    uri                 = google_cloud_run_v2_service.workspace_sandbox.uri
+    uri                 = local.workspace_sandbox_url
     region              = var.region
     service_account     = try(google_service_account.workload["workspace_sandbox"].email, null)
     coordinator_account = try(google_service_account.workload["coordinator"].email, null)
@@ -143,7 +154,7 @@ output "github_release_provider" {
   value = {
     enabled         = var.github_release_enabled
     service_name    = var.github_release_enabled ? try(google_cloud_run_v2_service.service["github_provider"].name, null) : null
-    uri             = var.github_release_enabled ? try(google_cloud_run_v2_service.service["github_provider"].uri, null) : null
+    uri             = var.github_release_enabled ? local.github_provider_url : null
     service_account = try(google_service_account.workload["github_provider"].email, null)
     repository_id   = var.github_repository_id
     policy          = "coordinator-only; signed-webhook; approval-bound-merge"
@@ -156,7 +167,7 @@ output "antigravity_workspace_provider" {
   value = {
     enabled                          = var.antigravity_demo_enabled
     service_name                     = var.antigravity_demo_enabled ? google_cloud_run_v2_service.antigravity_workspace[0].name : null
-    uri                              = var.antigravity_demo_enabled ? google_cloud_run_v2_service.antigravity_workspace[0].uri : null
+    uri                              = var.antigravity_demo_enabled ? local.antigravity_workspace_url : null
     service_account                  = try(google_service_account.workload["antigravity"].email, null)
     coordinator_service_account      = try(google_service_account.workload["coordinator"].email, null)
     provider_revision                = var.antigravity_provider_revision
@@ -173,7 +184,7 @@ output "antigravity_workspace_provider" {
 output "synthetic_fixture_attester" {
   description = "Optional isolated signer and exact KMS/public-fixture bindings."
   value = var.antigravity_demo_enabled ? {
-    uri             = google_cloud_run_v2_service.fixture_attester[0].uri
+    uri             = local.fixture_attester_url
     service_account = try(google_service_account.workload["fixture_attester"].email, null)
     kms_key_version = google_kms_crypto_key_version.synthetic_attester[0].name
     fixture_prefix  = "gs://${google_storage_bucket.runtime.name}/${var.organization_id}/${var.scope_project_id}/${var.environment_id}/fixtures/payments-leak-v1/"
@@ -185,7 +196,7 @@ output "antigravity_workspace_registry_binding" {
   description = "Conditional Agent Registry catalog binding for the optional provider."
   value = var.antigravity_demo_enabled ? {
     registry_resource = google_agent_registry_service.antigravity_workspace_endpoint[0].registry_resource
-    service_uri       = google_cloud_run_v2_service.antigravity_workspace[0].uri
+    service_uri       = local.antigravity_workspace_url
     lifecycle         = "EXPERIMENT_ONLY"
   } : null
 }

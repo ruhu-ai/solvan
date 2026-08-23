@@ -275,14 +275,20 @@ def _cloud_run_health(topology: ReleaseTopology, project_id: str) -> tuple[bool,
             item.get(key) if key in item else status.get(key) if isinstance(status, dict) else None
         )
 
-    by_uri = {
-        service_value(item, "uri"): item
+    by_name = {
+        item.get("metadata", {}).get("name"): item
         for item in listed
-        if isinstance(item, dict) and isinstance(service_value(item, "uri"), str)
+        if isinstance(item, dict)
+        and isinstance(item.get("metadata"), dict)
+        and isinstance(item["metadata"].get("name"), str)
     }
     services: dict[str, dict[str, Any]] = {}
     for key, expected_uri in topology.service_uris:
-        value = by_uri.get(expected_uri)
+        expected = re.fullmatch(
+            r"https://(?P<service>[a-z0-9-]+)-[0-9]+\.europe-west1\.run\.app",
+            expected_uri,
+        )
+        value = by_name.get(expected.group("service")) if expected is not None else None
         if not isinstance(value, dict):
             services[key] = {
                 "ready": False,
@@ -295,10 +301,13 @@ def _cloud_run_health(topology: ReleaseTopology, project_id: str) -> tuple[bool,
         ready = any(
             isinstance(item, dict)
             and item.get("type") == "Ready"
-            and item.get("state") in {"CONDITION_SUCCEEDED", "True"}
+            and (
+                item.get("state") in {"CONDITION_SUCCEEDED", "True"}
+                or item.get("status") in {"CONDITION_SUCCEEDED", "True", True}
+            )
             for item in conditions
         )
-        observed_uri = service_value(value, "uri")
+        observed_uri = service_value(value, "url") or service_value(value, "uri")
         latest_ready = service_value(value, "latestReadyRevision") or service_value(
             value, "latestReadyRevisionName"
         )
@@ -307,7 +316,14 @@ def _cloud_run_health(topology: ReleaseTopology, project_id: str) -> tuple[bool,
         )
         services[key] = {
             "ready": ready,
-            "uri_matches": observed_uri == expected_uri,
+            # Google may report the stable generated alias here. Match the
+            # service by its authoritative resource name and require that the
+            # observed endpoint remains a default Cloud Run HTTPS URL.
+            "uri_matches": (
+                isinstance(observed_uri, str)
+                and re.fullmatch(r"https://[a-z0-9-]+(?:\.[a-z0-9-]+)*\.run\.app", observed_uri)
+                is not None
+            ),
             "latest_revision_ready": bool(latest_ready) and latest_ready == latest_created,
         }
     return all(all(item.values()) for item in services.values()), {"services": services}

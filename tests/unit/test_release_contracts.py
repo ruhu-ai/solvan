@@ -62,6 +62,18 @@ def test_cloud_run_service_graph_uses_deterministic_provider_audience() -> None:
     assert 'google_cloud_run_v2_service.service["github_provider"].uri' not in terraform
 
 
+def test_release_outputs_export_deterministic_cloud_run_urls() -> None:
+    outputs = _text("infra/terraform/environments/gcp/outputs.tf")
+    service_uris = outputs[
+        outputs.index('output "service_uris"') : outputs.index('output "workspace_sandbox"')
+    ]
+
+    assert '"https://%s-%s.%s.run.app"' in service_uris
+    assert "data.google_project.current.number" in service_uris
+    assert "service.uri" not in service_uris
+    assert "local.antigravity_workspace_url" in service_uris
+
+
 def test_optional_antigravity_services_supply_fail_closed_otel_environment() -> None:
     cloud_run = _text("infra/terraform/environments/gcp/cloud_run.tf")
     resource_bounds = {
