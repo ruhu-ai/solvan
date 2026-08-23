@@ -1,0 +1,34 @@
+infra/terraform/environments/gcp/outputs.tf
+  s_36f3e3f4652fc0::t_c626b5178929a6 113-116,118-127,129,132,142,157,170,187,199
+tests/unit/test_platform_probes.py
+  s_36f3e3f4652fc0::t_c626b5178929a6 9-14,55-88
+  s_e3bbd13bbca130::t_0305b4db834aab 89-90
+tests/unit/test_release_contracts.py
+  s_36f3e3f4652fc0::t_c626b5178929a6 65-76
+tools/run_platform_probes.py
+  s_36f3e3f4652fc0::t_c626b5178929a6 278-279,281-283,287-291,304-307,310,319-326
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "4e10b5a26bdf61038becdc21c8649bf3badd0270",
+  "prompts": {},
+  "sessions": {
+    "s_36f3e3f4652fc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0244c-ebff-7543-ada7-451be8d4be6b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    },
+    "s_e3bbd13bbca130": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a02753-b048-7013-8932-f65f124f681b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
