@@ -299,6 +299,16 @@ resource "google_cloud_run_v2_service" "console" {
 }
 
 resource "google_cloud_run_v2_service" "service" {
+  lifecycle {
+    precondition {
+      # github_release_enabled without a real ghr_ binding deployed a
+      # coordinator that 500ed on unrelated routes (staging-20260823-05).
+      # Refuse the contradiction at plan time instead of at runtime.
+      condition = !var.github_release_enabled || can(regex("^ghr_", var.github_repository_id))
+      error_message = "github_release_enabled requires a real github_repository_id (ghr_...); complete the console GitHub onboarding first or disable the provider."
+    }
+  }
+
   for_each = {
     for key, value in local.cloud_run_services : key => value
     if(!var.direct_gcp_alert_triage_pilot_enabled || contains(local.direct_gcp_pilot_service_keys, key)) &&
@@ -1132,7 +1142,7 @@ resource "google_cloud_run_v2_service" "service" {
         for_each = each.key == "api" && var.github_release_enabled ? [1] : []
         content {
           name  = "SOLVAN_RELEASE_VERIFIER_SIGNING_KEY_VERSION"
-          value = google_kms_crypto_key_version.release_verifier[0].id
+          value = google_kms_crypto_key_version.release_verifier.id
         }
       }
       dynamic "env" {
@@ -1436,7 +1446,7 @@ resource "google_cloud_run_v2_service" "service" {
         for_each = each.key == "release_verifier" ? [1] : []
         content {
           name  = "SOLVAN_RELEASE_VERIFIER_SIGNING_KEY_VERSION"
-          value = google_kms_crypto_key_version.release_verifier[0].id
+          value = google_kms_crypto_key_version.release_verifier.id
         }
       }
       dynamic "env" {
@@ -1499,7 +1509,7 @@ resource "google_cloud_run_v2_service" "service" {
         for_each = each.key == "github_identity_broker" ? [1] : []
         content {
           name  = "SOLVAN_GITHUB_IDENTITY_PKCE_KMS_KEY"
-          value = google_kms_crypto_key.github_identity_pkce[0].id
+          value = google_kms_crypto_key.github_identity_pkce.id
         }
       }
       dynamic "env" {

@@ -57,7 +57,10 @@ resource "google_kms_crypto_key_iam_member" "coordinator_public_key_reader" {
 # This symmetric key is usable only by the identity broker and is unrelated to
 # repository installation credentials or deployment signing authority.
 resource "google_kms_key_ring" "github_identity" {
-  count = var.github_release_enabled ? 1 : 0
+  # Key material is durable and near-free; feature flags gate consumers,
+  # never keys. Gating keys on the flag made disabling the feature demand
+  # destroying prevent_destroy crypto keys (staging-20260823-06), wedging
+  # the apply in both directions.
 
   project  = var.project_id
   name     = "${local.prefix}-github-identity"
@@ -67,10 +70,13 @@ resource "google_kms_key_ring" "github_identity" {
 }
 
 resource "google_kms_crypto_key" "github_identity_pkce" {
-  count = var.github_release_enabled ? 1 : 0
+  # Key material is durable and near-free; feature flags gate consumers,
+  # never keys. Gating keys on the flag made disabling the feature demand
+  # destroying prevent_destroy crypto keys (staging-20260823-06), wedging
+  # the apply in both directions.
 
   name            = "oauth-pkce-envelope"
-  key_ring        = google_kms_key_ring.github_identity[0].id
+  key_ring        = google_kms_key_ring.github_identity.id
   purpose         = "ENCRYPT_DECRYPT"
   rotation_period = "7776000s"
 
@@ -80,9 +86,12 @@ resource "google_kms_crypto_key" "github_identity_pkce" {
 }
 
 resource "google_kms_crypto_key_iam_member" "github_identity_pkce_user" {
-  count = var.github_release_enabled ? 1 : 0
+  # Key material is durable and near-free; feature flags gate consumers,
+  # never keys. Gating keys on the flag made disabling the feature demand
+  # destroying prevent_destroy crypto keys (staging-20260823-06), wedging
+  # the apply in both directions.
 
-  crypto_key_id = google_kms_crypto_key.github_identity_pkce[0].id
+  crypto_key_id = google_kms_crypto_key.github_identity_pkce.id
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
   member        = google_service_account.workload["github_identity_broker"].member
 }
@@ -90,7 +99,10 @@ resource "google_kms_crypto_key_iam_member" "github_identity_pkce_user" {
 # Release health evidence is signed by an identity that has no deployment or
 # rollback authority. The Deployment Controller may read only its public key.
 resource "google_kms_key_ring" "release_verification" {
-  count = var.github_release_enabled ? 1 : 0
+  # Key material is durable and near-free; feature flags gate consumers,
+  # never keys. Gating keys on the flag made disabling the feature demand
+  # destroying prevent_destroy crypto keys (staging-20260823-06), wedging
+  # the apply in both directions.
 
   project  = var.project_id
   name     = "${local.prefix}-release-verification"
@@ -100,10 +112,13 @@ resource "google_kms_key_ring" "release_verification" {
 }
 
 resource "google_kms_crypto_key" "release_verifier" {
-  count = var.github_release_enabled ? 1 : 0
+  # Key material is durable and near-free; feature flags gate consumers,
+  # never keys. Gating keys on the flag made disabling the feature demand
+  # destroying prevent_destroy crypto keys (staging-20260823-06), wedging
+  # the apply in both directions.
 
   name            = "release-health-verifier"
-  key_ring        = google_kms_key_ring.release_verification[0].id
+  key_ring        = google_kms_key_ring.release_verification.id
   purpose         = "ASYMMETRIC_SIGN"
   rotation_period = null
 
@@ -118,8 +133,9 @@ resource "google_kms_crypto_key" "release_verifier" {
 }
 
 resource "google_kms_crypto_key_version" "release_verifier" {
-  count      = var.github_release_enabled ? 1 : 0
-  crypto_key = google_kms_crypto_key.release_verifier[0].id
+  # A key version is key material like its key: never gated on the feature
+  # flag, for the same wedge documented above.
+  crypto_key = google_kms_crypto_key.release_verifier.id
   state      = "ENABLED"
 
   lifecycle {
@@ -129,7 +145,7 @@ resource "google_kms_crypto_key_version" "release_verifier" {
 
 resource "google_kms_crypto_key_iam_member" "release_verifier_signer" {
   count         = var.github_release_enabled ? 1 : 0
-  crypto_key_id = google_kms_crypto_key.release_verifier[0].id
+  crypto_key_id = google_kms_crypto_key.release_verifier.id
   role          = "roles/cloudkms.signerVerifier"
   member        = google_service_account.workload["release_verifier"].member
 }
@@ -137,7 +153,7 @@ resource "google_kms_crypto_key_iam_member" "release_verifier_signer" {
 resource "google_kms_crypto_key_iam_member" "release_verifier_public_key_readers" {
   for_each = var.github_release_enabled ? toset(["api", "coordinator", "deployment_controller"]) : toset([])
 
-  crypto_key_id = google_kms_crypto_key.release_verifier[0].id
+  crypto_key_id = google_kms_crypto_key.release_verifier.id
   role          = "roles/cloudkms.publicKeyViewer"
   member        = google_service_account.workload[each.value].member
 }

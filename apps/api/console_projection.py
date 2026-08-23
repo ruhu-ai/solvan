@@ -19,7 +19,7 @@ from apps.api.fleet_governance_projection import (
 )
 from apps.api.guidance_projection import guidance_projection
 from apps.api.incident_projection import incident_projection
-from apps.api.overview_history import counts_over_time, tile
+from apps.api.overview_history import overview_tiles
 from apps.api.workspace_projection import workspace_case_projections
 from solvan.application.alert_list import AlertListFilter
 from solvan.application.patch_diff import diff_view
@@ -47,6 +47,9 @@ _ACTIVE_INCIDENT_STATES = (
     "MITIGATED",
     "ESCALATED",
 )
+# Both are reached only by passing verification: `MITIGATED` from
+# `VERIFICATION_PASSED`, and `RESOLVED` only from `MITIGATED`.
+_MITIGATED_INCIDENT_STATES = {"MITIGATED", "RESOLVED"}
 _CASE_PHASES = [
     "Root cause",
     "Repair",
@@ -349,14 +352,6 @@ def live_console_snapshot(connection: Connection[Any], *, scope: Scope) -> dict[
             transitions_by_incident.setdefault(str(row["entity_id"]), []).append(
                 (row["occurred_at"], str(row["to_state"]), str(row["from_state"]))
             )
-        history = counts_over_time(
-            incidents=[dict(row) for row in incident_rows],
-            transitions_by_incident=transitions_by_incident,
-            cases=[dict(row) for row in case_rows],
-            active_states=_ACTIVE_INCIDENT_STATES,
-            mitigated_states={"MITIGATED", "RESOLVED"},
-            now=datetime.now(UTC),
-        )
     if environment is None:
         raise RuntimeError("configured console scope does not exist")
     manifest_facts = agent_manifest_facts(
@@ -364,9 +359,16 @@ def live_console_snapshot(connection: Connection[Any], *, scope: Scope) -> dict[
     )
 
     incidents = [incident_projection(connection, scope, dict(row)) for row in incident_rows]
-    active_count = sum(row["state"] in _ACTIVE_INCIDENT_STATES for row in incident_rows)
-    awaiting_count = sum(row["state"] == "AWAITING_APPROVAL" for row in incident_rows)
-    mitigated_count = sum(row["state"] in {"MITIGATED", "RESOLVED"} for row in incident_rows)
+    # One instant for the whole tile row: the trend's last point, every caption's
+    # clock, and the counts then describe the same moment rather than four.
+    metrics = overview_tiles(
+        incidents=[dict(row) for row in incident_rows],
+        transitions_by_incident=transitions_by_incident,
+        cases=[dict(row) for row in case_rows],
+        active_states=_ACTIVE_INCIDENT_STATES,
+        mitigated_states=_MITIGATED_INCIDENT_STATES,
+        now=datetime.now(UTC),
+    )
     workspace_by_case = workspace_case_projections(connection, scope=scope)
     cases = []
     for row in case_rows:
@@ -542,17 +544,7 @@ def live_console_snapshot(connection: Connection[Any], *, scope: Scope) -> dict[
             "region": str(environment["region"]),
         },
         "overview": {
-            "metrics": [
-                tile("Open incidents", "durable", history["open_incidents"], active_count),
-                tile("Reliability Cases", "durable", history["reliability_cases"], len(cases)),
-                tile("Awaiting approval", "exact", history["awaiting_approval"], awaiting_count),
-                tile(
-                    "Verified mitigations",
-                    "stored",
-                    history["verified_mitigations"],
-                    mitigated_count,
-                ),
-            ],
+            "metrics": metrics,
             "queue": {
                 "ready": int(queue["ready"] or 0),
                 "running": int(queue["running"] or 0),

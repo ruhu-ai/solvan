@@ -23,6 +23,7 @@ from solvan.domain import (
     Scope,
     StepBudget,
 )
+from solvan.observability import record_control_refusal
 from solvan.platform.agent_runtime import (
     AgentRuntimeConfiguration,
     GeminiAgentRuntime,
@@ -348,11 +349,25 @@ def _settings() -> CoordinatorSettings:
     github_release_enabled = (
         os.environ.get("SOLVAN_GITHUB_RELEASE_ENABLED", "false").lower() == "true"
     )
+    github_repository_id = os.environ.get("SOLVAN_GITHUB_REPOSITORY_ID", "UNCONFIGURED")
+    if github_release_enabled and not github_repository_id.startswith("ghr_"):
+        # Enabled without a real binding is a contradiction, and it used to be
+        # a control-plane outage: the placeholder refused inside the dataclass,
+        # settings construction raised, and every coordinator route 500ed --
+        # including workspace rehydration, which has nothing to do with GitHub
+        # (staging-20260823-05). One feature's misconfiguration must fail that
+        # feature closed, loudly, and nothing else. Terraform now also refuses
+        # this pairing at plan time; this is the runtime half.
+        record_control_refusal(
+            service_name="coordinator",
+            reason_code="GITHUB_RELEASE_BINDING_INVALID",
+        )
+        github_release_enabled = False
     github_release = (
         GitHubReleaseProviderConfiguration(
             base_url=_required("SOLVAN_GITHUB_PROVIDER_URL"),
             audience=_required("SOLVAN_GITHUB_PROVIDER_AUDIENCE"),
-            repository_id=_required("SOLVAN_GITHUB_REPOSITORY_ID"),
+            repository_id=github_repository_id,
         )
         if github_release_enabled
         else None

@@ -344,9 +344,12 @@ export type ConsoleSnapshot = {
   generated_at: string;
   environment: { name: string; region: string };
   overview: {
-    /** A stat tile: the figure, the signed change over a named period, and the
-     *  trend it moved along. `delta` is derived from durable records, never
-     *  from a window the console did not observe. */
+    /** A stat tile: the figure, the signed change over a named period, the
+     *  trend it moved along, and a caption. `delta` is derived from durable
+     *  records, never from a window the console did not observe, and `detail`
+     *  is read from the same rows the figure counted — a severity composition,
+     *  a due wake-up, a wait, a verification — or says which record is missing.
+     *  Neither is written by hand at either end; render both as text. */
     metrics: Array<{
       label: string;
       value: string;

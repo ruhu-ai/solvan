@@ -1361,6 +1361,15 @@ test("the incident axis is drawn from stored evidence and nothing else", async (
   const tile = page.locator(".metric-card").first();
   await expect(tile.locator(".metric-delta")).toContainText("over 12 days");
   await expect(tile.locator(".trendline")).toBeVisible();
+
+  // The caption under the figure is read from the rows the figure counted, not
+  // written. This test runs against the live projection, so both captions here
+  // are the seeded database's own answer: one SEV2 incident is open, and
+  // nothing is at the approval gate. An adjective — "durable", "exact" — would
+  // be the one part of a tile asserting something no record said, and a tile
+  // with nothing to count says so rather than keeping a stale caption.
+  await expect(tile.locator("small")).toHaveText("1 SEV2");
+  await expect(page.locator(".metric-card").nth(2).locator("small")).toHaveText("none waiting");
 });
 
 test("reliability case exposes exact patch review and calendar-separated continuity", async ({ page }) => {

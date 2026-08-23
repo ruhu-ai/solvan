@@ -495,6 +495,34 @@ more verified mitigations is better, so a single up-is-bad rule would be wrong
 half the time, and whether a change is good is a judgement the records do not
 carry. The tile states the change and its period and stops.
 
+**The caption is derived, not written.** The line under a tile's figure reads
+as part of it, so an operator takes it for a second measurement, and it used to
+be a hand-written adjective — "durable", "exact", "stored" — which is the one
+part of a tile that asserted something no record said. Each caption is now read
+from the same rows the figure counted, at the same instant: the severity
+composition of the open incidents, when the earliest scheduled wake-up is due,
+how long the longest-waiting approval has waited, and when the most recent
+mitigation passed verification. Durations are relative (`in 9h`, `2h`, `4d
+ago`) rather than wall-clock, because a time with no date is ambiguous the
+moment it is more than a day away and a tile row has no space for a date.
+
+A caption is a claim, so it obeys the withholding rule the rest of the surface
+does. "Oldest waiting" and "last verified" are claims about *every* counted
+incident, and each is withheld — replaced by `wait time not recorded` or
+`verification time not recorded` — unless every one of them carries the
+transition that proves it, because the unrecorded one could be the oldest or
+the most recent. The wait is measured from the entry into `AWAITING_APPROVAL`
+and never from `detected_at`, and from the *last* such entry, since a denied
+approval returns the incident to the gate and starts a new wait. Verification
+is dated from the entry into `MITIGATED`, which is reachable only by
+`VERIFICATION_PASSED`; for a resolved incident the later entry into `RESOLVED`
+is the closure, not the verification. `overview_tiles` in
+`apps/api/overview_history.py` is the only constructor of a tile row, and
+`tile()` takes a `TileDetail` rather than a `str`, so there is no parameter
+through which a written caption can reach a tile — including from the scripted
+release fixture, which holds records and derives its captions through the same
+functions.
+
 **The axis draws a revision marker, not a deploy marker.** Cloud Run returns
 `updateTime` on every service read and it was being discarded, so nothing
 recorded when the observed revision arrived. It is captured now and projected

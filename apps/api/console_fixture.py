@@ -5,12 +5,81 @@ The data is visibly labeled and grants no workflow or mutation authority.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from apps.api.console_fleet_fixture import fleet_fixture
 from apps.api.console_incident_fixture import incident_fixtures, scripted_patch_diff
 from apps.api.console_integration_fixture import integration_fixture
 from apps.api.console_release_fixture import scripted_release_fixture
+from apps.api.overview_history import (
+    awaiting_approval_detail,
+    open_incidents_detail,
+    reliability_cases_detail,
+    tile,
+    verified_mitigations_detail,
+)
+
+#: The instant this projection claims to have been generated at. Every caption
+#: below is measured from it, so the fixture is deterministic across runs.
+_GENERATED_AT = datetime(2026, 8, 8, 12, 8, tzinfo=UTC)
+
+#: The scripted incident's own clock, matching `console_incident_fixture`.
+#: Every scripted instant below is offset from it, so the tile captions, the
+#: incident's stated age, and its impact window cannot contradict each other.
+_DETECTED_AT = datetime(2026, 8, 8, 11, 50, 3, tzinfo=UTC)
+
+
+def _scripted_metrics() -> list[dict[str, Any]]:
+    """The four stat tiles, captioned by the live path's own derivations.
+
+    The figures and trends are scripted — that is what a fixture is for — but
+    the captions are not written here. They are read from scripted *records*
+    through the same functions `overview_tiles` uses, so this projection cannot
+    display a caption the product is unable to produce, and a change to a
+    caption form shows up here rather than drifting away from the live path.
+    """
+    # Triage, investigation, and diagnosis precede the approval gate; the
+    # mitigation is verified once the scripted 8m 10s impact window has closed.
+    waiting_since = _DETECTED_AT + timedelta(minutes=4)
+    verified_at = _DETECTED_AT + timedelta(minutes=8, seconds=10)
+    return [
+        tile(
+            "Open incidents",
+            open_incidents_detail([{"severity": "SEV2"}]),
+            [0, 0, 0, 0, 1, 1, 2, 2, 1, 1, 1, 1],
+            1,
+        ),
+        tile(
+            "Reliability Cases",
+            reliability_cases_detail(
+                [{"next_action_at": datetime(2026, 8, 9, 9, 0, tzinfo=UTC)}], _GENERATED_AT
+            ),
+            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+            1,
+        ),
+        tile(
+            "Awaiting approval",
+            awaiting_approval_detail(
+                [{"id": "inc_scripted", "state": "AWAITING_APPROVAL"}],
+                {"inc_scripted": [(waiting_since, "AWAITING_APPROVAL", "MITIGATION_PROPOSED")]},
+                _GENERATED_AT,
+            ),
+            [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
+            1,
+        ),
+        tile(
+            "Verified mitigations",
+            verified_mitigations_detail(
+                [{"id": "inc_1042", "state": "MITIGATED"}],
+                {"inc_1042": [(verified_at, "MITIGATED", "VERIFYING_MITIGATION")]},
+                {"MITIGATED", "RESOLVED"},
+                _GENERATED_AT,
+            ),
+            [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+            1,
+        ),
+    ]
 
 
 def console_snapshot() -> dict[str, Any]:
@@ -18,45 +87,12 @@ def console_snapshot() -> dict[str, Any]:
         "schema_version": 1,
         "data_status": "SCRIPTED_RELEASE_FIXTURE",
         "authority": "NO_PRODUCTION_AUTHORITY",
-        "generated_at": "2026-08-08T12:08:00Z",
+        "generated_at": _GENERATED_AT.isoformat().replace("+00:00", "Z"),
         # The local console is a development environment, not a product tenant.
         # The fault injection remains a separately enabled acceptance scenario.
         "environment": {"name": "development", "region": "europe-west1"},
         "overview": {
-            "metrics": [
-                {
-                    "label": "Open incidents",
-                    "value": "1",
-                    "detail": "1 SEV2 active",
-                    "delta": 1,
-                    "delta_period": "12 days",
-                    "trend": [0, 0, 0, 0, 1, 1, 2, 2, 1, 1, 1, 1],
-                },
-                {
-                    "label": "Reliability Cases",
-                    "value": "1",
-                    "detail": "next wake-up 09:00",
-                    "delta": 1,
-                    "delta_period": "12 days",
-                    "trend": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-                },
-                {
-                    "label": "Awaiting approval",
-                    "value": "1",
-                    "detail": "exact rollback",
-                    "delta": 0,
-                    "delta_period": "12 days",
-                    "trend": [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
-                },
-                {
-                    "label": "Verified mitigations",
-                    "value": "1",
-                    "detail": "scripted fixture",
-                    "delta": 1,
-                    "delta_period": "12 days",
-                    "trend": [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-                },
-            ],
+            "metrics": _scripted_metrics(),
             "queue": {"ready": 2, "running": 1, "sleeping": 3, "overdue": 0, "fenced": 1},
         },
         "incidents": incident_fixtures(),
