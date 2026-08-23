@@ -1,0 +1,79 @@
+.gitignore
+  s_ea9b9b24df1c46::t_7cce91c6753b2e 34-35
+PLAN.md
+  s_ea9b9b24df1c46::t_a29dd3fcced564 5-6
+README.md
+  s_ea9b9b24df1c46::t_03abe8e5fd64ee 65,70,72,76
+apps/actuator/local_policy.py
+  s_ea9b9b24df1c46::t_dc00baa78d2868 31-45
+apps/actuator/main.py
+  s_ea9b9b24df1c46::t_5f9d8dec6b9836 42,207-211
+apps/api/liaison_service.py
+  s_ea9b9b24df1c46::t_d9a7e0bd2756ee 83-104,106,110-113
+docs/generated/repository-map.md
+  s_ea9b9b24df1c46::t_8965bb74ab6064 11,14,17,31,33,35,42,49
+docs/index.md
+  s_ea9b9b24df1c46::t_b8547edca99dfa 7,28-58,63
+docs/quality.md
+  s_ea9b9b24df1c46::t_6fbfbeb77c13f0 15
+docs/sources/production-environment-model.md
+  s_ea9b9b24df1c46::t_9911e3ddac4d71 7,24
+docs/tech-debt.md
+  s_ea9b9b24df1c46::t_33d0afcc5bd1b1 14,16,18,28
+infra/terraform/environments/gcp/alerting.tf
+  s_ea9b9b24df1c46::t_e22f44f3e90194 1-243
+infra/terraform/environments/gcp/budget.tf
+  s_ea9b9b24df1c46::t_77d18fbc400f30 26-38
+infra/terraform/environments/gcp/dev.tfvars.example
+  s_ea9b9b24df1c46::t_a75c90c5b15d87 5-7
+infra/terraform/environments/gcp/production.tfvars.example
+  s_ea9b9b24df1c46::t_fa27fcb9a22a56 7-9
+infra/terraform/environments/gcp/pubsub.tf
+  s_ea9b9b24df1c46::t_155936846be754 22-45
+infra/terraform/environments/gcp/staging.tfvars.example
+  s_ea9b9b24df1c46::t_4e1b2d47d4c7bd 5-7
+infra/terraform/environments/gcp/variables.tf
+  s_ea9b9b24df1c46::t_681bd2d02e9dbf 1099-1123
+specs/07-implementation-deployment.md
+  s_ea9b9b24df1c46::t_06a93108390b32 1115-1140
+specs/11-ruhu-integration-profile.md
+  s_ea9b9b24df1c46::t_2ae724a15156c4 5
+specs/12-workspace-cognition-architecture.md
+  s_ea9b9b24df1c46::t_87b65fd7afda0d 9-10
+specs/13-tenant-integration.md
+  s_ea9b9b24df1c46::t_19bcb5ee2724e1 12,860,878-880
+specs/14-conversational-surface.md
+  s_ea9b9b24df1c46::t_a6bb1918db7df1 2895-2898,2955-2960,3196
+src/solvan/observability.py
+  s_ea9b9b24df1c46::t_6d678ababeb96a 24-35,39,110-131
+src/solvan/persistence/liaison_visibility.py
+  s_ea9b9b24df1c46::t_1ae2639241448e 9-17,42-51
+tests/harness/test_actuator_api.py
+  s_ea9b9b24df1c46::t_9d5aad84dc762e 1-2,5-6,8,44-87
+tests/harness/test_documentation_checker.py
+  s_ea9b9b24df1c46::t_5b74a266b37e6a 1-42
+tests/unit/test_actuator_alert_binding.py
+  s_ea9b9b24df1c46::t_ad707f0b71b66c 1-134
+tests/unit/test_liaison_access.py
+  s_ea9b9b24df1c46::t_d0e05748827e5a 30,211-264
+tests/unit/test_liaison_adk_composer.py
+  s_ea9b9b24df1c46::t_5050002067d733 453-524
+tools/check_docs.py
+  s_ea9b9b24df1c46::t_d42cd2e85ba9e9 48-72,185
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "b308826ff5876f331d2affea58672165f3ae1ab0",
+  "prompts": {},
+  "sessions": {
+    "s_ea9b9b24df1c46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ed42e522-bb61-497e-9d39-2096114957f1",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
