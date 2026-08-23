@@ -296,3 +296,38 @@ resource "google_kms_crypto_key_iam_member" "direct_gcp_pilot_receipt_signer" {
   role          = "roles/cloudkms.signerVerifier"
   member        = google_service_account.workload["pilot_qualification_verifier"].member
 }
+
+# The decoupling above removed `count` from these resources, which changes
+# their state addresses from [0]-indexed to plain. The release runner plans
+# its bootstrap phases with -target, and Terraform refuses targeted plans
+# that exclude moved instances -- so the moves must be declared, not
+# inferred (staging-20260823-07).
+moved {
+  from = google_kms_key_ring.github_identity[0]
+  to   = google_kms_key_ring.github_identity
+}
+
+moved {
+  from = google_kms_crypto_key.github_identity_pkce[0]
+  to   = google_kms_crypto_key.github_identity_pkce
+}
+
+moved {
+  from = google_kms_crypto_key_iam_member.github_identity_pkce_user[0]
+  to   = google_kms_crypto_key_iam_member.github_identity_pkce_user
+}
+
+moved {
+  from = google_kms_key_ring.release_verification[0]
+  to   = google_kms_key_ring.release_verification
+}
+
+moved {
+  from = google_kms_crypto_key.release_verifier[0]
+  to   = google_kms_crypto_key.release_verifier
+}
+
+moved {
+  from = google_kms_crypto_key_version.release_verifier[0]
+  to   = google_kms_crypto_key_version.release_verifier
+}
