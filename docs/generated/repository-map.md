@@ -8,13 +8,13 @@ Generator: `tools/generate_repository_map.py`
 - `apps/`: 288 tracked-source file(s)
 - `src/`: 359 tracked-source file(s)
 - `config/`: 6 tracked-source file(s)
-- `infra/`: 35 tracked-source file(s)
+- `infra/`: 36 tracked-source file(s)
 - `scripts/`: 31 tracked-source file(s)
 - `tools/`: 49 tracked-source file(s)
-- `tests/`: 239 tracked-source file(s)
+- `tests/`: 240 tracked-source file(s)
 - `evals/`: 5 tracked-source file(s)
 - `specs/`: 148 tracked-source file(s)
-- `docs/`: 19 tracked-source file(s)
+- `docs/`: 126 tracked-source file(s)
 
 ## File types
 
@@ -28,25 +28,25 @@ Generator: `tools/generate_repository_map.py`
 - `.js`: 1
 - `.json`: 17
 - `.lock`: 2
-- `.md`: 90
+- `.md`: 180
 - `.mjs`: 1
-- `.pdf`: 2
+- `.pdf`: 18
 - `.png`: 3
-- `.py`: 856
+- `.py`: 857
 - `.python`: 1
 - `.release`: 1
 - `.service`: 1
 - `.solvant-relay`: 1
 - `.sql`: 85
 - `.svg`: 7
-- `.tf`: 19
+- `.tf`: 20
 - `.timer`: 1
 - `.toml`: 2
 - `.ts`: 20
 - `.tsx`: 37
 - `.txt`: 1
 - `.workspace-sandbox`: 1
-- `.yaml`: 55
+- `.yaml`: 56
 - `.yml`: 1
 - `[no extension]`: 37
 

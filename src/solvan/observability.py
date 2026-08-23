@@ -21,10 +21,22 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.trace import SpanKind, Status, StatusCode
 
+#: The one telemetry logger name. Exported so an alert-binding test can attach
+#: to the same logger the runtime writes to, rather than asserting on a string
+#: copied into the test.
+TELEMETRY_LOGGER_NAME = "solvan.telemetry"
+
+#: Log body prefix for a local control refusal. The reason code is appended to
+#: the *body*, not only to a structured attribute, because how OTel attributes
+#: land in a Cloud Logging entry is a property of the exporter version, while
+#: the body is stable. An alert filter keyed on the body cannot silently stop
+#: matching when that mapping changes.
+CONTROL_REFUSAL_EVENT = "solvan.control.refused"
+
 _LOCK = Lock()
 _CONFIGURED_SERVICE: str | None = None
 _LOGGER_PROVIDER: LoggerProvider | None = None
-_LOGGER = logging.getLogger("solvan.telemetry")
+_LOGGER = logging.getLogger(TELEMETRY_LOGGER_NAME)
 _LOGGER.propagate = False
 
 
@@ -93,6 +105,28 @@ def configure_observability(config: ObservabilityConfiguration) -> None:
         _LOGGER.handlers.clear()
         _LOGGER.addHandler(LoggingHandler(level=logging.INFO, logger_provider=logger_provider))
         _LOGGER.setLevel(logging.INFO)
+
+
+def record_control_refusal(*, service_name: str, reason_code: str) -> None:
+    """Emit one content-free record that a local control refused an operation.
+
+    An in-binary control that refuses silently is unobservable at exactly the
+    moment it matters: an engaged kill switch, an exhausted budget and an
+    unparsable policy all present to a caller as one 403, and to an operator as
+    nothing at all. Only the enumerated reason code is recorded — never the
+    action, target, payload or caller.
+    """
+
+    _LOGGER.warning(
+        "%s:%s",
+        CONTROL_REFUSAL_EVENT,
+        reason_code,
+        extra={
+            "solvan.service": service_name,
+            "solvan.control.event": CONTROL_REFUSAL_EVENT,
+            "solvan.control.reason_code": reason_code,
+        },
+    )
 
 
 def instrument_fastapi(app: FastAPI, *, service_name: str) -> FastAPI:

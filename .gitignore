@@ -31,6 +31,8 @@ tmp/
 # Third-party product documentation kept locally for research only.
 # Not Solvan material and not covered by THIRD_PARTY_NOTICES.md; excluded so an
 # Apache-2.0 publication does not redistribute it.
+docs/resolve-examples/
+docs/google-challenge/
 
 # Downloaded OAuth client files. These carry a client secret, and they sit
 # inside the repository, so one `git add -A` would publish it. Ignored by path

@@ -19,6 +19,30 @@ resource "google_pubsub_topic" "security" {
 resource "google_pubsub_topic" "dead_letter" {
   project = var.project_id
   name    = "${local.prefix}-dead-letter"
+
+  # Topic retention is defence in depth for the subscription below. A message
+  # published to a topic with no attached subscription is discarded on the spot,
+  # so the quarantine queue is what makes exhausted delivery recoverable at all.
+  message_retention_duration = "604800s"
+}
+
+# The quarantine queue. It is deliberately a pull subscription with no push
+# endpoint: a message arrives here precisely because ten delivery attempts to
+# the coordinator failed, so redelivering it automatically would reproduce the
+# failure. An operator drains it, and `num_undelivered_messages` on this
+# subscription is what the dead-letter alert policy watches.
+resource "google_pubsub_subscription" "dead_letter" {
+  project = var.project_id
+  name    = "${local.prefix}-dead-letter-quarantine"
+  topic   = google_pubsub_topic.dead_letter.id
+
+  ack_deadline_seconds       = 600
+  message_retention_duration = "604800s"
+  retain_acked_messages      = true
+
+  expiration_policy {
+    ttl = ""
+  }
 }
 
 resource "google_pubsub_subscription" "coordinator" {

@@ -4,7 +4,7 @@ Status: researched design input; **corrected 2026-08-12 after adversarial review
 Retrieved: 2026-08-12
 Authority: official Google Cloud documentation only
 
-> **Correction notice.** An adversarial review
+> **Correction notice.** An [adversarial review](../reviews/2026-08-12-production-environment-outcome-quality-earned-autonomy-review.md)
 > found three defects in the first version of this record. They are corrected
 > in place below and marked **CORRECTED**; the original readings are stated so
 > the error is visible rather than quietly replaced.
@@ -21,7 +21,7 @@ Authority: official Google Cloud documentation only
 >
 > The consequent design change — a four-tier source model in which App Topology
 > is demoted to optional observed hints — is recorded in the
-> disposition.
+> [disposition](../reviews/2026-08-12-production-environment-outcome-quality-disposition.md).
 > [Specification 20](../../specs/20-production-environment-model.md) now uses
 > that four-tier model. This source record remains research input, not runtime
 > or cloud verification.

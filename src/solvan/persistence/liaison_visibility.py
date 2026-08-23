@@ -6,6 +6,15 @@ from typing import Any
 
 from solvan.domain import Scope
 
+# The two modes whose visibility is decided by the authorized record set.
+# `DERIVED_SOURCES` joins to its sources as well (see reader_may_see_compaction),
+# but at row level both are the same rule: an empty set denies.
+_RECORD_SET_MODES = frozenset({"RECORD_SET", "DERIVED_SOURCES"})
+
+
+class UnknownAccessMode(ValueError):
+    """An access mode this build cannot evaluate. Never resolved into a grant."""
+
 
 def reader_may_see_row(
     *,
@@ -30,6 +39,16 @@ def reader_may_see_row(
             and membership_epoch is not None
             and reader_epoch <= membership_epoch
         )
+    if access_mode not in _RECORD_SET_MODES:
+        # INV-C-06/§5: visibility is never granted by omission. Every mode
+        # except the record-set pair used to fall through to the check below,
+        # so an unrecognized value -- a typo, or a mode added to the schema
+        # after this build -- was evaluated as "the authorized references
+        # decide" and could return True for a mode whose rule nobody had
+        # written yet. A mode this build cannot evaluate refuses instead, and
+        # says which one, rather than returning a quiet False that would hide
+        # the missing rule.
+        raise UnknownAccessMode(f"unrecognized access mode {access_mode!r}")
     if not references:
         return False
     return all(tuple(reference) in authorized for reference in references)

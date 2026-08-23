@@ -28,6 +28,21 @@ KILL_SWITCH_VARIABLE = "SOLVAN_ACTUATOR_KILL_SWITCH_FILE"
 BUDGET_VARIABLE = "SOLVAN_ACTUATOR_MAX_MUTATIONS_PER_HOUR"
 _WINDOW_SECONDS = 3600.0
 
+#: The closed set of reason codes this binary can refuse with. The alert filters
+#: in `infra/terraform/environments/gcp/alerting.tf` are bound to these strings,
+#: so a new code that is not recorded here would refuse in silence. A test
+#: reads the raise sites below and fails when the two disagree.
+LOCAL_POLICY_REASON_CODES = frozenset(
+    {
+        "LOCAL_KILL_SWITCH_UNCONFIGURED",
+        "LOCAL_KILL_SWITCH_UNREADABLE",
+        "LOCAL_KILL_SWITCH_ENGAGED",
+        "LOCAL_BUDGET_UNCONFIGURED",
+        "LOCAL_BUDGET_INVALID",
+        "LOCAL_RATE_BUDGET_EXHAUSTED",
+    }
+)
+
 
 class LocalPolicyRefusal(Exception):
     """A local control refused this mutation."""

@@ -2892,7 +2892,10 @@ question-chip launcher with a transcript appended beneath it:
   refuses to load if one does. One unresolvable citation fails the whole
   claim.
 - INV-C-06 Every part carries a classification and an explicit access mode;
-  an empty record set denies. The authorized record set is computed by the
+  an empty record set denies, and so does a mode the evaluator does not
+  implement -- an unrecognized value is refused by name rather than falling
+  through to the record-set rule, which would let a mode nobody had written
+  a rule for be decided by whichever references the reader happened to hold. The authorized record set is computed by the
   authoritative, scope-aware reader from the current grant, directory, anchor
   graph, policy epoch, and membership epoch; it is never the complete local
   snapshot in a production path. `RECORD_SET` parts are filtered by envelope
@@ -2949,8 +2952,12 @@ question-chip launcher with a transcript appended beneath it:
 - INV-C-17 Platform screening (Model Armor, semantic governance) is defense
   in depth over deterministic gates; coverage claims are per recorded
   operation; a screening block is visible, never silent; an outage degrades
-  to the deterministic path. The seat consumes no MCP toolsets and
-  participates in no A2A.
+  to the deterministic path. An **unconfigured** screen is not an outage and
+  does not degrade: a composer whose only content screen is absent refuses to
+  construct. Degrading there would serve the deterministic path under the
+  governed path's name for the life of the deployment, visible only as a log
+  line, so a misconfigured revision fails readiness and never takes traffic
+  instead. The seat consumes no MCP toolsets and participates in no A2A.
 - INV-C-18 Every projection read executes under an audience-bound read grant
   with per-request digests: provider/tool reads use a turn-scoped
   `ConversationReadGrant`, while directory, question-chip, thread-list,
@@ -3186,6 +3193,7 @@ Catch-up and channels:
 | 40 | Outbound brief exceeds the binding's ceiling | deep link delivered; nothing trimmed silently |
 | 41 | Model Armor blocks inbound | visible `content_withheld` part; deterministic gates unaffected |
 | 42 | Model Armor outage | deterministic path holds; outage audited; no silent bypass of either layer |
+| 42a | ADK composer selected with no Model Armor template configured | construction refuses; the revision fails readiness and never serves; no unscreened answer is composed |
 
 MCP facade:
 

@@ -1112,6 +1112,32 @@ and cannot claim Runtime proof; migration back changes only dispatcher adapters.
   service to its known-good revision,
   but does not delete evidence before release capture.
 
+### 18.1 Operational alerting
+
+Every alert policy binds to a signal the platform already emits. A policy whose
+filter matches telemetry nothing writes is prohibited: it reads as coverage and
+provides none.
+
+- the dead-letter topic carries a pull quarantine subscription. A message is
+  published there only after delivery is exhausted, and a topic with no
+  subscription discards on publish, so the subscription is what makes an
+  exhausted workflow message recoverable at all. Nothing drains it
+  automatically; automatic redelivery would reproduce the failure that
+  quarantined it;
+- `num_undelivered_messages` above zero on that subscription alerts;
+- the actuator's in-binary controls emit one content-free record per refusal
+  carrying the enumerated reason code and nothing else. An engaged kill switch
+  alerts separately from routine refusal, because a halted mutation path is not
+  an error condition and presents to every caller as an ordinary 403;
+- sustained 5xx from `api`, `coordinator`, `actuator`, `verifier` or `evidence`
+  alerts;
+- a crossed budget threshold reaches the same channel as an outage rather than
+  billing administrators alone.
+
+Alert policies are provisioned whether or not a delivery address is configured,
+so a firing condition is always visible in Cloud Monitoring. An unconfigured
+address removes delivery only, and is a plan-time warning.
+
 ## 19. Definition of implementation complete
 
 The Minimum Submittable Release implementation is complete only when:

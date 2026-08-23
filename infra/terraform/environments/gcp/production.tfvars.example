@@ -4,6 +4,9 @@ project_id         = "REPLACE_WITH_SOLVAN_PRODUCTION_PROJECT_ID"
 billing_account_id = "REPLACE_WITH_BILLING_ACCOUNT_ID"
 environment        = "production"
 monthly_budget_usd = 500
+# Delivery address for operational alerts and budget thresholds. Unset means
+# the alert policies still exist and still fire, but tell nobody.
+alert_notification_email = "REPLACE_WITH_ONCALL_ADDRESS"
 database_admin_secret_name = "REPLACE_WITH_REGION_BOUND_SECRET_NAME"
 
 organization_id  = "org_REPLACE_WITH_ULID"

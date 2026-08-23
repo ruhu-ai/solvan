@@ -23,5 +23,18 @@ resource "google_billing_budget" "release" {
     spend_basis       = "CURRENT_SPEND"
   }
 
+  # Without this rule a crossed threshold notifies billing administrators only,
+  # which for this project is an address nobody watches during a release. The
+  # channel is the same one the operational policies use, so budget and outage
+  # reach the same place.
+  dynamic "all_updates_rule" {
+    for_each = google_monitoring_notification_channel.operations
+
+    content {
+      monitoring_notification_channels = [all_updates_rule.value.id]
+      disable_default_iam_recipients   = false
+    }
+  }
+
   depends_on = [google_project_service.required["billingbudgets.googleapis.com"]]
 }

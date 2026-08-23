@@ -45,6 +45,31 @@ def check_spec_status() -> list[str]:
     return failures
 
 
+def check_active_plan_status(root: Path = ROOT) -> list[str]:
+    """An active plan may not declare itself finished.
+
+    `docs/exec-plans/completed/README.md` says a plan moves only once its
+    outcome and definition of done are met, but nothing enforced it, so seven
+    plans sat in `active/` announcing completion. A plan with residual work
+    should say what is outstanding; a plan with none belongs in `completed/`.
+    """
+
+    failures: list[str] = []
+    for path in sorted((root / "docs/exec-plans/active").glob("*.md")):
+        for line in path.read_text(encoding="utf-8").splitlines()[:8]:
+            if not line.startswith("Status:"):
+                continue
+            declared = line[len("Status:") :].strip().lower()
+            if declared.startswith(("completed", "resolved", "done")):
+                failures.append(
+                    f"{path.relative_to(root)}: an active plan declares "
+                    f"'{declared[:40]}'; move it to completed/ or state the "
+                    "outstanding work first"
+                )
+            break
+    return failures
+
+
 def check_spec_index() -> list[str]:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     return [
@@ -157,6 +182,7 @@ def main() -> None:
     failures = [
         *check_links(),
         *check_spec_status(),
+        *check_active_plan_status(),
         *check_spec_index(),
         *check_yaml(),
         *check_requirements(),

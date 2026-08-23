@@ -450,3 +450,75 @@ def test_a_classifier_places_only_text_the_router_handed_over() -> None:
     )
     assert unrecognized.reply_intent == "OUT_OF_SCOPE"
     assert unrecognized.drafts == ()
+
+
+def _service(monkeypatch: pytest.MonkeyPatch, **env: str | None) -> Any:
+    """Build the composition root with an explicit environment."""
+
+    from apps.api.liaison_service import LiaisonService
+
+    for name in ("SOLVAN_LIAISON_COMPOSER", "SOLVAN_MODEL_ARMOR_TEMPLATE"):
+        monkeypatch.delenv(name, raising=False)
+    for name, value in env.items():
+        if value is not None:
+            monkeypatch.setenv(name, value)
+    return LiaisonService(
+        connect=lambda: None,
+        snapshot_provider=dict,
+        registry_provider=lambda: None,
+    )
+
+
+def test_adk_without_a_model_armor_template_refuses_instead_of_answering_unscreened(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A missing template is a missing control, never a missing gate.
+
+    Model Armor is the only content screen on the ADK path: it screens the
+    operator's question inbound and the model's answer outbound. The planner
+    accepts `safety_gate=None`, so an unset environment variable used to build
+    a planner that skipped both while still answering from the model -- the
+    silent bypass specification 14 §11.1 step 5 and acceptance case 42 forbid.
+
+    INV-C-17 degrades a screening *outage* to the deterministic path, which
+    `AdkQuestionComposer` still does. An unconfigured template is the other
+    case: the revision asked for the governed path and cannot provide it, so
+    it refuses to construct rather than serving something else under that
+    name for the life of the deployment.
+    """
+
+    with pytest.raises(RuntimeError, match="SOLVAN_MODEL_ARMOR_TEMPLATE"):
+        _service(monkeypatch, SOLVAN_LIAISON_COMPOSER="ADK")
+
+    # The release tooling writes this sentinel for an unset required setting,
+    # so it must refuse exactly as absence does rather than reaching the API
+    # as a literal template name.
+    with pytest.raises(RuntimeError, match="unscreened"):
+        _service(
+            monkeypatch,
+            SOLVAN_LIAISON_COMPOSER="ADK",
+            SOLVAN_MODEL_ARMOR_TEMPLATE="UNCONFIGURED",
+        )
+
+
+def test_a_configured_regional_template_still_selects_the_adk_composer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The refusal above must not have disabled the governed path."""
+
+    service = _service(
+        monkeypatch,
+        SOLVAN_LIAISON_COMPOSER="ADK",
+        SOLVAN_MODEL_ARMOR_TEMPLATE="projects/p/locations/europe-west1/templates/liaison",
+    )
+    assert isinstance(service._composer, AdkQuestionComposer)
+
+
+def test_the_deterministic_default_needs_no_armor_and_is_not_refused(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Only the ADK path depends on Armor, so the default still starts."""
+
+    from solvan.application.liaison.questions import EnumeratedComposer
+
+    assert isinstance(_service(monkeypatch)._composer, EnumeratedComposer)

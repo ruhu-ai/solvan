@@ -39,7 +39,7 @@ from solvan.domain import (
     ActionType,
     AuthorizedActionMaterial,
 )
-from solvan.observability import instrument_fastapi
+from solvan.observability import instrument_fastapi, record_control_refusal
 from solvan.persistence import PostgresActionStore
 from solvan.persistence.production_graph import read_current_graph
 from solvan.persistence.target_action_gates import (
@@ -204,6 +204,11 @@ def create_app() -> FastAPI:
             check_kill_switch()
             _rate_budget().claim()
         except LocalPolicyRefusal as refusal:
+            # The refusal is the operator's signal, not just the caller's. It is
+            # recorded before the response so an engaged switch, an exhausted
+            # budget and an unparsable policy are alertable rather than being
+            # indistinguishable 403s in an access log.
+            record_control_refusal(service_name="actuator", reason_code=refusal.reason_code)
             raise HTTPException(
                 status.HTTP_403_FORBIDDEN,
                 {"reason_code": refusal.reason_code, "detail": refusal.detail},

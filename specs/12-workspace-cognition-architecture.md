@@ -6,7 +6,8 @@ Related: [architecture](02-system-architecture.md),
 [agents](03-agent-model-runtime.md),
 [security](05-security-governance.md),
 [Ruhu profile](11-ruhu-integration-profile.md), and
-[Code Repair Workspace profile](23-code-repair-workspace-profile.md).
+[Code Repair Workspace profile](23-code-repair-workspace-profile.md), and
+[decisions](../docs/OPEN-DECISIONS.md)
 
 ## 1. Decision
 

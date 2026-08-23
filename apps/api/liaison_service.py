@@ -80,24 +80,39 @@ class LiaisonService(LiaisonTurnControlMixin, LiaisonCompositionMixin, LiaisonCh
         )
         self._process_boot_id = new_identifier("pbt")
         self._composer: Composer
-        if os.environ.get("SOLVAN_LIAISON_COMPOSER", "DETERMINISTIC").upper() == "ADK":
-            armor_template = os.environ.get("SOLVAN_MODEL_ARMOR_TEMPLATE")
-            armor_gate = (
-                GoogleModelArmorTextGate(
-                    template=armor_template,
-                    region=os.environ.get("SOLVAN_GCP_REGION", "europe-west1"),
-                )
-                if armor_template
-                else None
+        armor_template = os.environ.get("SOLVAN_MODEL_ARMOR_TEMPLATE")
+        if os.environ.get("SOLVAN_LIAISON_COMPOSER", "DETERMINISTIC").upper() != "ADK":
+            self._composer = EnumeratedComposer()
+        elif not armor_template or armor_template == "UNCONFIGURED":
+            # An unset template used to build the planner with
+            # `safety_gate=None`, so one missing environment variable turned
+            # both inbound and outbound Model Armor off while the model kept
+            # answering -- the silent bypass §11.1 step 5 forbids.
+            #
+            # INV-C-17 degrades an *outage* to the deterministic path, and
+            # `adk_composer` still does exactly that when a screening call
+            # fails. This is the other case: a revision that asked for ADK
+            # composition without configuring its only content screen is
+            # misconfigured, not degraded. Degrading here would serve the
+            # enumerated composer indefinitely while the deployment believed
+            # the governed path was live, so the configuration error refuses
+            # at construction instead. On Cloud Run that is the contained
+            # outcome: the revision fails readiness and never takes traffic,
+            # and the last healthy revision keeps serving.
+            raise RuntimeError(
+                "SOLVAN_LIAISON_COMPOSER=ADK requires SOLVAN_MODEL_ARMOR_TEMPLATE; "
+                "refusing to construct a composer that would answer unscreened"
             )
+        else:
             self._composer = AdkQuestionComposer(
                 planner=AdkQuestionPlanner(
                     model_resource=os.environ.get("SOLVAN_MODEL_RESOURCE", "gemini-3.6-flash"),
-                    safety_gate=armor_gate,
+                    safety_gate=GoogleModelArmorTextGate(
+                        template=armor_template,
+                        region=os.environ.get("SOLVAN_GCP_REGION", "europe-west1"),
+                    ),
                 )
             )
-        else:
-            self._composer = EnumeratedComposer()
 
     def reader(
         self,

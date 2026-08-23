@@ -9,6 +9,7 @@ Related: [architecture](02-system-architecture.md),
 [governed Tool Catalog](16-governed-tool-catalog.md),
 [SaaS scale and isolation](19-saas-scale-and-isolation.md),
 [Solvant Relay](22-solvant-relay.md),
+[decisions](../docs/OPEN-DECISIONS.md),
 [DDL](artifacts/schema.sql)
 
 This specification generalizes the Ruhu adoption profile into the commercial
@@ -856,6 +857,7 @@ target status and is the recommended posture for regulated estates.
 | INV-T-11 | Credential posture is recorded per connection and rendered in the console | `E2E-UI-CONNECTION-POSTURE-001` |
 | INV-T-12 | `STORED_LONG_LIVED` credentials are Secret Manager references; values never enter Cloud SQL, logs, traces, or model context | `SEC-VENDOR-KEY-CONTAINMENT-001` |
 | INV-T-13 | The kill switch is evaluated locally and holds when Solvan is unreachable | `IT-ACTUATOR-KILLSWITCH-001` |
+| INV-T-25 | Every local-policy refusal emits one content-free record carrying its enumerated reason code, so an in-binary control is observable to an operator and not only to its caller | `UT-ACTUATOR-REFUSAL-OBSERVABLE-001` |
 | INV-T-14 | Receipts are dual-written to the customer sink | `IT-ACTUATOR-DUAL-AUDIT-001` |
 | INV-T-15 | Capability is observed by probe; an unprobed connection cannot back an incident | `IT-CONNECTION-CAPABILITY-PROBE-001` |
 | INV-T-16 | Every provider instance has one explicit connection ID and no request is routed through an implicit environment/provider default | `IT-CONNECTION-NO-DEFAULT-001` |
@@ -873,7 +875,9 @@ target status and is the recommended posture for regulated estates.
 
 The security claim in §7 is only credible if it is falsifiable. This suite
 assumes Solvan is **malicious**, and every case must fail closed. Each fixture
-corresponds to a failure observed in shipping open-source incident tooling.
+corresponds to a failure observed in shipping open-source incident tooling,
+recorded in the
+[competitive landscape study](../docs/research/2026-08-08-competitive-landscape.md).
 
 | Fixture | Attack |
 |---|---|

@@ -1096,3 +1096,28 @@ check "github_app_configuration" {
     error_message = "github_release_enabled requires the App slug, App identifier, private key, and webhook secret."
   }
 }
+
+variable "alert_notification_email" {
+  description = "Address receiving Solvan operational alerts and budget notifications."
+  type        = string
+  default     = "UNCONFIGURED"
+
+  validation {
+    condition = var.alert_notification_email == "UNCONFIGURED" || can(
+      regex("^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$", var.alert_notification_email)
+    )
+    error_message = "alert_notification_email must be an email address."
+  }
+}
+
+# Alert policies are created either way, so a firing condition is always visible
+# in Cloud Monitoring. What an unconfigured address removes is *delivery* — the
+# policy opens an incident nobody is told about. That is worth a plan-time
+# warning rather than a silent default, because the failure it produces is
+# indistinguishable from "nothing went wrong".
+check "alert_delivery_configured" {
+  assert {
+    condition     = var.alert_notification_email != "UNCONFIGURED"
+    error_message = "alert_notification_email is unset; alert policies will open incidents that notify nobody."
+  }
+}

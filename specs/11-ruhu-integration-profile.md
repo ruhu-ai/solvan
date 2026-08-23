@@ -2,7 +2,7 @@
 
 Status: target product contract; excluded from the competition release gate
 Audience: Solvan, Ruhu, platform, security, SRE, product, and QA
-Related: [product requirements](01-product-requirements.md), [architecture](02-system-architecture.md), [security](05-security-governance.md), [acceptance](08-test-evaluation-acceptance.md), [governed Tool Catalog](16-governed-tool-catalog.md), [machine profile](artifacts/ruhu-integration-profile.template.yaml), Ruhu-side integration note
+Related: [product requirements](01-product-requirements.md), [architecture](02-system-architecture.md), [security](05-security-governance.md), [acceptance](08-test-evaluation-acceptance.md), [governed Tool Catalog](16-governed-tool-catalog.md), [machine profile](artifacts/ruhu-integration-profile.template.yaml), [Ruhu-side integration note](../../ruhu/docs/solvan-integration.md)
 Reviewed Ruhu checkout: `86165d227820453c834bfc3acffa8be6e80157ed`, with uncommitted application changes present on 2026-08-08
 
 ## 1. Purpose and product boundary

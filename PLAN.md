@@ -2,6 +2,8 @@
 
 Status: active guidance
 Submission deadline: 2026-08-31 17:00 PT
+Supporting guide:
+[`docs/exec-plans/active/2026-08-14-final-17-day-submission-plan.md`](docs/exec-plans/active/2026-08-14-final-17-day-submission-plan.md)
 
 Use the remaining time in two broad passes:
 

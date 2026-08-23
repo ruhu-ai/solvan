@@ -27,6 +27,7 @@ from solvan.application.liaison import (
 )
 from solvan.application.liaison.parts import user_part, withheld_part
 from solvan.domain import Scope
+from solvan.persistence.liaison_visibility import UnknownAccessMode, reader_may_see_row
 
 SCOPE = Scope(
     "org_00000000000000000000000000",
@@ -207,3 +208,57 @@ def test_an_expired_steer_grant_cannot_be_spent() -> None:
     )
     with pytest.raises(GrantError, match="expired"):
         issuer.consume_steer_grant(steer)
+
+
+def test_an_unrecognized_stored_access_mode_refuses_rather_than_falling_through() -> None:
+    """A mode this build cannot evaluate is never resolved into a grant.
+
+    The stored evaluator takes `access_mode` as a bare column value, so unlike
+    the in-memory twin in `parts.py` -- which matches on `AccessMode` members
+    and cannot hold an unknown -- it can be handed a string no branch claims.
+    Every such value used to fall through to the record-set rule, so a mode
+    added to the schema after this build, or a typo, was silently evaluated as
+    "the authorized references decide" and returned True whenever the reader
+    happened to hold them.
+    """
+
+    authorized = {("incident", "INC-1042")}
+    references = {("incident", "INC-1042")}
+
+    # The reader holds every referenced record, so the old fall-through would
+    # have granted visibility on a rule that was never written.
+    with pytest.raises(UnknownAccessMode, match="PARTICIPANTS_AT_EPOC"):
+        reader_may_see_row(
+            access_mode="PARTICIPANTS_AT_EPOC",  # one character short
+            author_principal="user:someone-else",
+            references=references,
+            reader_principal="user:reader",
+            authorized=authorized,
+            participant_epochs={},
+            membership_epoch=None,
+        )
+
+
+def test_the_record_set_modes_still_decide_on_their_authorized_references() -> None:
+    """The refusal above must not have narrowed the two legitimate modes."""
+
+    for mode in ("RECORD_SET", "DERIVED_SOURCES"):
+        assert reader_may_see_row(
+            access_mode=mode,
+            author_principal="user:author",
+            references={("incident", "INC-1042")},
+            reader_principal="user:reader",
+            authorized={("incident", "INC-1042")},
+            participant_epochs={},
+            membership_epoch=None,
+        )
+        # And an empty set still denies rather than passing vacuously.
+        assert not reader_may_see_row(
+            access_mode=mode,
+            author_principal="user:author",
+            references=set(),
+            reader_principal="user:reader",
+            authorized={("incident", "INC-1042")},
+            participant_epochs={},
+            membership_epoch=None,
+        )
