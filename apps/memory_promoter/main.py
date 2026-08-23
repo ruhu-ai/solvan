@@ -20,6 +20,7 @@ from solvan.observability import instrument_fastapi
 from solvan.persistence import PostgresMemoryStore
 from solvan.platform import GeminiMemoryBank, MemoryBankConfiguration, VertexMemoryAPI
 from solvan.platform.database import connect_database
+from solvan.platform.memory_bank import resolve_engine_id
 
 
 class TickRequest(BaseModel):
@@ -79,13 +80,17 @@ def _required(name: str) -> str:
 
 
 def _engine_id(resource: str, *, project_id: str, location: str) -> str:
-    prefix = f"projects/{project_id}/locations/{location}/reasoningEngines/"
-    if not resource.startswith(prefix):
-        raise RuntimeError("Memory Bank resource is outside the exact deployment scope")
-    engine_id = resource.removeprefix(prefix)
-    if not engine_id or "/" in engine_id:
-        raise RuntimeError("Memory Bank reasoning engine resource is malformed")
-    return engine_id
+    # Vertex names the deployed engine with the project number; the shared
+    # resolver accepts either spelling of this exact project and nothing else.
+    try:
+        return resolve_engine_id(
+            resource,
+            project_id=project_id,
+            project_number=_required("SOLVAN_GCP_PROJECT_NUMBER"),
+            location=location,
+        )
+    except ValueError as error:
+        raise RuntimeError(str(error)) from error
 
 
 app = FastAPI(title="Solvan Memory Promoter", version="1.0.0", docs_url=None, redoc_url=None)

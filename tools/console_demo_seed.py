@@ -74,6 +74,59 @@ STEPS = (
 )
 
 
+def _payload_projection(detected_at: datetime, evidence_id: str) -> Jsonb | None:
+    """Fifteen one-minute buckets for the monitoring item, or nothing.
+
+    Shaped as `apps/evidence_broker/helpers.payload_projection` writes it, so the
+    console renders the demo through the same projection a real Cloud Monitoring
+    read produces rather than through a second, friendlier shape.
+    """
+    if evidence_id == EVIDENCE[1][0]:
+        # The observed service revision: what the axis draws its revision marker
+        # from, arriving four minutes before detection so the marker precedes
+        # the breach it explains.
+        return Jsonb(
+            {
+                "kind": "service_revision",
+                "revision": "payments-api-00042-abc",
+                "changed_at": (detected_at - timedelta(minutes=4)).isoformat(),
+            }
+        )
+    if evidence_id != EVIDENCE[0][0]:
+        return None
+    curve = [
+        0.004,
+        0.004,
+        0.005,
+        0.004,
+        0.006,
+        0.031,
+        0.092,
+        0.164,
+        0.181,
+        0.178,
+        0.184,
+        0.096,
+        0.021,
+        0.006,
+        0.004,
+    ]
+    start = detected_at - timedelta(minutes=len(curve) - 1)
+    return Jsonb(
+        {
+            "kind": "metric_series",
+            "signal_kind": "HTTP_5XX_RATIO",
+            "points": [
+                {
+                    "observed_at": (start + timedelta(minutes=index)).isoformat(),
+                    "value": value,
+                }
+                for index, value in enumerate(curve)
+            ],
+        }
+    )
+
+
 def _hash(seed: str) -> str:
     """A visibly synthetic content hash of the right shape."""
 
@@ -203,11 +256,12 @@ def seed_investigation(
                   source_resource,query_spec_json,window_start,window_end,observed_at,
                   content_ref,content_hash,classification,residency,
                   redaction_manifest_ref,provenance_json,freshness_expires_at,
-                  created_by_agent_run_id)
+                  created_by_agent_run_id,projection_json)
                VALUES (%(organization_id)s,%(project_id)s,%(environment_id)s,%(id)s,
                   %(incident_id)s,%(source_kind)s,%(resource)s,%(query)s,%(start)s,
                   %(end)s,%(observed)s,%(content_ref)s,%(content_hash)s,'INTERNAL',
-                  'europe-west1',%(redaction)s,%(provenance)s,%(expires)s,%(run_id)s)
+                  'europe-west1',%(redaction)s,%(provenance)s,%(expires)s,%(run_id)s,
+                  %(series)s)
                ON CONFLICT DO NOTHING""",
             {
                 **values,
@@ -227,6 +281,7 @@ def seed_investigation(
                 ),
                 "expires": detected_at + timedelta(days=7),
                 "run_id": _run_id(min(index, len(STEPS) - 1)),
+                "series": _payload_projection(detected_at, evidence_id),
             },
         )
         written += 1

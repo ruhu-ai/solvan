@@ -19,6 +19,9 @@ from solvan.platform.model_routes import qualified_model_endpoint
 
 ROOT = Path(__file__).resolve().parents[1]
 DATASET = ROOT / "evals/cases/model-quality.yaml"
+# Written while the live client is open; the receipt records what the client
+# resolved, so a wrong pin fails the receipt instead of hiding behind it.
+_OBSERVED_ENDPOINT: dict[str, str] = {"value": ""}
 THRESHOLDS = {
     "observation_precision": 0.90,
     "observation_recall": 0.85,
@@ -194,7 +197,19 @@ def live_attempts(suite: QualitySuite, *, repetitions: int = 3) -> tuple[Attempt
     model = os.environ["SOLVAN_GEMINI_EVAL_MODEL"]
     qualified_model_endpoint(model=model, location=location)
     attempts: list[Attempt] = []
-    with genai.Client(enterprise=True, project=project, location=location) as client:
+    with genai.Client(
+        enterprise=True,
+        project=project,
+        location=location,
+        # Pin the qualified endpoint in the client rather than asserting
+        # it in the receipt; the receipt reads the value back off the
+        # live client, recording an observation instead of a lookup.
+        http_options=types.HttpOptions(
+            base_url=qualified_model_endpoint(model=model, location=location)
+        ),
+    ) as client:
+        observed = getattr(getattr(client, "_api_client", None), "_http_options", None)
+        _OBSERVED_ENDPOINT["value"] = str(getattr(observed, "base_url", "") or "")
         for case in suite.cases:
             prompt, input_hash = _input(case)
             for repetition in range(1, repetitions + 1):
@@ -248,6 +263,14 @@ def live_attempts(suite: QualitySuite, *, repetitions: int = 3) -> tuple[Attempt
 
 def write_receipt(output: Path, *, suite: QualitySuite, attempts: tuple[Attempt, ...]) -> bool:
     result = score(suite, attempts)
+    endpoint_bound = _OBSERVED_ENDPOINT["value"] == qualified_model_endpoint(
+        model=os.environ["SOLVAN_GEMINI_EVAL_MODEL"],
+        location=os.environ["SOLVAN_GEMINI_EVAL_LOCATION"],
+    )
+    if not endpoint_bound:
+        result = {**result, "passed": False, "endpoint_bound": False}
+    else:
+        result = {**result, "endpoint_bound": True}
     model = os.environ["SOLVAN_GEMINI_EVAL_MODEL"]
     location = os.environ["SOLVAN_GEMINI_EVAL_LOCATION"]
     value = {
@@ -258,7 +281,8 @@ def write_receipt(output: Path, *, suite: QualitySuite, attempts: tuple[Attempt,
         "project": os.environ["SOLVAN_GEMINI_EVAL_PROJECT"],
         "location": location,
         "model": model,
-        "endpoint": qualified_model_endpoint(model=model, location=location),
+        "endpoint": _OBSERVED_ENDPOINT["value"],
+        "endpoint_qualified": qualified_model_endpoint(model=model, location=location),
         **result,
         "attempts": [attempt.model_dump(mode="json") for attempt in attempts],
     }

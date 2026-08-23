@@ -24,7 +24,6 @@ from solvan.application.liaison.anchors import Anchor
 from solvan.application.liaison.budgets import TurnUsage
 from solvan.application.liaison.grants import (
     ConversationReadGrant,
-    verify_read_request,
 )
 from solvan.application.liaison.predicates import ProjectionReader
 
@@ -123,15 +122,20 @@ class GrantedReader:
         )
 
     def _authorize(self, method: str, arguments: dict[str, object]) -> None:
-        """Authorize, digest-bind, loop-check, and count one exact read."""
+        """Authorize, loop-check, and count one exact read.
 
-        presented = self._grant.request_digest(method, arguments)
-        verify_read_request(
-            self._grant,
-            method=method,
-            arguments=arguments,
-            presented_digest=presented,
-        )
+        This used to compute `grant.request_digest(method, arguments)` and
+        hand it to `verify_read_request`, which recomputes the same value and
+        compares -- a check that compared a value with itself and could not
+        fail. The digest binding is real only where a digest crosses a
+        boundary: a caller that *received* one presents it, and the grant
+        holder recomputes. Inside this process the reader and the grant are
+        the same party, so the load-bearing controls are the ones invoked
+        here: the grant's method allow-list and expiry. The dead comparison
+        is removed rather than left looking like a control.
+        """
+
+        self._grant.authorize(method)
         if self._verifying:
             self._usage.verification_reads += 1
             return

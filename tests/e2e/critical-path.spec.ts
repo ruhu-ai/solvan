@@ -523,7 +523,10 @@ test("Fleet exposes governed Alert policy and capacity evidence", async ({ page 
   // What the policy does, and whether it can admit right now, are on the card:
   // the operator should not have to open a detail panel to learn either.
   await expect(page.getByText("Investigate, then escalate by rule")).toBeVisible();
-  await expect(page.getByText("Admitting", { exact: true })).toBeVisible();
+  // The badge now carries its machine state as a real text node so assistive
+  // technology reaches it; `title` alone was hover-only, which specification 6
+  // never permitted. The visible label is still the human sentence.
+  await expect(page.locator(".status-badge-label").getByText("Admitting", { exact: true })).toBeVisible();
   await expect(page.getByText("Source ready")).toBeVisible();
   await expect(page.getByText("user:policy-approver@example.com")).toBeVisible();
   await page.getByRole("button", { name: /payments-http-errors/ }).click();
@@ -1295,7 +1298,11 @@ test("verification renders labelled intervals, table equivalence, and connector 
   const table = page.getByRole("table", { name: "Equivalent table for baseline and verification intervals" });
   await expect(table).toBeVisible();
   for (const interval of ["Healthy baseline", "Fault", "Mutation", "Warmup", "Observation"]) {
-    await expect(table.getByRole("cell", { name: interval, exact: true })).toBeVisible();
+    // On narrow viewports the responsive table prefixes each cell's
+    // accessible name with its data-label ("Interval Healthy baseline"), so
+    // an exact role-name match finds nothing there. The label text itself is
+    // what must render; assert on it directly in both layouts.
+    await expect(table.getByText(interval, { exact: true })).toBeVisible();
   }
   await expect(page.getByText("The connector receipt did not decide this verdict.")).toBeVisible();
 });
@@ -1312,6 +1319,48 @@ test("investigation map preserves plan, evidence, inference, and operator-brief 
   await expect(page.getByText("Confirm customer-path impact")).toBeVisible();
   await expect(page.getByText("Inferred — not validated", { exact: true })).toBeVisible();
   await expect(page.getByText(/chain[- ]of[- ]thought/i)).toHaveCount(0);
+});
+
+test("the incident axis is drawn from stored evidence and nothing else", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: /Open incident workspace/ }).click();
+  await page.getByRole("tab", { name: "Evidence" }).click();
+  await expect(page.getByRole("heading", { name: "Observed window" })).toBeVisible();
+
+  // The caption states what the axis is made of: the signal, the bucket count
+  // and the span. A chart that cannot say that is asserting a window.
+  const figure = page.locator(".chart-block figcaption");
+  await expect(figure).toContainText("HTTP_5XX_RATIO");
+  await expect(figure).toContainText("15 buckets");
+
+  // Every point is reachable by keyboard, not only by pointer.
+  const firstPoint = page.locator(".chart-block .hit").first();
+  await firstPoint.focus();
+  await expect(firstPoint).toBeFocused();
+
+  // The table is the equivalent the design system requires, and it carries the
+  // same number of rows the caption claims.
+  await page.getByRole("button", { name: /observations as a table/ }).click();
+  await expect(page.locator(".chart-block tbody tr")).toHaveCount(15);
+
+  // The axis cites the evidence it was composed from.
+  await expect(page.locator(".chart-sources code").first()).toContainText("evd_");
+
+  // The observed service revision is drawn as its own marker, named for what
+  // Cloud Run reported rather than for a deployment event nobody recorded.
+  await expect(page.locator(".chart-block").getByText(/^revision /)).toBeVisible();
+
+  // The overview carries the same series as a sparkline. It is not in the
+  // incident queue: that table is at its width budget and the repository
+  // enforces that no cell overruns its column.
+  await navigate(page, "Overview");
+  await expect(page.locator(".active-incident-card .sparkline")).toBeVisible();
+
+  // Every stat tile states its change over a named period and the trend it
+  // moved along. A tile with neither is a figure with no history behind it.
+  const tile = page.locator(".metric-card").first();
+  await expect(tile.locator(".metric-delta")).toContainText("over 12 days");
+  await expect(tile.locator(".trendline")).toBeVisible();
 });
 
 test("reliability case exposes exact patch review and calendar-separated continuity", async ({ page }) => {

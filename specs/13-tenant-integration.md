@@ -446,6 +446,28 @@ environment binding, and the connection's observed `METRIC_READ` coverage.
 Neither value is derived from the other; absent, mismatched, unbound, or
 uncovered values refuse before evidence, triage, or incident work.
 
+**A partial read refuses.** `projects.timeSeries.list` under `view=FULL`
+bounds `pageSize` by **Points**, not by series, so an observation window that
+needs more aligned buckets than one page can carry returns truncated with a
+`nextPageToken`. A reduction over that prefix describes a shorter window than
+the one asked about, and for a `MAX` reduction it omits any peak that fell
+later — a missed breach reported as a passing verdict. The read therefore
+follows the page token to exhaustion, and refuses with the window and the
+alignment period named if the bound is reached. It never reduces over a prefix.
+The failure is a condition an operator resolves by widening the alignment
+period or narrowing the window; neither is a choice the reader may make on a
+verification path, because both change what the value means.
+
+**The aligned buckets are evidence; the reduction is the authority.** The read
+already asks for a 60-second alignment, so the response carries one bucket a
+minute. Detection and verification consume only the reduced value, and nothing
+about how it is computed depends on the buckets being retained. They are kept
+alongside it, oldest first with the end of each bucket as its instant, so that
+a reader can be shown the shape of a window rather than a single number. A
+bucket whose interval is missing still counts toward the reduction and takes no
+position on the axis: dropping it would move the authoritative value, which
+this contract forbids.
+
 **Cross-project reduction refuses.** A cross-series reduction over series from
 more than one project produces a number describing no real service. A read whose
 response carries more than one distinct project is an error, never a sum: either

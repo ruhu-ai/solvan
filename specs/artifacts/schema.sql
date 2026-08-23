@@ -1042,10 +1042,34 @@ CREATE TABLE evidence_items (
   provenance_json jsonb NOT NULL,
   freshness_expires_at timestamptz NOT NULL,
   created_by_agent_run_id text,
+  -- A bounded projection of the evidence payload, for the console alone. The
+  -- content itself stays in GCS behind the broker; the console reads Cloud SQL
+  -- and never reads evidence objects, so without a projection here an operator
+  -- surface would either invent what it shows or the console tier would need
+  -- customer-evidence read scope it has never had.
+  --
+  -- One column with a discriminator rather than one column per payload shape:
+  -- `kind` says what it is and the constraint below checks that shape and no
+  -- other. A metric series is bounded to a fifteen-minute window's worth of
+  -- one-minute buckets, with headroom.
+  projection_json jsonb,
   PRIMARY KEY (organization_id, project_id, environment_id, id),
   FOREIGN KEY (organization_id, project_id, environment_id, incident_id)
     REFERENCES incidents(organization_id, project_id, environment_id, id),
-  CHECK (window_end >= window_start)
+  CHECK (window_end >= window_start),
+  CHECK (projection_json IS NULL OR (
+    projection_json ->> 'kind' IN ('metric_series', 'service_revision')
+    AND CASE projection_json ->> 'kind'
+      WHEN 'metric_series' THEN
+        jsonb_typeof(projection_json -> 'points') = 'array'
+        AND jsonb_array_length(projection_json -> 'points') <= 64
+        AND jsonb_typeof(projection_json -> 'signal_kind') = 'string'
+      WHEN 'service_revision' THEN
+        jsonb_typeof(projection_json -> 'revision') = 'string'
+        AND jsonb_typeof(projection_json -> 'changed_at') = 'string'
+      ELSE false
+    END
+  ))
 );
 
 CREATE TABLE tool_calls (

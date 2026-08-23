@@ -9,16 +9,17 @@ selection indicator and the dark-theme sign-in button painted #E6E8EB text on a
 hard-coded white pill at 1.23:1 — plus eighteen raw colour literals and a
 hundred and forty-nine hand-set font sizes. Prose did not prevent any of it.
 
-Five checks, in the order a reviewer would apply them:
+Six checks, in the order a reviewer would apply them:
 
-1. every ``var(--x)`` resolves to a definition;
-2. colour literals appear only in ``tokens.css``;
-3. font sizes and weights come from the type scale, not from a call site;
-4. the semantic contrast pairs hold in both themes;
-5. the status palette's hues stay separable, including under simulated colour
+1. braces balance and no rule is left open;
+2. every ``var(--x)`` resolves to a definition;
+3. colour literals appear only in ``tokens.css``;
+4. font sizes and weights come from the type scale, not from a call site;
+5. the semantic contrast pairs hold in both themes;
+6. the status palette's hues stay separable, including under simulated colour
    vision deficiency.
 
-Check 5 is a Python twin of the reference JavaScript validator: same OKLab
+Check 6 is a Python twin of the reference JavaScript validator: same OKLab
 conversion, same Machado-Oliveira-Fernandes (2009) severity-1.0 transforms,
 same thresholds. A CI gate cannot reach a bundled tool, and a gate that depends
 on a path outside the repository is not a gate.
@@ -203,6 +204,35 @@ def check_defined_tokens() -> list[str]:
                         f"{path.relative_to(ROOT)}:{number}: var({name}) is never defined; "
                         "the declaration is dropped"
                     )
+    return failures
+
+
+def check_structure() -> list[str]:
+    """Braces must balance, and no rule may be left open.
+
+    A stylesheet with one missing brace still loads: the browser swallows the
+    remainder of the block, so a whole media query silently stops applying and
+    the page looks almost right. The bundler reports it as a warning and the
+    build still succeeds. Nothing else here reads CSS structurally, so a
+    scripted edit that ate a closing brace went unnoticed until a browser test
+    failed for an unrelated-looking reason.
+    """
+    failures: list[str] = []
+    for path in stylesheets():
+        blanked = _blank_comments(path.read_text(encoding="utf-8"))
+        depth = 0
+        for number, line in enumerate(blanked.splitlines(), start=1):
+            depth += line.count("{") - line.count("}")
+            if depth < 0:
+                failures.append(
+                    f"{path.relative_to(ROOT)}:{number}: closing brace with no rule open"
+                )
+                break
+        else:
+            if depth != 0:
+                failures.append(
+                    f"{path.relative_to(ROOT)}: {depth} rule(s) left unclosed at end of file"
+                )
     return failures
 
 
@@ -392,6 +422,7 @@ def check_palette_separation() -> list[str]:
 
 def main() -> None:
     failures = [
+        *check_structure(),
         *check_defined_tokens(),
         *check_colour_literals(),
         *check_type_scale(),

@@ -47,17 +47,20 @@ export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?:
  *  states that have stopped moving, so a settled state is a different SHAPE
  *  from one still in flight rather than only a different word.
  *
- *  `machine` stays on `title`. Exposing it as visually-hidden text instead
- *  would reach keyboard and touch users, but it also joins the badge's text
- *  content, and the critical path asserts both `getByTitle` and an exact
- *  `getByText` against these badges. Widening the affordance is a change to a
- *  tested contract and to specification 6, not a detail to alter in passing.
+ *  `machine` is the exact machine state. Specification 6 asks for it on hover
+ *  AND focus; `title` on a non-interactive span delivers hover only, and is
+ *  unreliable on touch and inconsistently announced by assistive technology.
+ *  It is now carried as a real text node the accessible name includes, with
+ *  `title` kept for the pointer affordance it does serve. The visible label
+ *  stays the human sentence — the machine state is never the primary label.
  */
 export function StatusBadge({ label, tone = "neutral", machine, terminal = false }: { label: string; tone?: StatusTone; machine?: string; terminal?: boolean }): React.JSX.Element {
+  const exact = machine && machine !== label ? machine : null;
   return (
     <span className={`status-badge status-${tone}`} title={machine ?? label}>
       <span aria-hidden="true">{statusIcon(tone, terminal)}</span>
-      {label}
+      <span className="status-badge-label">{label}</span>
+      {exact && <span className="sr-only">{` · machine state ${exact}`}</span>}
     </span>
   );
 }

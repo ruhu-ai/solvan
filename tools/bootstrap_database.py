@@ -1211,9 +1211,22 @@ def transactional_liaison_schema_sql() -> str:
 
 
 def expected_liaison_tables() -> int:
-    """How many tables the target conversational schema declares."""
+    """How many tables the conversational schema declares across its chain.
 
-    return LIAISON_SCHEMA.read_text(encoding="utf-8").count("\nCREATE TABLE ")
+    Counting only the baseline file broke the moment a forward-only
+    expansion created a table: the v4 durable-nonce migration added the
+    38th, and the drift guard refused a correct database as drifted. The
+    expected count is a property of the whole registered chain, so it is
+    derived from the same migration registry bootstrap applies.
+    """
+
+    from tools.target_schema_migrations import MIGRATIONS
+
+    return sum(
+        migration.source.read_text(encoding="utf-8").count("\nCREATE TABLE ")
+        for migration in MIGRATIONS
+        if migration.schema_name == "solvan_liaison"
+    )
 
 
 def transactional_operability_schema_sql() -> str:

@@ -23,6 +23,7 @@ from solvan.platform.memory_bank import (
     GeminiMemoryBank,
     MemoryBankConfiguration,
     VertexMemoryAPI,
+    resolve_engine_id,
 )
 
 _MEMORY_PURPOSE = "incident-patterns"
@@ -110,14 +111,17 @@ class EvidenceMemoryContextEnricher:
     def _service_for(
         settings: CoordinatorSettings, connection: Connection[Any]
     ) -> GovernedMemorySearchService:
-        prefix = (
-            f"projects/{settings.gcp_project_id}/locations/{settings.gcp_region}/reasoningEngines/"
-        )
-        if not settings.memory_bank_resource.startswith(prefix):
-            raise RuntimeError("Memory Bank resource is outside the configured project/region")
-        engine_id = settings.memory_bank_resource.removeprefix(prefix)
-        if not engine_id or "/" in engine_id:
-            raise RuntimeError("Memory Bank resource name is invalid")
+        # Vertex names the deployed engine with the project number; accept
+        # either spelling of this exact project/region and nothing else.
+        try:
+            engine_id = resolve_engine_id(
+                settings.memory_bank_resource,
+                project_id=settings.gcp_project_id,
+                project_number=settings.gcp_project_number,
+                location=settings.gcp_region,
+            )
+        except ValueError as error:
+            raise RuntimeError(str(error)) from error
         config = MemoryBankConfiguration(
             settings.gcp_project_id,
             settings.gcp_region,

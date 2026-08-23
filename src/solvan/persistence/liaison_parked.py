@@ -22,8 +22,10 @@ from enum import StrEnum
 from typing import Any
 
 from psycopg import Connection
+from psycopg.errors import UniqueViolation
 from psycopg.rows import dict_row
 
+from solvan.application.liaison.grants import GrantError
 from solvan.domain import Scope, new_identifier
 
 #: A pending request expires no later than this, and often sooner — §14
@@ -369,3 +371,42 @@ class ParkedRequestStore:
                 {**scope.canonical_dict(), "now": moment},
             )
             return len(cursor.fetchall())
+
+
+def consume_steer_nonce(
+    connection: Any,
+    *,
+    scope: Scope,
+    nonce: str,
+    grant_digest: str,
+    parked_request_id: str,
+    confirming_principal: str,
+) -> None:
+    """Spend a steer-grant nonce durably, or refuse a replay.
+
+    The issuer's in-memory set survives neither a restart nor a second
+    serving instance, so once-only was in truth borrowed from the parked
+    decision's idempotency. This row is the grant's own guarantee: the
+    primary key makes a second consumption a unique violation whichever
+    instance attempts it, and the insert commits in the same transaction as
+    the coordinator-inbox submission it authorizes.
+    """
+
+    try:
+        connection.execute(
+            """INSERT INTO solvan_liaison.liaison_consumed_steer_grants
+                (organization_id, project_id, environment_id, nonce,
+                 grant_digest, parked_request_id, confirming_principal)
+               VALUES (%(organization_id)s, %(project_id)s, %(environment_id)s,
+                 %(nonce)s, %(grant_digest)s, %(parked_request_id)s,
+                 %(confirming_principal)s)""",
+            {
+                **scope.canonical_dict(),
+                "nonce": nonce,
+                "grant_digest": grant_digest,
+                "parked_request_id": parked_request_id,
+                "confirming_principal": confirming_principal,
+            },
+        )
+    except UniqueViolation as error:
+        raise GrantError("the steer submission grant has already been used") from error

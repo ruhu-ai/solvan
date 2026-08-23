@@ -41,6 +41,7 @@ from solvan.domain import (
 )
 from solvan.observability import instrument_fastapi, record_control_refusal
 from solvan.persistence import PostgresActionStore
+from solvan.persistence.actuator_dispatch_store import count_dispatches_in_window
 from solvan.persistence.production_graph import read_current_graph
 from solvan.persistence.target_action_gates import (
     PostgresEarnedAutonomyActionGate,
@@ -222,6 +223,27 @@ def create_app() -> FastAPI:
                 httpx.Client(timeout=httpx.Timeout(10.0, read=35.0)) as client,
             ):
                 store = PostgresActionStore(connection)
+                # The durable half of the hourly ceiling. The in-process
+                # budget above is the floor that holds when the database is
+                # unreachable; this count is shared by every instance and
+                # survives cold starts, closing the scale-to-zero reset the
+                # review found. Same closed reason code, same alert filter.
+                recent = count_dispatches_in_window(connection, window_seconds=3600)
+                if recent >= _rate_budget().limit:
+                    record_control_refusal(
+                        service_name="actuator",
+                        reason_code="LOCAL_RATE_BUDGET_EXHAUSTED",
+                    )
+                    raise HTTPException(
+                        status.HTTP_403_FORBIDDEN,
+                        {
+                            "reason_code": "LOCAL_RATE_BUDGET_EXHAUSTED",
+                            "detail": (
+                                "the durable hourly mutation ceiling is exhausted "
+                                f"({recent} dispatches in the trailing hour)"
+                            ),
+                        },
+                    )
                 with connection.transaction():
                     scope = store.bound_scope()
                     store.require_execution_invocation(

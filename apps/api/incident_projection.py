@@ -9,6 +9,7 @@ from psycopg import Connection
 from psycopg.rows import dict_row
 
 from apps.api.incident_evidence import _agent_council, _causal_chain, _evidence_index
+from apps.api.incident_series import series_view
 from apps.api.projection_format import _age, _short
 from solvan.domain import Scope
 from solvan.persistence import PostgresApprovalStore
@@ -86,7 +87,9 @@ def incident_projection(
         hypotheses = cursor.fetchall()
         cursor.execute(
             """SELECT a.*, p.policy_version, p.decision AS policy_decision,
-                e.id AS receipt_id, e.result AS receipt_result
+                e.id AS receipt_id, e.result AS receipt_result,
+                e.started_at AS receipt_started_at,
+                e.reconciled_at AS receipt_reconciled_at
               FROM solvan.actions a
               JOIN solvan.policy_decisions p
                 ON (p.organization_id, p.project_id, p.environment_id, p.id)
@@ -104,12 +107,19 @@ def incident_projection(
         )
         action_rows = cursor.fetchall()
         cursor.execute(
-            """SELECT * FROM solvan.verification_runs
-              WHERE organization_id = %(organization_id)s
-                AND project_id = %(project_id)s
-                AND environment_id = %(environment_id)s
-                AND incident_id = %(incident_id)s
-              ORDER BY completed_at DESC LIMIT 1""",
+            """SELECT r.*, p.required_signals_json
+              FROM solvan.verification_runs r
+              LEFT JOIN solvan.verification_profiles p
+                ON p.organization_id = r.organization_id
+               AND p.project_id = r.project_id
+               AND p.environment_id = r.environment_id
+               AND p.id = r.profile_id
+               AND p.version = r.profile_version
+              WHERE r.organization_id = %(organization_id)s
+                AND r.project_id = %(project_id)s
+                AND r.environment_id = %(environment_id)s
+                AND r.incident_id = %(incident_id)s
+              ORDER BY r.completed_at DESC LIMIT 1""",
             parameters,
         )
         verification = cursor.fetchone()
@@ -128,7 +138,7 @@ def incident_projection(
         cursor.execute(
             """SELECT id, source_kind, source_resource, window_start, window_end,
                 classification, redaction_manifest_ref, freshness_expires_at,
-                content_ref
+                content_ref, projection_json
               FROM solvan.evidence_items
               WHERE organization_id = %(organization_id)s
                 AND project_id = %(project_id)s
@@ -406,6 +416,12 @@ def incident_projection(
             current_state=str(incident["state"]),
         ),
         "verification": _verification_view(verification),
+        "series": series_view(
+            evidence_rows,
+            incident=incident,
+            action_rows=action_rows,
+            verification=verification,
+        ),
         "timeline": [
             {
                 "time": row["occurred_at"].astimezone(UTC).strftime("%H:%M:%S"),
@@ -537,27 +553,59 @@ def _verification_view(row: dict[str, Any] | None) -> dict[str, Any]:
             "owner": "Verification Agent",
             "binding": "not resolved",
             "intervals": [],
+            "signals": [],
+            "window": "not started",
             "threshold": "policy-owned",
             "synthetic": "not run",
         }
     signal_results = _json_list(row["signal_results_json"])
+    # The profile states each signal's comparator and threshold. Without it every
+    # row had to borrow the run's overall verdict, so a signal that failed and a
+    # signal that passed rendered identically, and the p95 column was the literal
+    # string "n/a" for every signal including the p95 one.
+    requirements = {
+        str(item.get("signal_key")): item
+        for item in _json_list(row.get("required_signals_json"))
+        if isinstance(item, dict)
+    }
     return {
         "id": str(row["id"]),
         "verdict": str(row["verdict"]),
         "profile": f"{row['profile_id']} v{row['profile_version']}",
         "owner": "Independent Verification Agent",
         "binding": str(row["resolved_binding_ref"]),
-        "intervals": [
-            {
-                "name": str(item.get("signal_key", "signal")),
-                "window": f"{row['window_start']} to {row['window_end']}",
-                "error_ratio": str(item.get("value", "n/a")),
-                "p95": "n/a",
-                "result": str(row["verdict"]),
-            }
+        # The verification record holds observations per signal, not phases.
+        # This projection used to label them "intervals" and give every row the
+        # run's overall verdict, so a signal that failed and one that passed
+        # rendered identically.
+        "intervals": [],
+        "signals": [
+            _signal_row(item, requirements.get(str(item.get("signal_key"))))
             for item in signal_results
             if isinstance(item, dict)
         ],
+        "window": f"{row['window_start']} to {row['window_end']}",
         "threshold": "immutable profile comparators",
         "synthetic": str(row["synthetic_receipt_ref"] or "missing"),
+    }
+
+
+def _signal_row(observed: dict[str, Any], requirement: dict[str, Any] | None) -> dict[str, Any]:
+    """One observed signal beside the objective it was measured against.
+
+    The console states the observation and the objective and does not adjudicate
+    between them. The verifier owns that comparison and its verdict is rendered
+    once, on the panel, rather than copied onto every row: re-deriving it here
+    would put a second comparator in the product, and the two could disagree.
+    """
+    value = observed.get("value")
+    comparator = str(requirement.get("comparator", "")) if requirement else ""
+    threshold = requirement.get("threshold") if requirement else None
+    return {
+        "signal": str(observed.get("signal_key", "signal")),
+        "provider_kind": str(observed.get("provider_signal_kind", "")),
+        "observed_value": float(value) if isinstance(value, int | float) else None,
+        "observed_at": str(observed.get("observed_at", "")),
+        "objective": f"{comparator} {threshold}".strip() if comparator else "profile-owned",
+        "citations": [str(item) for item in observed.get("request_ids", []) if item],
     }

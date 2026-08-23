@@ -331,3 +331,40 @@ def test_governed_search_applies_token_budget_after_sql_revalidation() -> None:
         search_port=SearchPort(candidates), repository=SearchRepository()
     ).search(query=search_query())
     assert len(hints) == 1
+
+
+def test_resolve_engine_id_accepts_both_project_spellings_and_nothing_else() -> None:
+    """Vertex returns resource names with the project number while local
+    canonical forms use the project ID. Both name the same boundary; a third
+    project, another region, or a malformed tail still refuses.
+    staging-20260823-04: the ID-only comparison refused the deployed value in
+    the coordinator, the promoter, and the release probe at once."""
+
+    from solvan.platform.memory_bank import resolve_engine_id
+
+    kwargs = {
+        "project_id": "solvan-staging",
+        "project_number": "599862894051",
+        "location": "europe-west1",
+    }
+    for spelling in ("solvan-staging", "599862894051"):
+        assert (
+            resolve_engine_id(
+                f"projects/{spelling}/locations/europe-west1/reasoningEngines/re-1", **kwargs
+            )
+            == "re-1"
+        )
+    import pytest
+
+    with pytest.raises(ValueError, match="outside the exact deployment scope"):
+        resolve_engine_id(
+            "projects/other-project/locations/europe-west1/reasoningEngines/re-1", **kwargs
+        )
+    with pytest.raises(ValueError, match="outside the exact deployment scope"):
+        resolve_engine_id(
+            "projects/solvan-staging/locations/us-central1/reasoningEngines/re-1", **kwargs
+        )
+    with pytest.raises(ValueError, match="malformed"):
+        resolve_engine_id(
+            "projects/solvan-staging/locations/europe-west1/reasoningEngines/re-1/extra", **kwargs
+        )

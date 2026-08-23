@@ -50,6 +50,7 @@ from apps.evidence_broker.helpers import (
     cloud_sql_resource,
     github_repository_id,
     google_resource,
+    monitoring_projection,
 )
 from apps.evidence_broker.projections import (
     error_reporting_period,
@@ -365,8 +366,14 @@ class TypedEvidenceReader:
             observation = CloudMonitoringReader(self._customer_session()).observe(
                 rule, window_start=start, window_end=end
             )
+            # The aligned buckets ride with the reduction, in the shape the
+            # Managed Prometheus path already emits and `MetricSeries`
+            # already validates. Cloud Monitoring was the only metric source
+            # that produced a scalar with no series behind it, which is why
+            # correlation and baseline tooling could not read its evidence and
+            # why nothing could draw the window it described.
             return (
-                {"signal_kind": arguments.signal_kind, "value": observation.value},
+                monitoring_projection(arguments.signal_kind, observation),
                 observation.request_ids,
                 start,
                 end,
@@ -572,6 +579,12 @@ class TypedEvidenceReader:
                 "name": payload.get("name"),
                 "uid": payload.get("uid"),
                 "generation": payload.get("generation"),
+                # When the observed revision arrived. Cloud Run returns it on
+                # every read and it was being discarded, so nothing recorded
+                # the instant a service last changed -- the one annotation an
+                # incident axis most needs beside its own detection.
+                "updateTime": payload.get("updateTime"),
+                "createTime": payload.get("createTime"),
                 "latestReadyRevision": payload.get("latestReadyRevision"),
                 "trafficStatuses": [
                     {key: item.get(key) for key in ("type", "revision", "percent", "tag")}

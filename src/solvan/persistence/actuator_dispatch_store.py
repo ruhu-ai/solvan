@@ -33,6 +33,26 @@ from solvan.persistence.actuator_dispatch_settlement import (
 )
 
 
+def count_dispatches_in_window(connection: Connection[Any], *, window_seconds: int) -> int:
+    """Mutation dispatches recorded in the trailing window, fleet-wide.
+
+    The in-process ActionRateBudget bounds one instance and resets on every
+    cold start; with scale-to-zero an actor pacing mutations slower than the
+    idle timeout faced no ceiling at all. Every mutation writes its
+    actuator_dispatches row before any connector acts, so this count is the
+    durable form of the same ceiling: shared by all instances and unaffected
+    by restarts. Deliberately unscoped -- the ceiling is a property of the
+    deployment, not of one tenant scope.
+    """
+
+    row = connection.execute(
+        """SELECT count(*) AS recent FROM solvan.actuator_dispatches
+            WHERE dispatched_at > now() - make_interval(secs => %(window)s)""",
+        {"window": window_seconds},
+    ).fetchone()
+    return int(row[0]) if row else 0
+
+
 class ActuatorDispatchMixin:
     """Implement the existing actuator tables as the one mutation-attempt truth."""
 

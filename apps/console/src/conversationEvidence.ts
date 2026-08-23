@@ -30,7 +30,7 @@ export function conversationEvidence(incident: Incident): EvidenceItem[] {
       kind: "record",
       label: `${incident.verification.id} · ${incident.verification.verdict}`,
       source: `Verification Agent · ${incident.verification.profile}`,
-      window: incident.verification.intervals.at(-1)?.window ?? "Recorded verification window",
+      window: incident.verification.window || "Recorded verification window",
       freshness: incident.verification.verdict,
       classification: "INTERNAL",
       content_ref: `record://verification/${incident.verification.id}`,

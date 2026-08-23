@@ -30,6 +30,7 @@ import { conversationEvidence } from "./conversationEvidence";
 import { Integrations } from "./Integrations";
 import { ActionCard, Actions } from "./IncidentActions";
 import { EvidenceProvider, Evidence, IncidentStateBadge, IncidentsList, OperatorBrief, RecoveryTimingRail, SourceChip, Timeline } from "./Incidents";
+import { Sparkline, TrendLine } from "./Timeseries";
 import { LabelValue, MonoChip, PageHeader, SolvanMark, StatusBadge, phaseClass, platformEvidenceLabel, platformHealthLabel, platformHealthTone, statusIcon } from "./components";
 import { Cases, PermanentRepair, VerificationPanel } from "./IncidentRepair";
 import { Fleet } from "./Fleet";
@@ -320,12 +321,30 @@ function Overview({ snapshot, openIncident, navigate }: { snapshot: ConsoleSnaps
     <div className="overview-grid">
       <section className="overview-main">
         <div className="metric-grid" aria-label="Operational metrics">
-          {snapshot.overview.metrics.map((metric) => <article className="metric-card" key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.detail}</small></article>)}
+          {snapshot.overview.metrics.map((metric) => <article className="metric-card" key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong>
+            <div className="metric-foot">
+              {/* The delta names its period: a signed number with no window is
+                  not a fact about anything. It is NOT coloured by direction:
+                  more open incidents is worse and more verified mitigations is
+                  better, so a single up-is-bad rule would be wrong half the
+                  time, and whether a change is good is a judgement the records
+                  do not carry. The console states the change and stops. */}
+              <span className="metric-delta">
+                {metric.delta === 0 ? "no change" : `${metric.delta > 0 ? "+" : ""}${metric.delta}`}
+                <span className="sr-only">{metric.delta === 0 ? "" : metric.delta > 0 ? " more" : " fewer"}</span>
+                {` over ${metric.delta_period}`}
+              </span>
+              <TrendLine points={metric.trend} label={`${metric.label} over ${metric.delta_period}`} />
+            </div>
+            <small>{metric.detail}</small></article>)}
         </div>
         <section className="card active-incident-card" aria-labelledby="active-incident-title">
           <div className="section-heading"><div><p className="eyebrow">Active incident</p><h2 id="active-incident-title">{incident.title}</h2></div><IncidentStateBadge state={incident.state} /></div>
           <div className="incident-meta"><MonoChip>{incident.id}</MonoChip><span>{incident.severity}</span><span>{incident.service}</span><span>{incident.environment}</span></div>
-          <p className="situation">{incident.brief.situation}</p>
+          <div className="situation-row"><p className="situation">{incident.brief.situation}</p>
+            {/* No sparkline where no metric evidence was accepted: a flat line
+                would read as a signal that was measured and held steady. */}
+            <Sparkline incident={incident} /></div>
           <div className="brief-grid"><LabelValue label="Last verified fact" value={incident.brief.last_verified} /><LabelValue label="Human attention" value={incident.brief.attention} /><LabelValue label="Next owner" value={incident.brief.next} /></div>
           <button className="primary-button" onClick={() => openIncident(incident.id)}>Open incident workspace <span aria-hidden="true">→</span></button>
         </section>

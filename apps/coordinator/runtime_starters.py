@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
 from typing import Any
 
 from psycopg import Connection
@@ -143,14 +142,10 @@ def _start_pending_supervisors(
                 )
                 effective_tool_set = binder.bind(dispatch)
                 selected_guidance = binder.bind_trigger_guidance(dispatch=dispatch)
-            dispatch = replace(
-                dispatch,
-                context={
-                    **dispatch.context,
-                    "effective_tool_set": effective_tool_set.canonical_dict(),
-                    "effective_tool_set_hash": effective_tool_set.effective_tool_set_hash,
-                },
-            )
+            enrichment: dict[str, Any] = {
+                "effective_tool_set": effective_tool_set.canonical_dict(),
+                "effective_tool_set_hash": effective_tool_set.effective_tool_set_hash,
+            }
             if selected_guidance is not None:
                 content_reader = GcsEvidenceReader(
                     allowed_buckets=frozenset({settings.guidance_bucket}),
@@ -178,17 +173,21 @@ def _start_pending_supervisors(
                     reader=content_reader,
                     audit=audit_fetch,
                 )
-                dispatch = replace(
-                    dispatch,
-                    context={
-                        **dispatch.context,
-                        "operational_guidance": {
-                            "selection_id": loaded.selection_id,
-                            "content_hash": loaded.content_hash,
-                            "content": loaded.value,
-                            "trust": "UNTRUSTED_OPERATIONAL_GUIDANCE",
-                        },
-                    },
+                enrichment["operational_guidance"] = {
+                    "selection_id": loaded.selection_id,
+                    "content_hash": loaded.content_hash,
+                    "content": loaded.value,
+                    "trust": "UNTRUSTED_OPERATIONAL_GUIDANCE",
+                }
+            # One CAS re-hash covering everything this dispatch will actually
+            # carry, exactly as the investigation path has always done: the
+            # persisted input_hash names the bytes sent, not the bytes
+            # reserved, and record_dispatch fences on the updated value.
+            with workflow.transaction():
+                dispatch = runs.attach_runtime_context(
+                    scope=settings.scope,
+                    dispatch=dispatch,
+                    context=enrichment,
                 )
             receipt = _invoke_with_partial_receipt(
                 runtime=runtime,
@@ -252,14 +251,10 @@ def _start_pending_executions(
                     bindings=settings.governed_agent_bindings,
                     connection=connection,
                 ).bind(dispatch)
-            dispatch = replace(
-                dispatch,
-                context={
-                    **dispatch.context,
-                    "effective_tool_set": effective_tool_set.canonical_dict(),
-                    "effective_tool_set_hash": effective_tool_set.effective_tool_set_hash,
-                },
-            )
+            enrichment: dict[str, Any] = {
+                "effective_tool_set": effective_tool_set.canonical_dict(),
+                "effective_tool_set_hash": effective_tool_set.effective_tool_set_hash,
+            }
         except Exception as error:
             with workflow.transaction(), connection.cursor() as cursor:
                 runs.fail_created(
@@ -294,6 +289,16 @@ def _start_pending_executions(
                 workflow.release_lease(scope=settings.scope, lease=lease)
             continue
         try:
+            # One CAS re-hash covering everything this dispatch will actually
+            # carry, exactly as the investigation path has always done: the
+            # persisted input_hash names the bytes sent, not the bytes
+            # reserved, and record_dispatch fences on the updated value.
+            with workflow.transaction():
+                dispatch = runs.attach_runtime_context(
+                    scope=settings.scope,
+                    dispatch=dispatch,
+                    context=enrichment,
+                )
             receipt = _invoke_with_partial_receipt(
                 runtime=runtime,
                 workflow=workflow,
@@ -380,14 +385,20 @@ def _start_pending_verifications(
                     bindings=settings.governed_agent_bindings,
                     connection=connection,
                 ).bind(dispatch)
-            dispatch = replace(
-                dispatch,
-                context={
-                    **dispatch.context,
-                    "effective_tool_set": effective_tool_set.canonical_dict(),
-                    "effective_tool_set_hash": effective_tool_set.effective_tool_set_hash,
-                },
-            )
+            enrichment: dict[str, Any] = {
+                "effective_tool_set": effective_tool_set.canonical_dict(),
+                "effective_tool_set_hash": effective_tool_set.effective_tool_set_hash,
+            }
+            # One CAS re-hash covering everything this dispatch will actually
+            # carry, exactly as the investigation path has always done: the
+            # persisted input_hash names the bytes sent, not the bytes
+            # reserved, and record_dispatch fences on the updated value.
+            with workflow.transaction():
+                dispatch = runs.attach_runtime_context(
+                    scope=settings.scope,
+                    dispatch=dispatch,
+                    context=enrichment,
+                )
             receipt = _invoke_with_partial_receipt(
                 runtime=runtime,
                 workflow=workflow,

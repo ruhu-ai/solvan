@@ -19,6 +19,7 @@ def test_target_schemas_have_checksum_bound_migrations_in_dependency_order() -> 
         "solvan_liaison",
         "solvan_liaison",
         "solvan_liaison",
+        "solvan_liaison",
         "solvan_graph",
         "solvan_quality",
         "solvan_operability",
@@ -77,7 +78,8 @@ def test_target_schemas_have_checksum_bound_migrations_in_dependency_order() -> 
         4,  # onboarding
         1,
         2,
-        3,  # liaison
+        3,
+        4,  # liaison
         1,  # graph
         1,  # quality
         1,

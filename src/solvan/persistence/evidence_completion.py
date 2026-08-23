@@ -54,14 +54,15 @@ class EvidenceCompletionMixin:
                    source_kind, source_resource, query_spec_json, window_start,
                    window_end, observed_at, content_ref, content_hash,
                    classification, residency, redaction_manifest_ref,
-                   provenance_json, freshness_expires_at, created_by_agent_run_id)
+                   provenance_json, freshness_expires_at, created_by_agent_run_id,
+                   projection_json)
                   VALUES (%(organization_id)s, %(project_id)s, %(environment_id)s,
                     %(evidence_id)s, %(incident_id)s, %(alert_episode_id)s, %(source_kind)s,
                     %(source_resource)s, %(query_spec)s, %(window_start)s,
                     %(window_end)s, %(observed_at)s, %(content_ref)s,
                     %(content_hash)s, %(classification)s, %(residency)s,
                     %(redaction_manifest_ref)s, %(provenance)s,
-                    %(freshness_expires_at)s, %(run_id)s)""",
+                    %(freshness_expires_at)s, %(run_id)s, %(projection)s)""",
                 {
                     **reservation.scope.canonical_dict(),
                     "evidence_id": evidence_id,
@@ -76,6 +77,7 @@ class EvidenceCompletionMixin:
                     "observed_at": write.observed_at,
                     "content_ref": write.content_ref,
                     "content_hash": write.content_hash,
+                    "projection": (Jsonb(write.projection) if write.projection else None),
                     "classification": write.classification,
                     "residency": write.residency,
                     "redaction_manifest_ref": write.redaction_manifest_ref,

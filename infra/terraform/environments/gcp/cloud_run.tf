@@ -1911,12 +1911,34 @@ resource "google_cloud_run_v2_service" "service" {
         name       = "cloudsql"
         mount_path = "/cloudsql"
       }
+
+      # The kill-switch directory. Only the actuator mounts it, read-only:
+      # engaging is an approver's object write, and the actuator can never
+      # delete its own switch. See google_storage_bucket.actuator_controls.
+      dynamic "volume_mounts" {
+        for_each = each.key == "actuator" ? [1] : []
+        content {
+          name       = "actuator-controls"
+          mount_path = "/var/run/solvan"
+        }
+      }
     }
 
     volumes {
       name = "cloudsql"
       cloud_sql_instance {
         instances = [google_sql_database_instance.control.connection_name]
+      }
+    }
+
+    dynamic "volumes" {
+      for_each = each.key == "actuator" ? [1] : []
+      content {
+        name = "actuator-controls"
+        gcs {
+          bucket    = google_storage_bucket.actuator_controls.name
+          read_only = true
+        }
       }
     }
 
@@ -2064,6 +2086,15 @@ resource "google_cloud_run_v2_service" "workspace_sandbox" {
 
     containers {
       image = var.images.workspace_sandbox
+
+      # The exact-patch sandbox: this container supervises nested Cloud Run
+      # Sandboxes rather than running untrusted work in its own process. The
+      # release probe `workspace_sandbox_launcher_enabled` observes this field
+      # on the live service; it read false on staging-20260823-04 because
+      # nothing had ever set it -- the "nested-sandbox" claim lived only in
+      # `outputs.tf` as a string. BETA launch stage above is what admits the
+      # field; provider 7.45.0 is the first pinned version that carries it.
+      sandbox_launcher = true
 
       ports {
         container_port = 8080
@@ -3046,7 +3077,10 @@ resource "google_cloud_run_v2_job" "memory_probe" {
 
         dynamic "env" {
           for_each = {
-            SOLVAN_GCP_PROJECT          = var.project_id
+            SOLVAN_GCP_PROJECT = var.project_id
+            # The deployed engine resource names the project by number; the
+            # probe's boundary resolver needs both spellings of this project.
+            SOLVAN_GCP_PROJECT_NUMBER   = data.google_project.current.number
             SOLVAN_GCP_REGION           = var.region
             SOLVAN_RELEASE_COMMIT       = var.release_commit
             SOLVAN_DEPLOYMENT_ID        = var.deployment_id

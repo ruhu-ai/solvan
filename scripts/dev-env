@@ -26,7 +26,7 @@ def build_environment() -> dict[str, str]:
     root = repository_root()
     digest = hashlib.sha256(str(root).encode()).hexdigest()
     worktree_id = digest[:10]
-    schema_revision = "71"
+    schema_revision = "73"
     offset = int(os.environ.get("SOLVAN_PORT_OFFSET", "0"))
     if not -1000 <= offset <= 1000:
         raise SystemExit("SOLVAN_PORT_OFFSET must be between -1000 and 1000")

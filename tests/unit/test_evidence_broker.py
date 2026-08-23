@@ -11,6 +11,7 @@ from pydantic import ValidationError
 import solvan.platform.google_rest as google_rest
 from apps.evidence_broker import main as broker_main
 from apps.evidence_broker.contracts import ServiceArgs
+from apps.evidence_broker.helpers import monitoring_projection, payload_projection
 from apps.evidence_broker.main import (
     _AGENT_TOOLS,
     AuditLogArgs,
@@ -32,9 +33,11 @@ from apps.evidence_broker.projections import (
 )
 from apps.evidence_broker.reader import TypedEvidenceReader
 from solvan.agents.read_tools import cloud_run_read
+from solvan.application.operational_compute import MetricSeries
 from solvan.domain import Scope
 from solvan.persistence import ToolAuthorizationError
 from solvan.persistence.evidence_types import EvidenceToolReservation
+from solvan.platform.cloud_monitoring import AlignedPoint, MetricObservation, ObservedResource
 from solvan.platform.service_identity import VerifiedCaller
 
 
@@ -604,3 +607,76 @@ def test_the_token_ceiling_and_runtime_identity_assertions_still_hold(
             delegate_principals=(SOLVAN_DELEGATOR,),
         )
     assert impersonation == []
+
+
+def test_cloud_monitoring_evidence_is_a_metric_series_like_every_other_source() -> None:
+    """Cloud Monitoring evidence used to carry a reduction with no series.
+
+    `MetricSeries` could not validate it, so correlation and baseline tooling
+    read Managed Prometheus evidence and not Monitoring evidence, and nothing
+    could draw the window the number described. The buckets were always in the
+    response: the request asks for a 60s alignment.
+    """
+    start = datetime(2026, 8, 8, 12, 0, tzinfo=UTC)
+    observation = MetricObservation(
+        value=2740.0,
+        request_ids=("req-1",),
+        resource=ObservedResource("solvan-demo", "cloud_run_revision", ()),
+        points=tuple(
+            AlignedPoint(start + timedelta(minutes=index), value)
+            for index, value in enumerate([210.0, 468.0, 2740.0, 212.0])
+        ),
+    )
+
+    payload = monitoring_projection("HTTP_P95_LATENCY", observation)
+
+    assert payload["value"] == 2740.0
+    assert payload["no_data"] is False
+    series = MetricSeries.model_validate(
+        {
+            "evidence_ref": "evd_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+            "signal_kind": payload["signal_kind"],
+            "points": payload["points"],
+        }
+    )
+    assert [point.value for point in series.points] == [210.0, 468.0, 2740.0, 212.0]
+
+
+def test_monitoring_projection_reports_no_data_rather_than_an_empty_axis() -> None:
+    """An empty window is a fact about the window, not a zero."""
+    payload = monitoring_projection(
+        "SQL_CONNECTIONS",
+        MetricObservation(0.0, ("req-1",), ObservedResource("solvan-demo", "", ()), ()),
+    )
+    assert payload["points"] == []
+    assert payload["no_data"] is True
+
+
+def test_a_cloud_run_read_projects_the_revision_and_the_instant_it_arrived() -> None:
+    """The marker the incident axis calls "revision".
+
+    Cloud Run returns `updateTime` on every read and it was discarded, so
+    nothing recorded when the observed revision arrived -- the one annotation an
+    axis most needs beside the incident's own detection.
+    """
+    projection = payload_projection(
+        {
+            "latestReadyRevision": "projects/p/locations/l/services/s/revisions/payments-00042",
+            "updateTime": "2026-08-23T13:18:00Z",
+        },
+        "CLOUD_RUN_METADATA",
+    )
+    assert projection == {
+        "kind": "service_revision",
+        "revision": "projects/p/locations/l/services/s/revisions/payments-00042",
+        "changed_at": "2026-08-23T13:18:00Z",
+    }
+
+
+def test_a_cloud_run_read_with_no_instant_projects_nothing() -> None:
+    """A revision with no time cannot be placed on an axis, so it is not stored."""
+    assert payload_projection({"latestReadyRevision": "r1"}, "CLOUD_RUN_METADATA") is None
+
+
+def test_a_log_read_projects_nothing_rather_than_an_empty_axis() -> None:
+    assert payload_projection({"entries": []}, "CLOUD_LOGGING") is None

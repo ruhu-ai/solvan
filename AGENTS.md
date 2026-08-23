@@ -87,9 +87,12 @@ counts as a GCP release receipt.
   enforces a local kill switch and an hourly action ceiling in its own binary
   before constructing any mutation connector; both refuse when absent or
   unparsable, so a control-plane compromise or partition cannot silently widen
-  them. The ceiling is counted per process, so N concurrently serving instances
-  admit N ceilings: it bounds a runaway loop in one actuator, and is not a
-  fleet-wide budget. The durable per-target reservation, not this counter, is
+  them. The ceiling is enforced twice: an in-process sliding window that
+  bounds one instance and keeps working when the database is unreachable, and
+  a durable count over `actuator_dispatches` evaluated before every mutation,
+  which is shared by all instances and survives cold starts -- so N serving
+  instances no longer admit N ceilings, and scale-to-zero no longer resets
+  the budget. The durable per-target reservation, not either counter, is
   what prevents concurrent instances from acting on the same target. Customer-side deployment and customer-authored policy are the target
   (specification 13), not a current property: the release topology runs the
   actuator in Solvan's project under a Solvan service account. Do not describe

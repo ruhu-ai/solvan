@@ -32,6 +32,7 @@ from solvan.persistence.liaison_parked import (
     DecisionOutcome,
     ParkedKind,
     ParkedRequestStore,
+    consume_steer_nonce,
 )
 from solvan.persistence.liaison_policy import current_policy_epoch
 
@@ -219,6 +220,17 @@ class SteerService:
         )
         try:
             envelope = self._issuer.consume_steer_grant(grant)
+            # The durable half of once-only: the in-memory set above cannot
+            # survive a restart or a second instance, so the nonce row is the
+            # guarantee, committed atomically with the submission below.
+            consume_steer_nonce(
+                connection,
+                scope=scope,
+                nonce=grant.nonce,
+                grant_digest=grant.digest(),
+                parked_request_id=request_id,
+                confirming_principal=confirming_principal,
+            )
         except GrantError as error:
             raise SteerRefused(str(error)) from error
 

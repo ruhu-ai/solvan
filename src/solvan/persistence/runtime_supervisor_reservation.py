@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import secrets
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from typing import Any
 
 from psycopg import Connection
@@ -21,6 +21,65 @@ from solvan.persistence.runtime_types import RuntimeRunBudgetExhausted, RuntimeR
 
 class RuntimeSupervisorReservationMixin:
     _connection: Connection[Any]
+
+    def attach_runtime_context(
+        self,
+        *,
+        scope: Scope,
+        dispatch: RuntimeDispatch,
+        context: dict[str, Any],
+    ) -> RuntimeDispatch:
+        """CAS-bind enrichment into a persisted Runtime input hash.
+
+        The investigation path has always done this (attach_dispatch_context);
+        the supervisor, execution, and verification starters all mutated
+        dispatch.context after reservation and invoked with the hash computed
+        before the mutation, so the persisted input_hash never covered the
+        effective tool set or the fetched guidance actually sent -- the
+        fleet's "exact request persisted before dispatch" claim held only for
+        the bytes reserved, not the bytes dispatched. All three reservations
+        hash one identical material shape, which this method must mirror
+        exactly or the CAS would fence every enrichment as stale.
+        """
+
+        merged = {**dispatch.context, **context}
+        material = {
+            "scope": scope.canonical_dict(),
+            "incident_id": dispatch.incident_id,
+            "workflow_version": dispatch.workflow_version,
+            "agent_resource": dispatch.agent_resource,
+            "agent_revision": dispatch.agent_revision,
+            "context": merged,
+            "budget": asdict(dispatch.budget),
+        }
+        resolved_hash = (
+            "sha256:"
+            + hashlib.sha256(
+                json.dumps(material, sort_keys=True, separators=(",", ":")).encode()
+            ).hexdigest()
+        )
+        with self._connection.cursor() as cursor:
+            cursor.execute(
+                """UPDATE solvan.agent_runs
+                  SET input_context_json = %(context)s, input_hash = %(new_hash)s
+                  WHERE organization_id = %(organization_id)s
+                    AND project_id = %(project_id)s
+                    AND environment_id = %(environment_id)s
+                    AND id = %(run_id)s AND invocation_id = %(invocation_id)s
+                    AND status = 'CREATED' AND input_hash = %(old_hash)s
+                  RETURNING id""",
+                {
+                    **scope.canonical_dict(),
+                    "run_id": dispatch.run_id,
+                    "invocation_id": dispatch.invocation_id,
+                    "context": Jsonb(merged),
+                    "new_hash": resolved_hash,
+                    "old_hash": dispatch.input_hash,
+                },
+            )
+            if cursor.fetchone() is None:
+                raise RuntimeRunConflict("runtime dispatch enrichment is stale")
+        return replace(dispatch, context=merged, input_hash=resolved_hash)
 
     def reserve_supervisor(
         self,

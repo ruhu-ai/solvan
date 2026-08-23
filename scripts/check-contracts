@@ -163,6 +163,14 @@ docker exec -i "$CONTRACT_CONTAINER" \
 
 docker exec -i "$CONTRACT_CONTAINER" \
   psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/liaison-schema.target.v4.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
+  < specs/artifacts/liaison-schema-contract-tests.v4.sql
+
+docker exec -i "$CONTRACT_CONTAINER" \
+  psql -v ON_ERROR_STOP=1 -q -U postgres -d postgres \
   < specs/artifacts/operability-schema.target.sql
 
 docker exec -i "$CONTRACT_CONTAINER" \

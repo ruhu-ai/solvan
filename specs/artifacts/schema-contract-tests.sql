@@ -707,6 +707,87 @@ BEGIN
   END;
 
   BEGIN
+    -- A series projection that is not a series. The console draws an axis from
+    -- this column and never reads the evidence object itself, so a malformed
+    -- projection would become a malformed chart with no way to notice.
+    INSERT INTO evidence_items (
+      organization_id, project_id, environment_id, id, incident_id, source_kind,
+      source_resource, query_spec_json, window_start, window_end, observed_at,
+      content_ref, content_hash, classification, residency,
+      redaction_manifest_ref, provenance_json, freshness_expires_at,
+      projection_json
+    ) VALUES (
+      'org_00000000000000000000000000','prj_00000000000000000000000000',
+      'env_00000000000000000000000000','evd_00000000000000000000000091',
+      'inc_00000000000000000000000001','CLOUD_MONITORING','payments-api',
+      '{}'::jsonb, now() - interval '15 minutes', now(), now(),
+      'gs://evidence/91.json',
+      'sha256:0000000000000000000000000000000000000000000000000000000000000000',
+      'INTERNAL','europe-west1','gs://redaction/91.json','{}'::jsonb,
+      now() + interval '7 days',
+      '{"kind": "metric_series", "signal_kind": "HTTP_P95_LATENCY", "points": "not-an-array"}'::jsonb
+    );
+    RAISE EXCEPTION 'a series projection carried points that are not an array';
+  EXCEPTION WHEN check_violation THEN
+    NULL;
+  END;
+
+  BEGIN
+    -- The window is bounded at fifteen minutes and the alignment at a minute,
+    -- so a projection with more buckets than that describes a window the read
+    -- was never allowed to take.
+    INSERT INTO evidence_items (
+      organization_id, project_id, environment_id, id, incident_id, source_kind,
+      source_resource, query_spec_json, window_start, window_end, observed_at,
+      content_ref, content_hash, classification, residency,
+      redaction_manifest_ref, provenance_json, freshness_expires_at,
+      projection_json
+    ) VALUES (
+      'org_00000000000000000000000000','prj_00000000000000000000000000',
+      'env_00000000000000000000000000','evd_00000000000000000000000092',
+      'inc_00000000000000000000000001','CLOUD_MONITORING','payments-api',
+      '{}'::jsonb, now() - interval '15 minutes', now(), now(),
+      'gs://evidence/92.json',
+      'sha256:0000000000000000000000000000000000000000000000000000000000000000',
+      'INTERNAL','europe-west1','gs://redaction/92.json','{}'::jsonb,
+      now() + interval '7 days',
+      jsonb_build_object(
+        'kind', 'metric_series',
+        'signal_kind', 'HTTP_P95_LATENCY',
+        'points', (SELECT jsonb_agg(jsonb_build_object('value', 1)) FROM generate_series(1, 65))
+      )
+    );
+    RAISE EXCEPTION 'a series projection carried more buckets than the window allows';
+  EXCEPTION WHEN check_violation THEN
+    NULL;
+  END;
+
+  BEGIN
+    -- An unknown discriminator. The console dispatches on `kind`, so a shape it
+    -- has no branch for would render as nothing while looking like evidence.
+    INSERT INTO evidence_items (
+      organization_id, project_id, environment_id, id, incident_id, source_kind,
+      source_resource, query_spec_json, window_start, window_end, observed_at,
+      content_ref, content_hash, classification, residency,
+      redaction_manifest_ref, provenance_json, freshness_expires_at,
+      projection_json
+    ) VALUES (
+      'org_00000000000000000000000000','prj_00000000000000000000000000',
+      'env_00000000000000000000000000','evd_00000000000000000000000093',
+      'inc_00000000000000000000000001','CLOUD_RUN_METADATA','payments-api',
+      '{}'::jsonb, now() - interval '1 minute', now(), now(),
+      'gs://evidence/93.json',
+      'sha256:0000000000000000000000000000000000000000000000000000000000000000',
+      'INTERNAL','europe-west1','gs://redaction/93.json','{}'::jsonb,
+      now() + interval '7 days',
+      '{"kind": "something_else", "revision": "r1", "changed_at": "2026-08-23T00:00:00Z"}'::jsonb
+    );
+    RAISE EXCEPTION 'a projection carried a discriminator nothing renders';
+  EXCEPTION WHEN check_violation THEN
+    NULL;
+  END;
+
+  BEGIN
     -- Availability and outcome are two views of one probe answer.
     INSERT INTO connection_capabilities (
       organization_id, project_id, environment_id, connection_id, capability,

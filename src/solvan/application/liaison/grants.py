@@ -162,8 +162,11 @@ class SteerSubmissionGrant:
 class GrantIssuer:
     """Mints grants from verified identity and records their consumption.
 
-    Consumption is tracked in memory here and persisted by the store; the point
-    of the class is that nothing else in the service may construct a grant.
+    Consumption is enforced twice: the in-memory set here refuses a replay
+    within one process, and the durable nonce row written by
+    `consume_steer_nonce` in the same transaction as the submission refuses
+    it across restarts and instances. The point of the class is that nothing
+    else in the service may construct a grant.
     """
 
     def __init__(self) -> None:
@@ -254,7 +257,15 @@ def verify_read_request(
     presented_digest: str,
     now: datetime | None = None,
 ) -> None:
-    """The projection layer's whole authorization check, in one place."""
+    """Authorize a read whose digest was *presented across a boundary*.
+
+    `presented_digest` must be a value the caller received from the party
+    that built the request -- never one the caller computed from `method` and
+    `arguments` itself, which makes the comparison a tautology (the shape
+    this had at its only former call site, since removed). In-process readers
+    call `grant.authorize` directly; this function exists for the boundary
+    where a transported digest genuinely arrives.
+    """
 
     grant.authorize(method, now=now)
     expected = grant.request_digest(method, arguments)

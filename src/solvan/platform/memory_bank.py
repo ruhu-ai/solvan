@@ -134,6 +134,35 @@ class MemoryBankConfiguration:
         )
 
 
+def resolve_engine_id(
+    resource: str,
+    *,
+    project_id: str,
+    project_number: str,
+    location: str,
+) -> str:
+    """Return the engine ID when ``resource`` names this exact project/region.
+
+    Vertex returns reasoning-engine resource names with the project *number*,
+    while every local canonical form is built from the project *ID*. Three
+    separate copies of a prefix check compared against the ID form only, so
+    the deployed value -- number form, straight from the create response --
+    was refused as "outside the boundary" by the coordinator, the memory
+    promoter, and the release probe alike (staging-20260823-04,
+    memory_exact_scope_recall). Both spellings name the same project; the
+    boundary is the project, not its spelling. Anything else still refuses.
+    """
+
+    for spelling in (project_id, project_number):
+        prefix = f"projects/{spelling}/locations/{location}/reasoningEngines/"
+        if resource.startswith(prefix):
+            engine_id = resource.removeprefix(prefix)
+            if not engine_id or "/" in engine_id:
+                raise ValueError("Memory Bank reasoning engine resource is malformed")
+            return engine_id
+    raise ValueError("Memory Bank resource is outside the exact deployment scope")
+
+
 class GeminiMemoryBank:
     """Reconcile exact fact and scope before calling non-idempotent create."""
 

@@ -262,3 +262,44 @@ def test_the_record_set_modes_still_decide_on_their_authorized_references() -> N
             participant_epochs={},
             membership_epoch=None,
         )
+
+
+def test_durable_nonce_consumption_refuses_a_replay_across_instances() -> None:
+    """The issuer's in-memory set survives neither a restart nor a second
+    instance; the nonce row is the grant's own once-only. A unique violation
+    maps to the same GrantError wording the in-memory path uses."""
+
+    from psycopg.errors import UniqueViolation
+
+    from solvan.persistence.liaison_parked import consume_steer_nonce
+
+    executed: dict[str, object] = {}
+
+    class _FirstConnection:
+        def execute(self, sql: str, params: dict[str, object]):
+            executed["sql"] = " ".join(sql.split())
+            executed["params"] = params
+
+    scope = Scope(
+        "org_00000000000000000000000000",
+        "prj_00000000000000000000000000",
+        "env_00000000000000000000000000",
+    )
+    kwargs = {
+        "scope": scope,
+        "nonce": "non_0000000000000000000000000001",
+        "grant_digest": "sha256:" + "0" * 64,
+        "parked_request_id": "prk_00000000000000000000000000",
+        "confirming_principal": "user:approver@example.test",
+    }
+    consume_steer_nonce(_FirstConnection(), **kwargs)
+    sql = str(executed["sql"])
+    assert "liaison_consumed_steer_grants" in sql
+    assert executed["params"]["nonce"] == kwargs["nonce"]  # type: ignore[index]
+
+    class _ReplayConnection:
+        def execute(self, sql: str, params: dict[str, object]):
+            raise UniqueViolation("duplicate key")
+
+    with pytest.raises(GrantError, match="already been used"):
+        consume_steer_nonce(_ReplayConnection(), **kwargs)

@@ -118,7 +118,16 @@ def read_budget_limit(environ: dict[str, str] | None = None) -> int:
 
 
 def check_kill_switch(environ: dict[str, str] | None = None) -> None:
-    """Refuse when the local kill switch is engaged or cannot be read."""
+    """Refuse when the local kill switch is engaged or cannot be read.
+
+    On Cloud Run the path is a read-only GCS FUSE mount of the
+    actuator-controls bucket, so engaging is one object write by a release
+    approver and the actuator can never delete its own switch. Before that
+    volume existed the check was real in code and unreachable in the deployed
+    topology -- no way to make the file exist in a running container.
+    Presence engages; a deleted or unmounted directory reads as absent or
+    unreadable, and unreadable refuses.
+    """
 
     source = os.environ if environ is None else environ
     configured = source.get(KILL_SWITCH_VARIABLE)

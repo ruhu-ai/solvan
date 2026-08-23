@@ -50,7 +50,8 @@ def test_memory_tick_contract_rejects_invalid_schema_before_composition() -> Non
     assert response.status_code == 422
 
 
-def test_engine_id_rejects_cross_project_resource() -> None:
+def test_engine_id_rejects_cross_project_resource(monkeypatch) -> None:
+    monkeypatch.setenv("SOLVAN_GCP_PROJECT_NUMBER", "599999999999")
     try:
         _engine_id(
             "projects/other/locations/europe-west1/reasoningEngines/re-1",
@@ -61,3 +62,18 @@ def test_engine_id_rejects_cross_project_resource() -> None:
         assert "outside the exact deployment scope" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("cross-project Memory Bank resource was accepted")
+
+
+def test_engine_id_accepts_the_number_spelling_vertex_actually_returns(monkeypatch) -> None:
+    """The create response names the project by number; staging-20260823-04
+    proved the ID-only prefix refused the real deployed value."""
+
+    monkeypatch.setenv("SOLVAN_GCP_PROJECT_NUMBER", "599862894051")
+    assert (
+        _engine_id(
+            "projects/599862894051/locations/europe-west1/reasoningEngines/5201437667287367680",
+            project_id="solvan-staging",
+            location="europe-west1",
+        )
+        == "5201437667287367680"
+    )

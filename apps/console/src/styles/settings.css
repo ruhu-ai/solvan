@@ -75,6 +75,7 @@
 @media (max-width: 900px) {
   .channel-provider-grid { grid-template-columns: 1fr; }
   .channel-provider-card { min-height: auto; }
+}
 .settings-loading { display: flex; min-height: 180px; align-items: center; justify-content: center; gap: 12px; }
 .settings-loading .spinner { width: 22px; height: 22px; }
 .settings-loading p { margin: 0; }
@@ -130,6 +131,7 @@
 
 @media (max-width: 640px) {
   .access-invite { grid-template-columns: 1fr; }
+}
 .step-up-shade {
   position: fixed;
   inset: 0;

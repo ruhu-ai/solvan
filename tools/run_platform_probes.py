@@ -262,7 +262,18 @@ def _job_probe(
     }
 
 
-def _cloud_run_health(topology: ReleaseTopology, project_id: str) -> tuple[bool, dict[str, Any]]:
+def _unauthenticated_status(url: str) -> int:
+    """Status of a bare GET; 404 from the frontend means the URL routes nowhere."""
+
+    try:
+        return int(httpx.get(url, timeout=15, follow_redirects=False).status_code)
+    except httpx.HTTPError:
+        return 0
+
+
+def _cloud_run_health(
+    topology: ReleaseTopology, project_id: str, project_number: str
+) -> tuple[bool, dict[str, Any]]:
     listed = _gcloud_json(
         ["run", "services", "list", f"--project={project_id}", "--region=europe-west1"]
     )
@@ -285,7 +296,7 @@ def _cloud_run_health(topology: ReleaseTopology, project_id: str) -> tuple[bool,
     services: dict[str, dict[str, Any]] = {}
     for key, expected_uri in topology.service_uris:
         expected = re.fullmatch(
-            r"https://(?P<service>[a-z0-9-]+)-[0-9]+\.europe-west1\.run\.app",
+            r"https://(?P<service>[a-z0-9-]+)-(?P<number>[0-9]+)\.europe-west1\.run\.app",
             expected_uri,
         )
         value = by_name.get(expected.group("service")) if expected is not None else None
@@ -316,13 +327,21 @@ def _cloud_run_health(topology: ReleaseTopology, project_id: str) -> tuple[bool,
         )
         services[key] = {
             "ready": ready,
-            # Google may report the stable generated alias here. Match the
-            # service by its authoritative resource name and require that the
-            # observed endpoint remains a default Cloud Run HTTPS URL.
+            # Google may report the stable generated alias here, so equality
+            # with the deterministic form cannot be required -- but the shape
+            # check that replaced it verified nothing about *this* deployment.
+            # The property that matters is the one every IAM audience depends
+            # on: the deterministic URL names this project and actually
+            # serves. An unauthenticated GET must come back 200/401/403; a
+            # frontend 404 means the audience URL routes to no service, which
+            # would otherwise surface only as runtime 401s long after promote.
             "uri_matches": (
                 isinstance(observed_uri, str)
                 and re.fullmatch(r"https://[a-z0-9-]+(?:\.[a-z0-9-]+)*\.run\.app", observed_uri)
                 is not None
+                and expected is not None
+                and expected.group("number") == project_number
+                and _unauthenticated_status(expected_uri) in {200, 401, 403}
             ),
             "latest_revision_ready": bool(latest_ready) and latest_ready == latest_created,
         }
@@ -474,38 +493,73 @@ def _members(policy: object) -> set[str]:
     }
 
 
-def _iap_matrix(*, topology: ReleaseTopology, project_number: str) -> tuple[bool, dict[str, Any]]:
+def _registered_endpoint_id(registered_endpoints: dict[str, Any], key: str) -> str:
+    """The exact resolution `configure_agent_iap` uses when *setting* policies.
+
+    The probe used to invent endpoint IDs from the service prefix
+    (`solvan-staging-evidence-broker`), but Agent Registry endpoints are named
+    `agentregistry-<uuid>` and only Terraform knows which is which. Every
+    getIamPolicy call therefore 404ed and the probe had never observed a
+    single real policy on any deployment -- it failed against
+    staging-20260823-04 with a bare HTTPError and empty observations. A probe
+    must read the same source of truth its setter wrote.
+    """
+
+    resource = registered_endpoints.get(key)
+    if not isinstance(resource, str):
+        raise RuntimeError(f"Terraform output is missing registered endpoint: {key}")
+    match = re.fullmatch(r"projects/[0-9]+/locations/[a-z0-9-]+/endpoints/([a-z0-9-]+)", resource)
+    if match is None:
+        raise RuntimeError(f"Terraform returned a malformed registered endpoint: {key}")
+    return match.group(1)
+
+
+def _iap_matrix(
+    *,
+    topology: ReleaseTopology,
+    project_number: str,
+    registered_endpoints: dict[str, Any],
+) -> tuple[bool, dict[str, Any]]:
     principals = dict(topology.agent_principals)
     all_members = set(principals.values())
-    expected = {
-        "solvan-staging-evidence-broker": {
+    expected: dict[str, set[str]] = {
+        "evidence": {
             principals["evidence_agent"],
             principals["infrastructure_agent"],
         },
-        "solvan-staging-actuator": {principals["execution_agent"]},
-        "solvan-staging-verifier": {principals["verification_agent"]},
-        "solvan-staging-aiplatform": all_members,
-        "solvan-staging-aiplatform-mtls": all_members,
-        "solvan-staging-aiplatform-rep": all_members,
-        "solvan-staging-resource-manager": all_members,
-        "solvan-staging-resource-manager-mtls": all_members,
-        "solvan-staging-logging": all_members,
-        "solvan-staging-telemetry": all_members,
-        "solvan-staging-telemetry-mtls": all_members,
+        "actuator": {principals["execution_agent"]},
+        "verifier": {principals["verification_agent"]},
     }
+    # Mirror configure_agent_iap.build_policies exactly, including
+    # aiplatform_eu_rep, which the old hardcoded list silently omitted: an
+    # endpoint the setter manages but the probe never checks is a policy that
+    # can drift without a red probe.
+    for dependency in (
+        "aiplatform",
+        "aiplatform_mtls",
+        "aiplatform_rep",
+        "aiplatform_eu_rep",
+        "resource_manager",
+        "resource_manager_mtls",
+        "logging",
+        "telemetry",
+        "telemetry_mtls",
+    ):
+        expected[dependency] = all_members
     observed: dict[str, list[str]] = {}
     session = authorized_session()
-    for endpoint, wanted in expected.items():
+    for endpoint_key, wanted in expected.items():
+        endpoint_id = _registered_endpoint_id(registered_endpoints, endpoint_key)
         response = session.post(
             "https://iap.googleapis.com/v1/"
             f"projects/{project_number}/locations/europe-west1/iap_web/"
-            f"agentRegistry/endpoints/{endpoint}:getIamPolicy",
+            f"agentRegistry/endpoints/{endpoint_id}:getIamPolicy",
             json={},
             timeout=30,
         )
         response.raise_for_status()
-        observed[endpoint] = sorted(_members(response.json()))
-        if set(observed[endpoint]) != wanted:
+        observed[endpoint_key] = sorted(_members(response.json()))
+        if set(observed[endpoint_key]) != wanted:
             return False, {"endpoint_members": observed, "distinct_principals": len(all_members)}
     return len(all_members) == 6, {
         "endpoint_members": observed,
@@ -593,7 +647,14 @@ def collect(plan: ProbePlan, *, acknowledgement: str | None) -> dict[str, Any]:
             work_dir=work_dir,
         )
 
-    capture("cloud_run_health", lambda: _cloud_run_health(topology, plan.project_id))
+    project = _gcloud_json(["projects", "describe", plan.project_id])
+    project_number = project.get("projectNumber") if isinstance(project, dict) else None
+    if not isinstance(project_number, str):
+        raise RuntimeError("GCP project number is unavailable")
+
+    capture(
+        "cloud_run_health", lambda: _cloud_run_health(topology, plan.project_id, project_number)
+    )
     capture(
         "workspace_sandbox_launcher_enabled",
         lambda: _workspace_sandbox_launcher(topology, plan.project_id),
@@ -613,14 +674,18 @@ def collect(plan: ProbePlan, *, acknowledgement: str | None) -> dict[str, Any]:
 
     capture("runtime_query_job_completed", runtime)
 
-    project = _gcloud_json(["projects", "describe", plan.project_id])
-    project_number = project.get("projectNumber") if isinstance(project, dict) else None
-    if not isinstance(project_number, str):
-        raise RuntimeError("GCP project number is unavailable")
     matrix_detail: dict[str, Any] = {}
 
+    endpoint_output = _output(terraform_value, "registered_endpoints")
+    if not isinstance(endpoint_output, dict):
+        raise ValueError("Terraform registered_endpoints output is malformed")
+
     def matrix() -> tuple[bool, dict[str, Any]]:
-        passed, detail = _iap_matrix(topology=topology, project_number=project_number)
+        passed, detail = _iap_matrix(
+            topology=topology,
+            project_number=project_number,
+            registered_endpoints=endpoint_output,
+        )
         matrix_detail.update(detail)
         return passed, detail
 

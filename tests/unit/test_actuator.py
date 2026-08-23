@@ -471,3 +471,31 @@ def test_authority_scope_drift_releases_before_any_connector_read() -> None:
 
     assert store.release_reason == "AUTHORIZATION_FAILED"
     assert connector.calls == []
+
+
+def test_durable_window_count_reads_the_dispatch_ledger() -> None:
+    """The in-process budget resets on every cold start; the durable count is
+    the same ceiling read from actuator_dispatches, shared by all instances.
+    The query is deliberately unscoped: the ceiling is a property of the
+    deployment, not of one tenant scope."""
+
+    from solvan.persistence.actuator_dispatch_store import count_dispatches_in_window
+
+    executed: dict[str, object] = {}
+
+    class _Cursor:
+        def fetchone(self):
+            return (7,)
+
+    class _Connection:
+        def execute(self, sql: str, params: dict[str, object]):
+            executed["sql"] = " ".join(sql.split())
+            executed["params"] = params
+            return _Cursor()
+
+    assert count_dispatches_in_window(_Connection(), window_seconds=3600) == 7  # type: ignore[arg-type]
+    sql = str(executed["sql"])
+    assert "solvan.actuator_dispatches" in sql
+    assert "dispatched_at > now() - make_interval" in sql
+    assert executed["params"] == {"window": 3600}
+    assert "organization_id" not in sql, "the deployment ceiling must not be tenant-scoped"

@@ -58,6 +58,12 @@ class EvidenceWrite:
     redaction_manifest_ref: str
     provenance: dict[str, Any]
     freshness_expires_at: datetime
+    #: A bounded numeric projection, present only when the payload is a metric
+    #: series. The content stays in GCS behind the broker; the console reads
+    #: Cloud SQL and never reads evidence objects, so this is how an axis
+    #: reaches it without either inventing points or granting the console tier
+    #: customer-evidence read scope.
+    projection: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True, slots=True)

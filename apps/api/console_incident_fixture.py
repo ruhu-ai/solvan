@@ -437,6 +437,8 @@ def incident_fixtures() -> list[dict[str, Any]]:
                 "profile": "payments-recovery-v1 · version 1",
                 "owner": "payments-sre",
                 "binding": "production graph pgs_…01 / connection_exhaustion",
+                "signals": [],
+                "window": "11:40–12:05:13",
                 "intervals": [
                     {
                         "name": "Healthy baseline",
@@ -476,6 +478,14 @@ def incident_fixtures() -> list[dict[str, Any]]:
                 ],
                 "threshold": "error ratio < 2.0% for 5m · immutable profile",
                 "synthetic": "payment syn_…3A1 committed once at 12:05:41",
+            },
+            "series": {
+                "signal_kind": "",
+                "points": [],
+                "markers": [],
+                "window_band": None,
+                "objective": "",
+                "evidence_refs": [],
             },
             "phase_rail": [
                 {"name": "Detect", "duration": "3s", "state": "done"},

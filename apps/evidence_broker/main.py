@@ -31,6 +31,7 @@ from apps.evidence_broker.helpers import (
     cloud_sql_resource,
     github_repository_id,
     google_resource,
+    payload_projection,
 )
 from apps.evidence_broker.projections import (
     bounded_summary,
@@ -326,6 +327,10 @@ def execute_query(*, agent_key: str, request: QueryRequest) -> EvidenceToolResul
                         content_hash=receipt.content_hash,
                         classification=classification,
                         residency=_required("SOLVAN_GCP_REGION"),
+                        # The console reads Cloud SQL and never reads evidence
+                        # objects, so a metric series is projected here or it
+                        # does not reach an operator at all.
+                        projection=payload_projection(value, source_kind),
                         redaction_manifest_ref="deterministic-solvan-v1",
                         provenance={
                             "request_ids": list(request_ids),

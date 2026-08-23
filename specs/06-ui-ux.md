@@ -157,8 +157,21 @@ Two consequences bind implementations:
 
 ### `StateBadge`
 
-Displays human label, machine state on hover/focus, icon, and elapsed time.
-Terminal and blocked states have distinct shapes/icons, not only colors.
+Displays the human label, the exact machine state, an icon, and elapsed time.
+The human label is the visible one; the machine state is secondary detail and
+is never the primary label.
+
+**The machine state is reachable without a pointer.** A `title` attribute
+satisfies hover and nothing else: it is unreachable by keyboard, unavailable on
+touch, and announced inconsistently by assistive technology. The state is
+therefore carried as text within the badge's accessible name, and `title` is
+kept only for the pointer affordance it does serve. This is the same rule the
+reference library states for tooltips — a tooltip may carry short helper text,
+never the only definition of a critical state.
+
+Terminal and blocked states have distinct shapes/icons, not only colors:
+terminal states take the square glyph of design system section 5, so a settled
+state differs from one in flight by shape and not merely by wording.
 
 ### `ScopePill`
 

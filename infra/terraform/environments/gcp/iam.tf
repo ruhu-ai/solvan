@@ -679,6 +679,24 @@ resource "google_project_iam_member" "scenario_oracle" {
   member  = google_service_account.workload["oracle"].member
 }
 
+# The Antigravity preflight probes call the private provider *as* the
+# coordinator: the provider accepts exactly one caller identity, so proving
+# its IAM means presenting that identity, and the probe mints a short-lived
+# impersonated ID token to do so. No binding granted this, so on
+# staging-20260823-04 every one of the twelve provider probes failed at the
+# token step before observing anything. Gated on the same flag that creates
+# the provider: when the demo is off, the grant does not exist. This is a
+# real widening -- an approver holding TokenCreator on the coordinator can
+# act as the control plane -- and it is accepted deliberately for the
+# preflight window rather than left implicit.
+resource "google_service_account_iam_member" "approver_coordinator_token" {
+  for_each = var.antigravity_demo_enabled ? var.approver_principals : toset([])
+
+  service_account_id = google_service_account.workload["coordinator"].name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = each.value
+}
+
 # Designated release operators may mint short-lived tokens for the two
 # non-agent harness identities. Agent Runtime identities receive no such grant.
 resource "google_service_account_iam_member" "approver_injector_token" {

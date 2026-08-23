@@ -358,3 +358,46 @@ resource "google_storage_bucket_iam_member" "evidence_memory_probe_creator" {
   role   = "roles/storage.objectCreator"
   member = google_service_account.workload["memory"].member
 }
+
+# The actuator's kill switch, made operable. The binary has always refused to
+# mutate when /var/run/solvan/kill-switch exists (apps/actuator/local_policy),
+# but no volume ever backed that path on Cloud Run, so there was no way to
+# make the file exist in a running container: the control was real in code
+# and unreachable in the deployed topology. This bucket is FUSE-mounted
+# read-only at /var/run/solvan on the actuator alone. Engaging is one object
+# write by a release approver:
+#
+#   gcloud storage cp /dev/null gs://<project>-<env>-actuator-controls/kill-switch
+#
+# and disengaging is the corresponding delete. The mount is read-only so the
+# actuator can never remove its own switch; gcsfuse stat caching means an
+# engage takes effect within about a minute, which is the accepted latency of
+# this control. A failed mount fails the revision -- fail closed at deploy.
+resource "google_storage_bucket" "actuator_controls" {
+  project                     = var.project_id
+  name                        = "${var.project_id}-${var.environment}-actuator-controls"
+  location                    = var.region
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
+  force_destroy               = false
+
+  versioning {
+    enabled = true
+  }
+
+  depends_on = [google_project_service.required["storage.googleapis.com"]]
+}
+
+resource "google_storage_bucket_iam_member" "actuator_controls_reader" {
+  bucket = google_storage_bucket.actuator_controls.name
+  role   = "roles/storage.objectViewer"
+  member = google_service_account.workload["actuator"].member
+}
+
+resource "google_storage_bucket_iam_member" "actuator_controls_operator" {
+  for_each = var.approver_principals
+
+  bucket = google_storage_bucket.actuator_controls.name
+  role   = "roles/storage.objectAdmin"
+  member = each.value
+}

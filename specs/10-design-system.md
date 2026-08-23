@@ -435,34 +435,72 @@ carries its `SourceChip`s and a trace link.
 
 ## 8. Charts
 
-**Status: specified, not implemented.** `--chart-1`, `--chart-marker`,
-`--chart-threshold` and `--chart-window` are defined and unreferenced.
+Status: the annotated incident timeseries ships. `apps/console/src/Timeseries.tsx`
+draws it from `series` on the incident projection, built by
+`apps/api/incident_series.py` from `evidence_items.series_projection_json`.
 
-The blocker is not the drawing, and it is not that numbers are absent.
-Verification observations are persisted as `signal_results_json`
-(`specs/artifacts/schema.sql`) and already reach the console:
-`apps/api/incident_projection.py` reads them and projects an `intervals` list.
-The blocker is the **shape**. `CloudMonitoringReader.observe()` returns a
-`MetricObservation` — one scalar for the whole window — because that is what
-verification needs to ask of a signal: did it clear its comparator over the
-window. The verifier records one such value per `signal_key` at window end.
-Nothing anywhere holds a time-ordered sequence of points, so an annotated
-timeseries has no x-axis to draw against. The projection then stringifies
-`value` and drops `observed_at`, which would have to change too.
+**How the points get there.** The Cloud Monitoring request has always carried
+`aggregation.alignmentPeriod=60s`, so the provider returns one bucket a minute;
+`CloudMonitoringReader` keeps them beside the reduction (specification 13 §4.2)
+instead of discarding their timestamps, the Evidence Broker projects them into
+the shared `MetricSeries` shape, and acceptance stores a bounded copy in Cloud
+SQL. The content itself stays in GCS behind the broker: the console reads Cloud
+SQL and holds no customer-evidence read scope.
 
-Four things are therefore open, in order: a series-returning read alongside the
-aggregating one; a contract in specification 4 for where the points live and
-who may read them; a projection that passes numbers and timestamps through
-reader-filtered rather than pre-formatted; then the component. Building the
-component first would mean rendering points the console had invented, which
-section 6 of specification 6 prohibits outright.
+**The axis is composed, not widened.** `WindowArgs.checked_window()` caps an
+evidence window at fifteen minutes because a provider task is bounded and
+stateless. An incident-length axis is therefore several consecutive evidence
+items concatenated, each separately authorized, classified, redacted and
+hashed, so the provenance is N citable windows rather than one. Points are
+never interpolated across a gap between items: a gap is a real gap in
+observation, and a line through it asserts a measurement nobody took.
 
-The **table** half of the requirement below — every chart has an equivalent
-table and a one-sentence summary — is already reachable from the existing
-`intervals` projection, and does not wait on any of this.
+**Every annotation resolves to a durable record** — the incident's
+`detected_at`, an execution receipt's `started_at`, the verification window,
+the profile's comparator. A marker with no record is not drawn. There is no
+deploy marker, because no deployment record exists in the schema; when one
+exists the marker follows, and until then its absence is the honest state.
 
-`--chart-1` resolves to ink, not blue. A series must not wear a status colour,
-and blue was already carrying link, focus ring and the info status.
+**The component computes geometry and nothing else.** It renders an empty state
+rather than an empty axis, because a chart with no points still claims a window
+was observed. Provider strings are placed as text nodes; there is no markup
+path for them.
+
+The sparkline variant below ships on the Overview's active-incident card,
+drawn from the same projection and sharing the full chart's mark classes so the
+two cannot drift. It is deliberately **not** in the incident queue: that table
+already carries eight columns, the repository enforces that no cell overruns
+its column at any supported width, and a ninth fixed-width column broke that
+contract and cascaded into body overflow on unrelated screens. A dense table is
+not a feed row.
+
+**The stat tiles carry their delta and trend.** Nothing new is stored to
+supply them: `apps/api/overview_history.py` reconstructs each figure at twelve
+day boundaries from records that were already durable — an incident's
+`detected_at` and its transitions, a Reliability Case's `created_at`. An
+incident counts at a boundary if it had been detected by then and its state as
+of then, the target of its last transition at or before that instant, is one
+the tile counts. Seeding the walk from the incident's *current* state would
+make every historical point report today's answer and the trend would be a flat
+line at the present value, which reads as "nothing changed" rather than "we did
+not look".
+
+Where the reconstruction and the authoritative count cannot agree — a state
+written without a transition, a transition recorded between two reads — the
+count wins and the trend's last point is set to it, so a tile can never
+contradict the list on the next screen.
+
+**The delta is not coloured by direction.** More open incidents is worse and
+more verified mitigations is better, so a single up-is-bad rule would be wrong
+half the time, and whether a change is good is a judgement the records do not
+carry. The tile states the change and its period and stops.
+
+**The axis draws a revision marker, not a deploy marker.** Cloud Run returns
+`updateTime` on every service read and it was being discarded, so nothing
+recorded when the observed revision arrived. It is captured now and projected
+onto the axis under the name of what was actually observed — the service last
+changed — rather than under "deploy", which would claim a deployment event
+nobody recorded.
 
 Deterministic inline SVG with semantic labels. No chart runtime, no canvas,
 no network. The hover layer ships with the chart, not after it: a crosshair

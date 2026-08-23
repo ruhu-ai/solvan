@@ -41,6 +41,7 @@ from solvan.platform.memory_bank import (
     GeminiMemoryBank,
     MemoryBankConfiguration,
     VertexMemoryAPI,
+    resolve_engine_id,
 )
 from tools.bootstrap_database import apply as apply_schema
 from tools.bootstrap_database import bind_bootstrap_role
@@ -623,12 +624,21 @@ def _proof_writer() -> GcsEvidenceWriter:
 def probe_memory() -> bool:
     scope = _scope()
     engine_resource = _required("SOLVAN_MEMORY_BANK_RESOURCE")
-    engine_id = engine_resource.rsplit("/", 1)[-1]
+    # The deployed resource carries the project number, the canonical form the
+    # project ID; the shared resolver accepts either spelling of this exact
+    # project and refuses everything else.
+    try:
+        engine_id = resolve_engine_id(
+            engine_resource,
+            project_id=_required("SOLVAN_GCP_PROJECT"),
+            project_number=_required("SOLVAN_GCP_PROJECT_NUMBER"),
+            location=_required("SOLVAN_GCP_REGION"),
+        )
+    except ValueError as error:
+        raise RuntimeError(str(error)) from error
     config = MemoryBankConfiguration(
         _required("SOLVAN_GCP_PROJECT"), _required("SOLVAN_GCP_REGION"), engine_id
     )
-    if config.engine_resource != engine_resource:
-        raise RuntimeError("Memory Bank probe resource is outside the release boundary")
     exact_scope = MemoryScope(scope, "preflight-release-continuity", "INTERNAL", config.location)
     alternate_environment = (
         "env_00000000000000000000000000"

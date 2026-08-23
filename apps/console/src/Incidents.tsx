@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import type { EvidenceItem, EvidenceKind, Finding, Incident, StatusTone } from "./types";
 import { LabelValue, MonoChip, PageHeader, StatusBadge, statusIcon } from "./components";
+import { Timeseries } from "./Timeseries";
 
 const evidenceIcons: Record<EvidenceKind | "record", LucideIcon> = {
   metric: Activity,
@@ -387,6 +388,9 @@ function planStepTone(status: string): StatusTone {
 export function Evidence({ incident }: { incident: Incident }): React.JSX.Element {
   return <div className="evidence-layout"><section className="card full-span"><div className="section-heading"><div><p className="eyebrow">Accepted durable plan · version {incident.plan.version}</p><h2>Investigation map</h2><p>{incident.plan.progress}</p></div></div><ol className="plan-list">{incident.plan.steps.map((step) => <li key={step.name} className={`plan-step plan-${step.status.toLowerCase()}`}><span className="plan-marker" aria-hidden="true">[{step.marker}]</span><div><div className="plan-title"><strong>{step.name}</strong><StatusBadge label={step.status.replaceAll("_", " ")} tone={planStepTone(step.status)} /></div><p>{step.purpose}</p><dl className="inline-facts"><div><dt>Agent</dt><dd>{step.agent}</dd></div><div><dt>Depends on</dt><dd>{step.dependencies}</dd></div><div><dt>Budget</dt><dd>{step.budget}</dd></div><div><dt>Evidence</dt><dd>{step.evidence_delta}</dd></div><div><dt>Trace</dt><dd>{step.trace}</dd></div></dl></div></li>)}</ol></section>
     {incident.guidance && <GuidanceChecklist guidance={incident.guidance} />}
+    {/* Under the findings, not above them: the verified claim is the evidence
+        and the axis shows the shape behind it. */}
+    <section className="card full-span"><div className="section-heading"><div><p className="eyebrow">Signal over the incident</p><h2>Observed window</h2><p>Composed from consecutive bounded evidence items. Gaps between them are not interpolated.</p></div></div><Timeseries incident={incident} /></section>
     <FindingGroup title="Validated" description="Every statement resolves to stored evidence." findings={incident.findings.validated} validated />
     <FindingGroup title="Inferred — not validated" description="Context for investigation only; excluded from the last verified fact." findings={incident.findings.inferred} />
     <EvidenceLedger items={incident.evidence_index} />

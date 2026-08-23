@@ -34,8 +34,8 @@ def test_dev_environment_is_stable_and_ports_are_unique() -> None:
     # Bumped whenever the authoritative DDL changes so a worktree never reuses a
     # volume built from an earlier revision. Revision 70 drops the dead third
     # `workspaces.kind` value and the unique index that only guarded that value.
-    assert first["SOLVAN_SCHEMA_REVISION"] == "71"
-    assert first["COMPOSE_PROJECT_NAME"].endswith("_s71")
+    assert first["SOLVAN_SCHEMA_REVISION"] == "73"
+    assert first["COMPOSE_PROJECT_NAME"].endswith("_s73")
 
 
 def test_port_offset_produces_a_separate_environment() -> None:
@@ -44,5 +44,5 @@ def test_port_offset_produces_a_separate_environment() -> None:
     assert first["SOLVAN_API_PORT"] != shifted["SOLVAN_API_PORT"]
     assert first["SOLVAN_STATE_DIR"] != shifted["SOLVAN_STATE_DIR"]
     assert first["COMPOSE_PROJECT_NAME"] != shifted["COMPOSE_PROJECT_NAME"]
-    assert shifted["SOLVAN_STATE_DIR"].endswith("/schema-71/offset-p50")
-    assert shifted["COMPOSE_PROJECT_NAME"].endswith("_s71_offset_p50")
+    assert shifted["SOLVAN_STATE_DIR"].endswith("/schema-73/offset-p50")
+    assert shifted["COMPOSE_PROJECT_NAME"].endswith("_s73_offset_p50")

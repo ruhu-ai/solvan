@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from solvan.persistence import ToolAuthorizationError
+from solvan.platform.cloud_monitoring import MetricObservation
 
 
 def _required(name: str) -> str:
@@ -91,6 +92,51 @@ def _managed_prometheus_projection(
         "no_data": not points,
         "no_data_semantics": no_data_semantics,
     }
+
+
+def monitoring_projection(signal_kind: str, observation: MetricObservation) -> dict[str, Any]:
+    """Project a Cloud Monitoring read into the shared metric-series shape.
+
+    Cloud Monitoring was the only metric source whose evidence carried a
+    reduction with no series behind it, so `MetricSeries` could not read it and
+    nothing could draw the window it described. The buckets were always in the
+    response — the request asks for a 60s alignment — and were discarded with
+    their timestamps.
+    """
+    return {
+        "signal_kind": signal_kind,
+        "value": observation.value,
+        "points": [
+            {"observed_at": point.observed_at.isoformat(), "value": point.value}
+            for point in observation.points
+        ],
+        "no_data": not observation.points,
+    }
+
+
+def payload_projection(value: Any, source_kind: str) -> dict[str, Any] | None:
+    """The bounded projection of a payload, for the console, or nothing.
+
+    One discriminated shape rather than one column per payload type. Only a
+    payload that already carries what the projection claims produces one, so a
+    log read stores NULL rather than an empty axis or a revision with no
+    instant.
+    """
+    if not isinstance(value, dict):
+        return None
+    if source_kind == "CLOUD_RUN_METADATA":
+        revision = value.get("latestReadyRevision")
+        changed_at = value.get("updateTime")
+        if not isinstance(revision, str) or not isinstance(changed_at, str):
+            return None
+        return {"kind": "service_revision", "revision": revision, "changed_at": changed_at}
+    points = value.get("points")
+    signal_kind = value.get("signal_kind")
+    if not isinstance(points, list) or not points or not isinstance(signal_kind, str):
+        return None
+    if len(points) > 64:
+        raise ToolAuthorizationError("metric series exceeds the bounded window's buckets")
+    return {"kind": "metric_series", "signal_kind": signal_kind, "points": points}
 
 
 def google_resource(resource: str, project_id: str, collection: str) -> str:

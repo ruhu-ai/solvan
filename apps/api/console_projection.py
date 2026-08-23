@@ -19,6 +19,7 @@ from apps.api.fleet_governance_projection import (
 )
 from apps.api.guidance_projection import guidance_projection
 from apps.api.incident_projection import incident_projection
+from apps.api.overview_history import counts_over_time, tile
 from apps.api.workspace_projection import workspace_case_projections
 from solvan.application.alert_list import AlertListFilter
 from solvan.application.patch_diff import diff_view
@@ -333,6 +334,29 @@ def live_console_snapshot(connection: Connection[Any], *, scope: Scope) -> dict[
               ORDER BY p.display_name"""
         )
         registered_agents = cursor.fetchall()
+        cursor.execute(
+            """SELECT entity_id, occurred_at, to_state, from_state
+                 FROM solvan.state_transitions
+                WHERE organization_id = %(organization_id)s
+                  AND project_id = %(project_id)s
+                  AND environment_id = %(environment_id)s
+                  AND entity_type = 'INCIDENT'
+                ORDER BY entity_id, occurred_at""",
+            _scope_parameters(scope),
+        )
+        transitions_by_incident: dict[str, list[tuple[Any, str, str]]] = {}
+        for row in cursor.fetchall():
+            transitions_by_incident.setdefault(str(row["entity_id"]), []).append(
+                (row["occurred_at"], str(row["to_state"]), str(row["from_state"]))
+            )
+        history = counts_over_time(
+            incidents=[dict(row) for row in incident_rows],
+            transitions_by_incident=transitions_by_incident,
+            cases=[dict(row) for row in case_rows],
+            active_states=_ACTIVE_INCIDENT_STATES,
+            mitigated_states={"MITIGATED", "RESOLVED"},
+            now=datetime.now(UTC),
+        )
     if environment is None:
         raise RuntimeError("configured console scope does not exist")
     manifest_facts = agent_manifest_facts(
@@ -519,14 +543,15 @@ def live_console_snapshot(connection: Connection[Any], *, scope: Scope) -> dict[
         },
         "overview": {
             "metrics": [
-                {"label": "Open incidents", "value": str(active_count), "detail": "durable"},
-                {"label": "Reliability Cases", "value": str(len(cases)), "detail": "durable"},
-                {"label": "Awaiting approval", "value": str(awaiting_count), "detail": "exact"},
-                {
-                    "label": "Verified mitigations",
-                    "value": str(mitigated_count),
-                    "detail": "stored",
-                },
+                tile("Open incidents", "durable", history["open_incidents"], active_count),
+                tile("Reliability Cases", "durable", history["reliability_cases"], len(cases)),
+                tile("Awaiting approval", "exact", history["awaiting_approval"], awaiting_count),
+                tile(
+                    "Verified mitigations",
+                    "stored",
+                    history["verified_mitigations"],
+                    mitigated_count,
+                ),
             ],
             "queue": {
                 "ready": int(queue["ready"] or 0),

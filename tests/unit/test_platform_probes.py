@@ -78,7 +78,9 @@ def test_cloud_run_health_accepts_google_generated_alias_for_canonical_service(
         )
     )
 
-    passed, detail = _cloud_run_health(topology, "solvan-staging")  # type: ignore[arg-type]
+    monkeypatch.setattr("tools.run_platform_probes._unauthenticated_status", lambda url: 403)
+
+    passed, detail = _cloud_run_health(topology, "solvan-staging", "599862894051")  # type: ignore[arg-type]
 
     assert passed is True
     assert detail["services"]["api"] == {
@@ -86,6 +88,43 @@ def test_cloud_run_health_accepts_google_generated_alias_for_canonical_service(
         "uri_matches": True,
         "latest_revision_ready": True,
     }
+
+
+def test_cloud_run_health_fails_when_the_audience_url_routes_nowhere(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The deterministic URL is baked into every IAM audience. A frontend 404
+    means that audience routes to no service -- the exact drift fc428c2's
+    shape-only regex could never see, which would otherwise surface as
+    runtime 401s long after promotion."""
+
+    monkeypatch.setattr(
+        "tools.run_platform_probes._gcloud_json",
+        lambda arguments: [
+            {
+                "metadata": {"name": "solvan-staging-api"},
+                "status": {
+                    "url": "https://solvan-staging-api-vlhy2vgmeq-ew.a.run.app",
+                    "latestReadyRevisionName": "solvan-staging-api-00002-abc",
+                    "latestCreatedRevisionName": "solvan-staging-api-00002-abc",
+                    "conditions": [{"type": "Ready", "status": "True"}],
+                },
+            }
+        ],
+    )
+    topology = SimpleNamespace(
+        service_uris=(("api", "https://solvan-staging-api-599862894051.europe-west1.run.app"),)
+    )
+    monkeypatch.setattr("tools.run_platform_probes._unauthenticated_status", lambda url: 404)
+    passed, detail = _cloud_run_health(topology, "solvan-staging", "599862894051")  # type: ignore[arg-type]
+    assert passed is False
+    assert detail["services"]["api"]["uri_matches"] is False
+
+    # A deterministic URL naming another project is refused before any HTTP.
+    monkeypatch.setattr("tools.run_platform_probes._unauthenticated_status", lambda url: 403)
+    passed, detail = _cloud_run_health(topology, "solvan-staging", "111111111111")  # type: ignore[arg-type]
+    assert passed is False
+    assert detail["services"]["api"]["uri_matches"] is False
 
 
 @pytest.mark.parametrize(("observed", "passed"), [(True, True), (False, False)])
@@ -121,3 +160,29 @@ def test_workspace_sandbox_probe_observes_live_launcher_field(
         "describe",
         "solvan-staging-workspace-sandbox",
     ]
+
+
+def test_iap_matrix_resolves_endpoint_ids_from_terraform_rather_than_inventing_them() -> None:
+    """Agent Registry endpoints are named `agentregistry-<uuid>`; only the
+    Terraform output knows which key maps to which. The probe used to build
+    IDs from the service prefix, so every getIamPolicy call 404ed and the
+    probe had never read a single real policy (staging-20260823-04,
+    identity_matrix_denied_excess_authority: bare HTTPError, empty
+    observations). Resolution now mirrors configure_agent_iap exactly."""
+
+    from tools.run_platform_probes import _registered_endpoint_id
+
+    registered = {
+        "evidence": (
+            "projects/599862894051/locations/europe-west1/endpoints/"
+            "agentregistry-00000000-0000-0000-7415-86f0e7e37131"
+        )
+    }
+    assert (
+        _registered_endpoint_id(registered, "evidence")
+        == "agentregistry-00000000-0000-0000-7415-86f0e7e37131"
+    )
+    with pytest.raises(RuntimeError, match="missing registered endpoint"):
+        _registered_endpoint_id(registered, "actuator")
+    with pytest.raises(RuntimeError, match="malformed"):
+        _registered_endpoint_id({"evidence": "not-a-resource"}, "evidence")

@@ -87,6 +87,13 @@ MIGRATIONS = (
         "liaison_threads",
     ),
     TargetMigration(
+        "solvan_liaison",
+        4,
+        "durable_steer_grant_nonce",
+        ROOT / "specs" / "artifacts" / "liaison-schema.target.v4.sql",
+        "liaison_threads",
+    ),
+    TargetMigration(
         "solvan_graph",
         1,
         "production_graph_baseline",

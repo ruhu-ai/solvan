@@ -328,8 +328,25 @@ def deploy(
         )
         env_vars: dict[str, str] = {
             "SOLVAN_ENVIRONMENT": plan.environment,
+            # The first live staging query died before reaching the model: the
+            # engine container's storage client auto-negotiated the mTLS
+            # endpoint (storage.mtls.googleapis.com) and failed certificate
+            # verification against a chain its trust store calls self-signed,
+            # so downloading the query input crashed the job with exit 1
+            # (staging-20260823-04, runtime_query_job_completed). The agents
+            # present no client certificate and gain nothing from mTLS
+            # negotiation, so pin the documented off-switch rather than trust
+            # whatever certificate configuration the managed image ships.
+            "GOOGLE_API_USE_MTLS_ENDPOINT": "never",
             "GOOGLE_GENAI_USE_VERTEXAI": "true",
             "SOLVAN_MODEL_ENDPOINT": plan.model_endpoint,
+            # SOLVAN_MODEL_ENDPOINT is receipt metadata that no SDK reads;
+            # GOOGLE_VERTEX_BASE_URL is the variable google-genai actually
+            # honors (google.genai._base_url, verified against the pinned
+            # 2.19.0). Without it the fleet's EU-REP endpoint was asserted in
+            # receipts and enforced nowhere: the client derived its own URL
+            # from the location and the receipts wrote a table lookup.
+            "GOOGLE_VERTEX_BASE_URL": plan.model_endpoint,
             "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY": "true",
             "OTEL_SEMCONV_STABILITY_OPT_IN": "gen_ai_latest_experimental",
             "ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS": "false",

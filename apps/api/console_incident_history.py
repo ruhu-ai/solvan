@@ -111,8 +111,18 @@ def closed_incident(
             "owner": service,
             "binding": "archived",
             "intervals": [],
+            "signals": [],
+            "window": "archived",
             "threshold": "archived immutable profile",
             "synthetic": "archived",
+        },
+        "series": {
+            "signal_kind": "",
+            "points": [],
+            "markers": [],
+            "window_band": None,
+            "objective": "",
+            "evidence_refs": [],
         },
         "phase_rail": [],
         "timeline": [

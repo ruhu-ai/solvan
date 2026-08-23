@@ -247,9 +247,38 @@ export type Incident = {
     profile: string;
     owner: string;
     binding: string;
+    /** Verification phases across the recovery — baseline, fault, mutation,
+     *  warmup, observation. A narrative of how the signal moved. */
     intervals: Array<{ name: string; window: string; error_ratio: string; p95: string; result: string }>;
+    /** One observed signal beside the objective it was measured against. A
+     *  different table from `intervals`: this is the readout the verification
+     *  record actually holds. The console states the observation and the
+     *  objective and adjudicates neither — the verdict is the verifier's and
+     *  is rendered once, on the panel. */
+    signals: Array<{
+      signal: string;
+      provider_kind: string;
+      observed_value: number | null;
+      observed_at: string;
+      objective: string;
+      citations: string[];
+    }>;
+    window: string;
     threshold: string;
     synthetic: string;
+  };
+  /** One annotated axis for the incident, composed from consecutive bounded
+   *  evidence items. Empty when no metric evidence has been accepted — the
+   *  console draws nothing rather than inventing a shape. Points are never
+   *  interpolated across a gap between items, because a gap is a real gap in
+   *  observation. */
+  series: {
+    signal_kind: string;
+    points: Array<{ observed_at: string; value: number }>;
+    markers: Array<{ kind: string; label: string; at: string; committed: string }>;
+    window_band: { start: string; end: string; label: string } | null;
+    objective: string;
+    evidence_refs: string[];
   };
   phase_rail: Array<{ name: string; duration: string; state: "done" | "current" }>;
   timeline: Array<{ time: string; actor: string; event: string; state: string; kind: StatusTone }>;
@@ -315,7 +344,17 @@ export type ConsoleSnapshot = {
   generated_at: string;
   environment: { name: string; region: string };
   overview: {
-    metrics: Array<{ label: string; value: string; detail: string }>;
+    /** A stat tile: the figure, the signed change over a named period, and the
+     *  trend it moved along. `delta` is derived from durable records, never
+     *  from a window the console did not observe. */
+    metrics: Array<{
+      label: string;
+      value: string;
+      detail: string;
+      delta: number;
+      delta_period: string;
+      trend: number[];
+    }>;
     queue: Record<string, number>;
   };
   incidents: Incident[];

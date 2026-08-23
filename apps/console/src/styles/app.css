@@ -60,8 +60,13 @@ main { width: min(100%, 1500px); min-height: calc(100vh - 94px); margin: 0 auto;
 .section-heading h2 { margin-bottom: 2px; }
 .section-heading p:last-child { margin-bottom: 0; font: var(--type-body-sm); }
 .muted { color: var(--text-muted); font: var(--type-small); }
-.status-badge { display: inline-flex; width: fit-content; min-height: 24px; align-items: center; gap: 5px; padding: 2px 8px; border: 1px solid; border-radius: var(--radius-pill); font: var(--type-micro); font-weight: 650; white-space: nowrap; }
-.status-badge > span { display: grid; width: var(--icon-size-sm); height: var(--icon-size-sm); place-items: center; }
+/* Positioned so it is a containing block, for the same reason `.responsive-table` is: the badge's visually-hidden machine state is absolutely positioned, and against the viewport it widens the page rather than being clipped — on every screen that shows a badge, which is all of them. */
+.status-badge { position: relative; display: inline-flex; width: fit-content; min-height: 24px; align-items: center; gap: 5px; padding: 2px 8px; border: 1px solid; border-radius: var(--radius-pill); font: var(--type-micro); font-weight: 650; white-space: nowrap; }
+/* The icon box only. The label is also a direct span child now, and the
+   bare child selector squeezed every badge label in the console to icon
+   width -- per-letter wrapping in the queue, clipped or overflowing
+   badges everywhere wrapping is forbidden. */
+.status-badge > span[aria-hidden="true"] { display: grid; width: var(--icon-size-sm); height: var(--icon-size-sm); place-items: center; }
 .status-success { border-color: var(--status-success-border); background: var(--status-success-bg); color: var(--status-success-strong); }
 .status-warning { border-color: var(--status-warning-border); background: var(--status-warning-bg); color: var(--status-warning-strong); }
 .status-danger { border-color: var(--status-danger-border); background: var(--status-danger-bg); color: var(--status-danger-strong); }
