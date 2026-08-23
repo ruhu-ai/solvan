@@ -1,0 +1,64 @@
+tests/harness/test_release_interrupt_handling.py
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 1-83
+apps/console/src/Alerts.tsx
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 275
+apps/console/src/styles/app.css
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 2,15-17,22,31,33-34,45-46,50,56,61-64,72,81-86,94-100,102-103,107-110,113-114,119,125,133,137,139,149,154-156,158,164,166-167,170-171,174,185-186,194,200,205-206,209,213,221-222,224,228,230,232,246,248,250,253,256,265,272,275,277,294,300,303,309,317,326-327,353,358,362,365,370,377-378,380-381,388,395,401,407,413,418-419,424,426-427
+apps/console/src/styles/code-change.css
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 3
+apps/console/src/styles/settings.css
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 13-14,18,24,27-28,31-32,36,46,48,54-55,60-61,69,82,85-86,90,95,124,128,140,149
+apps/console/src/styles/states.css
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 16
+apps/console/src/Incidents.tsx
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 179-183
+apps/console/src/styles/incident.css
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 12,15,22,25-26,71,139,164,168,171,181,209,251,255,264,266,280,337,342,345,350,354,361,363,366,369,374-375,381-382,401,407,416,436
+apps/console/src/styles/tokens.css
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 6,8,12-14,16,18-29,31-35,48,55,59,63,67,69,71,74-75,78-87,90,95-108,110-124,133-135,137-141,145-152,162,164,168,170,172-175,177-179,181-189,191-197
+infra/terraform/environments/gcp/alerting.tf
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 29-33,96-99,140-143
+apps/console/src/main.tsx
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 12
+scripts/check
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 27
+apps/console/src/components.tsx
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 10-12,41-62,65,67-71
+specs/10-design-system.md
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 3,51-56,102,104,108-114,116,151-152,158,161-162,205-210,214-267,291,309-313,336,375-385,438-466,468-472,495,497-501
+specs/06-ui-ux.md
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 43,46,52-54
+  s_ea9b9b24df1c46::t_ef1910da783aac 55
+apps/console/src/styles/alerts.css
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 4-5,12,29,35,37-39,44-45
+apps/console/src/styles/responsive.css
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 17,34,80,86,97-98,100,103-105
+docs/generated/repository-map.md
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 8,13-14,17,22,31,35
+apps/console/src/styles/skills.css
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 1-89
+apps/console/src/styles/production-graph.css
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 16,20-21
+apps/console/src/styles/operability.css
+  s_ea9b9b24df1c46::t_56dc2308dbbccc 67-68,81,84,102
+tools/check_design_system.py
+  s_ea9b9b24df1c46::t_ad004e30c48784 1-408
+tools/deploy_release.py
+  s_ea9b9b24df1c46::t_b256e40a171efe 16,1758-1777,1779
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "942e463dd8911d4168f4ef857f7e5989ce159456",
+  "prompts": {},
+  "sessions": {
+    "s_ea9b9b24df1c46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ed42e522-bb61-497e-9d39-2096114957f1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
