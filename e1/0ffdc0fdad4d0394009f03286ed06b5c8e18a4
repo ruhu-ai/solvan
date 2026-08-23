@@ -1,0 +1,37 @@
+apps/api/console_fixture.py
+  s_ea9b9b24df1c46::t_372a59c3bf6da3 8,15-82,90,95
+apps/api/console_projection.py
+  s_ea9b9b24df1c46::t_40e8084c1958f2 22,50-52,362-371,547
+apps/api/overview_history.py
+  s_ea9b9b24df1c46::t_a7627a7a6e171c 1,3-4,18-26,31-33,41-43,121-320,338
+apps/console/src/types.ts
+  s_ea9b9b24df1c46::t_f19745f7b44186 347-352
+apps/coordinator/contracts.py
+  s_ea9b9b24df1c46::t_976c324f51517f 26,352-365,370
+infra/terraform/environments/gcp/cloud_run.tf
+  s_ea9b9b24df1c46::t_75bf172f80cda4 302-311,1145,1449,1512
+infra/terraform/environments/gcp/kms.tf
+  s_ea9b9b24df1c46::t_b4fd2e90de654a 60-63,73-76,79,89-92,94,102-105,115-118,121,136-138,148,156
+specs/10-design-system.md
+  s_ea9b9b24df1c46::t_d606c96e64aff3 498-525
+tests/e2e/critical-path.spec.ts
+  s_ea9b9b24df1c46::t_e3525df942a7d3 1364-1372
+tests/unit/test_overview_history.py
+  s_ea9b9b24df1c46::t_b82ba558568f31 9-10,13-16,19,94,103,115,119-273
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "e10ffdc0fdad4d0394009f03286ed06b5c8e18a4",
+  "prompts": {},
+  "sessions": {
+    "s_ea9b9b24df1c46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ed42e522-bb61-497e-9d39-2096114957f1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
