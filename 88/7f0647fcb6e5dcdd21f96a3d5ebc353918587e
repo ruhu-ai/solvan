@@ -1,0 +1,27 @@
+infra/terraform/environments/gcp/cloud_run.tf
+  s_ea9b9b24df1c46::t_eac09b9d08f064 1853-1863
+src/solvan/platform/memory_bank.py
+  s_ea9b9b24df1c46::t_d45fb22358a5f4 254-265
+tests/unit/test_agent_platform_deploy.py
+  s_ea9b9b24df1c46::t_707cb1a5701aa1 440-441
+tests/unit/test_memory_bank.py
+  s_ea9b9b24df1c46::t_c62c9ccb10a5d2 27-35,70,77,87,95,103,108,120,144,163
+tools/deploy_agent_platform.py
+  s_ea9b9b24df1c46::t_6c01b5b3da42bd 350-359
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "887f0647fcb6e5dcdd21f96a3d5ebc353918587e",
+  "prompts": {},
+  "sessions": {
+    "s_ea9b9b24df1c46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ed42e522-bb61-497e-9d39-2096114957f1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
