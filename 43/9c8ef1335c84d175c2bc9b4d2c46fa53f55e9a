@@ -1,0 +1,19 @@
+infra/terraform/environments/gcp/kms.tf
+  s_ea9b9b24df1c46::t_a600ea5a12822c 299-333
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "439c8ef1335c84d175c2bc9b4d2c46fa53f55e9a",
+  "prompts": {},
+  "sessions": {
+    "s_ea9b9b24df1c46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ed42e522-bb61-497e-9d39-2096114957f1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
