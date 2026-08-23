@@ -1,0 +1,163 @@
+.github/workflows/ci.yml
+  s_ea9b9b24df1c46::t_12953f47edc34d 29-32
+AGENTS.md
+  s_ea9b9b24df1c46::t_7f83bf373d77a8 90-95
+apps/actuator/local_policy.py
+  s_ea9b9b24df1c46::t_d965f2c34b5368 121-130
+apps/actuator/main.py
+  s_ea9b9b24df1c46::t_752802e6edcf17 44,226-246
+apps/api/console_fixture.py
+  s_ea9b9b24df1c46::t_af8d89decbc2d8 27-58
+apps/api/console_incident_fixture.py
+  s_ea9b9b24df1c46::t_079cacf7663a8e 440-441,482-489
+apps/api/console_incident_history.py
+  s_ea9b9b24df1c46::t_af91e0d634f361 114-115,119-126
+apps/api/console_projection.py
+  s_ea9b9b24df1c46::t_6e22bf22145888 22,337-359,546-554
+apps/api/incident_projection.py
+  s_ea9b9b24df1c46::t_a0d01ac1e6a65b 12,90-92,110-122,141,419-424,556-557,562-570,577-583,587,591-611
+apps/api/incident_series.py
+  s_ea9b9b24df1c46::t_bc31c0fde9ed99 1-140
+apps/api/liaison_steer.py
+  s_ea9b9b24df1c46::t_5c15f620b5b248 35,223-233
+apps/api/overview_history.py
+  s_ea9b9b24df1c46::t_c0a1e84a35ca37 1-128
+apps/console/src/App.tsx
+  s_ea9b9b24df1c46::t_5ee106bf5ad5c0 33,324-339,344-347
+apps/console/src/IncidentRepair.tsx
+  s_ea9b9b24df1c46::t_23ae6db8fd5379 94
+apps/console/src/Incidents.tsx
+  s_ea9b9b24df1c46::t_432440d7128293 24,391-393
+apps/console/src/Timeseries.tsx
+  s_ea9b9b24df1c46::t_fa45cff60d152c 1-328
+apps/console/src/components.tsx
+  s_ea9b9b24df1c46::t_f5d11cbdc8e854 50-55,58,62-63
+apps/console/src/conversationEvidence.ts
+  s_ea9b9b24df1c46::t_5919644f4c8e0d 33
+apps/console/src/styles/app.css
+  s_ea9b9b24df1c46::t_1bc077f6e6ae4f 63-69
+apps/console/src/styles/incident.css
+  s_ea9b9b24df1c46::t_c945cf2015765d 440-474
+apps/console/src/styles/settings.css
+  s_ea9b9b24df1c46::t_22f4a03c4f5cf4 78,134
+apps/console/src/types.ts
+  s_ea9b9b24df1c46::t_44f8c7c67ddcd0 250-251,253-266,270-282,347-357
+apps/coordinator/memory_context.py
+  s_ea9b9b24df1c46::t_0083df8934fcdc 26,114-124
+apps/coordinator/runtime_starters.py
+  s_ea9b9b24df1c46::t_3f3302912bfe44 145-148,176-190,254-257,292-301,388-401
+apps/evidence_broker/helpers.py
+  s_ea9b9b24df1c46::t_06b49f58eee547 13,97-141
+apps/evidence_broker/main.py
+  s_ea9b9b24df1c46::t_af693a9e1f7759 34,330-333
+apps/evidence_broker/reader.py
+  s_ea9b9b24df1c46::t_6cd82f1af8f5aa 53,369-374,376,582-587
+apps/memory_promoter/main.py
+  s_ea9b9b24df1c46::t_11d6c190646c17 23,83-93
+docs/generated/repository-map.md
+  s_ea9b9b24df1c46::t_7f106717a7c59e 8,14,16-17,31,35,40,46
+docs/quality.md
+  s_ea9b9b24df1c46::t_a01633f81a6a96 27
+docs/tech-debt.md
+  s_ea9b9b24df1c46::t_74469b4348c89c 11-12
+infra/terraform/environments/gcp/cloud_run.tf
+  s_ea9b9b24df1c46::t_c690af08558c98 1914-1924,1934-1944,2090-2098,3080-3083
+infra/terraform/environments/gcp/iam.tf
+  s_ea9b9b24df1c46::t_a61ac8ca3d2f51 682-699
+infra/terraform/environments/gcp/storage.tf
+  s_ea9b9b24df1c46::t_4018f0ef3b7f23 361-403
+scripts/check-contracts
+  s_ea9b9b24df1c46::t_051164cb26b93e 164-171
+scripts/dev-env
+  s_ea9b9b24df1c46::t_eb7537adf0a4dc 29
+specs/06-ui-ux.md
+  s_ea9b9b24df1c46::t_586102571b4cfc 160-174
+specs/10-design-system.md
+  s_ea9b9b24df1c46::t_a7ff71124c83cb 438-503
+specs/13-tenant-integration.md
+  s_ea9b9b24df1c46::t_7c258410644d71 449-470
+specs/artifacts/liaison-schema-contract-tests.v4.sql
+  s_ea9b9b24df1c46::t_8075479ee2b042 1-43
+specs/artifacts/liaison-schema.target.v4.sql
+  s_ea9b9b24df1c46::t_6100d98f5ebbb4 1-27
+specs/artifacts/schema-contract-tests.sql
+  s_ea9b9b24df1c46::t_90165ef6f6c57a 709-789
+specs/artifacts/schema.sql
+  s_ea9b9b24df1c46::t_d0ce513e93fc81 1045-1055,1059-1072
+src/solvan/application/liaison/granted_reader.py
+  s_ea9b9b24df1c46::t_261d99dbf1df3b 125-138
+src/solvan/application/liaison/grants.py
+  s_ea9b9b24df1c46::t_ba5c6fb8f5ddb3 165-169,260-268
+src/solvan/persistence/actuator_dispatch_store.py
+  s_ea9b9b24df1c46::t_702e33a00d4043 36-55
+src/solvan/persistence/evidence_completion.py
+  s_ea9b9b24df1c46::t_8ea4069da1ff22 57-58,65,80
+src/solvan/persistence/evidence_types.py
+  s_ea9b9b24df1c46::t_8bdc0ae3b47e4d 61-66
+src/solvan/persistence/liaison_parked.py
+  s_ea9b9b24df1c46::t_45c643c937e4ff 25,28,374-412
+src/solvan/persistence/runtime_supervisor_reservation.py
+  s_ea9b9b24df1c46::t_c8eb7b57168037 8,25-83
+src/solvan/platform/cloud_monitoring.py
+  s_ea9b9b24df1c46::t_b2174747043a30 6,13-35,62-69,75-80,93,96,104-109,111,122,124,135,146,178,201-266,268,272,284,291,306-308,312-322,341-360
+src/solvan/platform/memory_bank.py
+  s_ea9b9b24df1c46::t_4c0132061f930e 137-165
+tests/e2e/critical-path.spec.ts
+  s_ea9b9b24df1c46::t_0b50bf55f41fdf 526-529,1301-1305,1324-1365
+tests/harness/test_dev_env.py
+  s_ea9b9b24df1c46::t_547e16aaa289dc 37-38,47-48
+tests/unit/test_actuator.py
+  s_ea9b9b24df1c46::t_1d3371996f23f5 474-501
+tests/unit/test_agent_platform_deploy.py
+  s_ea9b9b24df1c46::t_fbd421fe627c32 438-439
+tests/unit/test_cloud_platform_adapters.py
+  s_ea9b9b24df1c46::t_562ef3063dd1fa 10-14,79-101,287-376
+tests/unit/test_evidence_broker.py
+  s_ea9b9b24df1c46::t_2a4033da17e659 14,36,40,610-682
+tests/unit/test_liaison_access.py
+  s_ea9b9b24df1c46::t_43a991ffc20db3 265-305
+tests/unit/test_memory.py
+  s_ea9b9b24df1c46::t_8bfcdef7db0fe7 334-370
+tests/unit/test_memory_promoter.py
+  s_ea9b9b24df1c46::t_70d3052b418dd8 53-54,65-79
+tests/unit/test_overview_history.py
+  s_ea9b9b24df1c46::t_59293b7e775226 1-111
+tests/unit/test_platform_probes.py
+  s_ea9b9b24df1c46::t_2d4b90f831be15 81-83,93-129,163-188
+tests/unit/test_target_schema_migrations.py
+  s_ea9b9b24df1c46::t_a4aca5c3c4818c 22,81-82
+tools/bootstrap_database.py
+  s_ea9b9b24df1c46::t_a356a9c53f338f 1214,1216-1229
+tools/check_design_system.py
+  s_ea9b9b24df1c46::t_d6b4b9ed0f61e8 12-19,22,210-238,425
+tools/console_demo_seed.py
+  s_ea9b9b24df1c46::t_ff9e15ac9151ee 77-129,259,263-264,284
+tools/deploy_agent_platform.py
+  s_ea9b9b24df1c46::t_1b2cc24d1b5821 331-340,343-349
+tools/release_admin.py
+  s_ea9b9b24df1c46::t_e4cb81c62614d6 44,627-638
+tools/run_agent_evals.py
+  s_ea9b9b24df1c46::t_b82f2d4c727b3b 126-136,155-161
+tools/run_model_quality_evals.py
+  s_ea9b9b24df1c46::t_baac291bbb0e8f 22-24,200-212,266-273,284-285
+tools/run_platform_probes.py
+  s_ea9b9b24df1c46::t_b07508e0d95d3f 265-276,299,330-337,342-344,496-522,525-526,530-531,533-548,551-552,556,561-562,650-657,679-682,684-688
+tools/target_schema_migrations.py
+  s_ea9b9b24df1c46::t_fdf198dc4ca788 89-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "fffc4d14b0ad145374aaf0525f95ba76e839dea2",
+  "prompts": {},
+  "sessions": {
+    "s_ea9b9b24df1c46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ed42e522-bb61-497e-9d39-2096114957f1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
