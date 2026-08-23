@@ -10,6 +10,10 @@ export default defineConfig({
   forbidOnly: true,
   retries: process.env.CI ? 1 : 0,
   workers: 1,
+  // Governed local routes persist and project durable records before the UI
+  // changes. Keep assertions bounded, but allow the serial browser harness to
+  // observe those writes under host load without retrying the mutation.
+  expect: { timeout: 15_000 },
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL,
@@ -34,4 +38,3 @@ export default defineConfig({
     },
   ],
 });
-

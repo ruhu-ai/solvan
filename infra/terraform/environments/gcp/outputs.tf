@@ -122,14 +122,22 @@ output "service_uris" {
         data.google_project.current.number,
         var.region,
       )
+      if contains([
+        "actuator",
+        "api",
+        "coordinator",
+        "detector",
+        "evidence",
+        "memory",
+        "payments",
+        "publisher",
+        "verifier",
+      ], key)
     },
     { console = local.console_url },
     { workspace_sandbox = local.workspace_sandbox_url },
     var.antigravity_demo_enabled ? {
       antigravity_workspace = local.antigravity_workspace_url
-    } : {},
-    var.github_release_enabled ? {
-      github_provider = local.github_provider_url
     } : {},
   )
   sensitive = true

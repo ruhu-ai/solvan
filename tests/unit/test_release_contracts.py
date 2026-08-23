@@ -72,6 +72,20 @@ def test_release_outputs_export_deterministic_cloud_run_urls() -> None:
     assert "data.google_project.current.number" in service_uris
     assert "service.uri" not in service_uris
     assert "local.antigravity_workspace_url" in service_uris
+    assert '"github_provider"' not in service_uris
+    assert '"deployment_controller"' not in service_uris
+    for name in (
+        "actuator",
+        "api",
+        "coordinator",
+        "detector",
+        "evidence",
+        "memory",
+        "payments",
+        "publisher",
+        "verifier",
+    ):
+        assert f'"{name}"' in service_uris
 
 
 def test_optional_antigravity_services_supply_fail_closed_otel_environment() -> None:
