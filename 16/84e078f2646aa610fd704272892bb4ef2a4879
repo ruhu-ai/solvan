@@ -1,0 +1,27 @@
+apps/coordinator/memory_context.py
+  s_ea9b9b24df1c46::t_3925c4db04cea6 129
+apps/memory_promoter/main.py
+  s_ea9b9b24df1c46::t_eccb59d1150067 119
+src/solvan/platform/memory_bank.py
+  s_ea9b9b24df1c46::t_d84c5a90624a10 122-128,143-154,266
+tests/unit/test_memory.py
+  s_ea9b9b24df1c46::t_e8dfe14e681b47 371-390
+tools/release_admin.py
+  s_ea9b9b24df1c46::t_7f46710378aa04 640-643
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "1684e078f2646aa610fd704272892bb4ef2a4879",
+  "prompts": {},
+  "sessions": {
+    "s_ea9b9b24df1c46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ed42e522-bb61-497e-9d39-2096114957f1",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
