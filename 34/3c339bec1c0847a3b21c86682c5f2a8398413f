@@ -1,0 +1,29 @@
+infra/terraform/environments/gcp/iam.tf
+  s_ec02e82fd90252::t_6a22efe6948835 563-568
+infra/terraform/environments/gcp/outputs.tf
+  s_ec02e82fd90252::t_4b7c0baeff48cd 285
+infra/terraform/environments/gcp/platform.tf
+  s_ec02e82fd90252::t_9894b3d371e0a4 421-426
+tests/unit/test_agent_iap.py
+  s_ec02e82fd90252::t_460484e439e2ae 37,97
+tools/configure_agent_iap.py
+  s_ec02e82fd90252::t_ca89f2bddee977 104
+tools/run_platform_probes.py
+  s_ec02e82fd90252::t_583b0ef39ebe3b 539
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "343c339bec1c0847a3b21c86682c5f2a8398413f",
+  "prompts": {},
+  "sessions": {
+    "s_ec02e82fd90252": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "52b063e9-3c29-4efc-b6d7-daeb472c7ed3",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
