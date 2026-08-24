@@ -1,0 +1,21 @@
+tests/unit/test_platform_preflight.py
+  s_ea9b9b24df1c46::t_454184c7140a55 90
+tests/unit/test_release_projection.py
+  s_ea9b9b24df1c46::t_a2256f3b83ee34 117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "d37ae5916be707b1d57a7826b5b98d0dc94536a3",
+  "prompts": {},
+  "sessions": {
+    "s_ea9b9b24df1c46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ed42e522-bb61-497e-9d39-2096114957f1",
+        "model": "unknown"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
