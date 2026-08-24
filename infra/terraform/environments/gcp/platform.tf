@@ -418,6 +418,12 @@ resource "google_agent_registry_service" "runtime_dependencies" {
       url          = "https://aiplatform.eu.rep.googleapis.com"
       service_id   = "aiplatform-eu-rep"
     }
+    storage = {
+      display_name = "Cloud Storage JSON API"
+      description  = "Query-job input/output objects the Runtime harness reads and writes. Unregistered, the egress gateway intercepted the TLS handshake and every engine died verifying the gateway's certificate (staging-20260823-04 through -20260824-01)."
+      url          = "https://storage.googleapis.com"
+      service_id   = "storage"
+    }
     resource_manager = {
       display_name = "Cloud Resource Manager API"
       description  = "Project-number resolution required during Runtime startup."

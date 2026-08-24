@@ -282,6 +282,7 @@ output "registered_endpoints" {
     aiplatform            = try(google_agent_registry_service.runtime_dependencies["aiplatform"].registry_resource, null)
     aiplatform_mtls       = try(google_agent_registry_service.runtime_dependencies["aiplatform_mtls"].registry_resource, null)
     aiplatform_rep        = try(google_agent_registry_service.runtime_dependencies["aiplatform_rep"].registry_resource, null)
+    storage               = try(google_agent_registry_service.runtime_dependencies["storage"].registry_resource, null)
     aiplatform_eu_rep     = try(google_agent_registry_service.runtime_dependencies["aiplatform_eu_rep"].registry_resource, null)
     resource_manager      = try(google_agent_registry_service.runtime_dependencies["resource_manager"].registry_resource, null)
     resource_manager_mtls = try(google_agent_registry_service.runtime_dependencies["resource_manager_mtls"].registry_resource, null)

@@ -536,6 +536,7 @@ def _iap_matrix(
     # can drift without a red probe.
     for dependency in (
         "aiplatform",
+        "storage",
         "aiplatform_mtls",
         "aiplatform_rep",
         "aiplatform_eu_rep",

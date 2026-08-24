@@ -34,6 +34,7 @@ def registered_endpoints() -> dict[str, str]:
         "actuator",
         "verifier",
         "aiplatform",
+        "storage",
         "aiplatform_mtls",
         "aiplatform_rep",
         "aiplatform_eu_rep",
@@ -93,6 +94,7 @@ def test_iap_plan_allows_fleet_startup_and_telemetry_dependencies() -> None:
     assert set(by_endpoint) == {
         "actuator",
         "aiplatform",
+        "storage",
         "aiplatform_mtls",
         "aiplatform_rep",
         "aiplatform_eu_rep",

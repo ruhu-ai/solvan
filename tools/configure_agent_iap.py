@@ -101,6 +101,7 @@ def build_policies(
     # omitting them prevents otherwise-correct agents from starting.
     for dependency in (
         "aiplatform",
+        "storage",
         "aiplatform-mtls",
         "aiplatform-rep",
         "aiplatform-eu-rep",

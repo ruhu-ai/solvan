@@ -560,6 +560,12 @@ resource "google_project_iam_custom_role" "memory_promoter" {
   stage       = "BETA"
   permissions = [
     "aiplatform.memories.create",
+    # Retrieval by exact scope answers with memory resource names, and the
+    # follow-up read of one memory is a get on memories/{id} -- a distinct
+    # permission the role lacked, so the probe's exact-scope recall died 403
+    # after the five-pair scope fix let the request reach the API at all
+    # (staging-20260824-01).
+    "aiplatform.memories.get",
     "aiplatform.memories.retrieve",
   ]
 }
