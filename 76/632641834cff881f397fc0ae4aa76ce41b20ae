@@ -1,0 +1,29 @@
+scripts/check-cloud-contracts
+  s_ea9b9b24df1c46::t_0c6eb2bffa6537 1-33
+tests/cloud_contracts/test_vertex_memory_bank.py
+  s_ea9b9b24df1c46::t_5629d104e955c5 1-130
+tests/unit/test_deploy_release.py
+  s_ea9b9b24df1c46::t_a72442063eba97 387-396,402,416-433
+tests/unit/test_platform_probes.py
+  s_ea9b9b24df1c46::t_a70facb3129434 189-221
+tools/deploy_release.py
+  s_ea9b9b24df1c46::t_f9854c9609c405 125-134,138-146
+tools/run_platform_probes.py
+  s_ea9b9b24df1c46::t_4233484c3c4be8 66-69,86,96-102,110-117,127,662-663,839-840,854-864,874
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "76632641834cff881f397fc0ae4aa76ce41b20ae",
+  "prompts": {},
+  "sessions": {
+    "s_ea9b9b24df1c46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ed42e522-bb61-497e-9d39-2096114957f1",
+        "model": "unknown"
+      },
+      "human_author": "Ijidai Lassa <ijidai@cued.app>"
+    }
+  }
+}
