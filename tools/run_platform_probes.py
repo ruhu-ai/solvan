@@ -63,6 +63,10 @@ class ProbePlan:
     terraform_output: str
     output: str
     required_proofs: tuple[str, ...]
+    #: When set, only these proofs execute. A filtered manifest is diagnostic
+    #: tooling, never release evidence: it records the filter, and preflight's
+    #: exact proof-key expectations refuse a partial manifest regardless.
+    only: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,6 +83,7 @@ def build_plan(
     terraform_output: Path,
     output: Path,
     apply: bool,
+    only: tuple[str, ...] = (),
 ) -> ProbePlan:
     if re.fullmatch(r"[a-z][a-z0-9-]{4,28}[a-z0-9]", project_id) is None:
         raise ValueError("project ID is not canonical")
@@ -88,6 +93,13 @@ def build_plan(
         raise ValueError("deployment ID is not canonical")
     if apply and not terraform_output.is_file():
         raise ValueError("Terraform output does not exist")
+    if only:
+        # Downstream proofs read the runtime query's detail; selecting one
+        # without the query would measure an empty result, not the platform.
+        expanded = set(only)
+        if expanded & {"gateway_registered_route_allowed", "otel_trace_correlated"}:
+            expanded.add("runtime_query_job_completed")
+        only = tuple(sorted(expanded))
     required_proofs = _REQUIRED_PROOFS
     if terraform_output.is_file():
         raw = json.loads(terraform_output.read_text(encoding="utf-8"))
@@ -95,6 +107,14 @@ def build_plan(
             raise ValueError("Terraform output must be a JSON object")
         if topology_from_terraform_output(raw).antigravity is not None:
             required_proofs = frozenset(set(required_proofs) | set(ANTIGRAVITY_PROOFS))
+    unknown = set(only) - set(required_proofs)
+    if unknown:
+        raise ValueError(
+            "--only names unknown proofs: "
+            + ", ".join(sorted(unknown))
+            + "; valid: "
+            + ", ".join(sorted(required_proofs))
+        )
     return ProbePlan(
         schema_version=1,
         mutation_mode="APPLY" if apply else "PLAN_ONLY",
@@ -104,6 +124,7 @@ def build_plan(
         terraform_output=str(terraform_output.resolve()),
         output=str(output.resolve()),
         required_proofs=tuple(sorted(required_proofs)),
+        only=only,
     )
 
 
@@ -638,6 +659,8 @@ def collect(plan: ProbePlan, *, acknowledgement: str | None) -> dict[str, Any]:
     results: dict[str, ProbeResult] = {}
 
     def capture(name: str, probe: Callable[[], tuple[bool, dict[str, Any]]]) -> None:
+        if plan.only and name not in plan.only:
+            return
         results[name] = _safe_probe(
             name,
             probe,
@@ -813,6 +836,8 @@ def collect(plan: ProbePlan, *, acknowledgement: str | None) -> dict[str, Any]:
             for name, result in sorted(results.items())
         },
     }
+    if plan.only:
+        manifest["filtered_to"] = sorted(plan.only)
     _atomic_json(Path(plan.output), manifest)
     return manifest
 
@@ -826,6 +851,17 @@ def main() -> int:
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--ack-deployment")
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument(
+        "--only",
+        action="append",
+        default=None,
+        metavar="PROOF",
+        help=(
+            "Run only the named proof (repeatable). Diagnostic mode: the "
+            "manifest records the filter and can never satisfy preflight. "
+            "Proofs downstream of the runtime query auto-include it."
+        ),
+    )
     args = parser.parse_args()
     try:
         plan = build_plan(
@@ -835,6 +871,7 @@ def main() -> int:
             terraform_output=args.terraform_output,
             output=args.output,
             apply=args.apply,
+            only=tuple(args.only or ()),
         )
         if not args.apply:
             print(json.dumps(asdict(plan), indent=2, sort_keys=True))

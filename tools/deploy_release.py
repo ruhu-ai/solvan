@@ -122,15 +122,28 @@ class CommandFailure(RuntimeError):
 def validate_staging_configuration(
     *, backend_config: Path, base_tfvars: Path, project_id: str
 ) -> None:
-    """Reject release inputs that could attach staging to dev state or config."""
+    """Bind the release to one environment's state and config, exactly.
+
+    Historically staging-only, which made staging the only cloud environment
+    that existed and turned the release ladder into the debugger: fourteen
+    deploy cycles in the 2026-08-23/24 campaign were spent discovering
+    cloud-only behavior thirty minutes at a time. A dev environment uses the
+    same runner with dev-prefixed state and dev tfvars; the binding rules
+    stay exact -- an environment may never attach to another environment's
+    state, and the environment in the tfvars decides, not a flag.
+    """
 
     backend = backend_config.read_text(encoding="utf-8")
     variables = base_tfvars.read_text(encoding="utf-8")
-    staging_prefix = r'^\s*prefix\s*=\s*"solvan/staging(?:/[^"\n]+)?"\s*$'
-    if re.search(staging_prefix, backend, re.MULTILINE) is None:
-        raise ValueError("release backend prefix must be solvan/staging")
-    if re.search(r'^\s*environment\s*=\s*"staging"\s*$', variables, re.MULTILINE) is None:
-        raise ValueError("release tfvars environment must be staging")
+    environment_match = re.search(
+        r'^\s*environment\s*=\s*"(dev|staging)"\s*$', variables, re.MULTILINE
+    )
+    if environment_match is None:
+        raise ValueError("release tfvars environment must be dev or staging")
+    environment = environment_match.group(1)
+    environment_prefix = r'^\s*prefix\s*=\s*"solvan/' + environment + r'(?:/[^"\n]+)?"\s*$'
+    if re.search(environment_prefix, backend, re.MULTILINE) is None:
+        raise ValueError(f"release backend prefix must be solvan/{environment}")
     project_match = re.search(r'^\s*project_id\s*=\s*"([^"\n]+)"\s*$', variables, re.MULTILINE)
     if project_match is None or project_match.group(1) != project_id:
         raise ValueError("release tfvars project_id must exactly equal --project")

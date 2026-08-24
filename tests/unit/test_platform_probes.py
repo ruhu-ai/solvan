@@ -186,3 +186,36 @@ def test_iap_matrix_resolves_endpoint_ids_from_terraform_rather_than_inventing_t
         _registered_endpoint_id(registered, "actuator")
     with pytest.raises(RuntimeError, match="malformed"):
         _registered_endpoint_id({"evidence": "not-a-resource"}, "evidence")
+
+
+def test_only_filter_expands_dependencies_validates_names_and_marks_manifest(
+    tmp_path: pytest.TempPathFactory,
+) -> None:
+    """A filtered run is a diagnostic, never release evidence: unknown names
+    refuse with the valid list, downstream proofs pull in the runtime query
+    they read from, and the manifest records the filter so a partial result
+    cannot pose as a full pass."""
+
+    from tools.run_platform_probes import build_plan
+
+    plan = build_plan(
+        project_id="solvan-staging",
+        release_commit="a" * 40,
+        deployment_id="staging-20260824-99",
+        terraform_output=Path("/nonexistent"),
+        output=Path("/tmp/x.json"),
+        apply=False,
+        only=("otel_trace_correlated",),
+    )
+    assert "runtime_query_job_completed" in plan.only
+
+    with pytest.raises(ValueError, match="unknown proofs"):
+        build_plan(
+            project_id="solvan-staging",
+            release_commit="a" * 40,
+            deployment_id="staging-20260824-99",
+            terraform_output=Path("/nonexistent"),
+            output=Path("/tmp/x.json"),
+            apply=False,
+            only=("not_a_proof",),
+        )

@@ -384,13 +384,22 @@ def test_release_plan_requires_paired_calibration_inputs(tmp_path: Path) -> None
         )
 
 
-def test_release_apply_rejects_dev_backend_and_tfvars(tmp_path: Path) -> None:
+def test_release_binds_each_environment_to_exactly_its_own_state(tmp_path: Path) -> None:
+    """Dev is a legitimate environment now; cross-attachment never is.
+
+    The runner was staging-only, which left staging as the only cloud
+    environment and made the release ladder the debugger. The binding rules
+    survive the widening unchanged: the tfvars environment decides, the
+    backend prefix must name that same environment, and anything else
+    refuses.
+    """
+
     backend = tmp_path / "dev.tfbackend"
     backend.write_text('bucket = "state"\nprefix = "solvan/dev"\n', encoding="utf-8")
     variables = tmp_path / "dev.tfvars"
     variables.write_text('project_id = "solvan-demo"\nenvironment = "dev"\n', encoding="utf-8")
 
-    with pytest.raises(ValueError, match="backend prefix must be solvan/staging"):
+    def plan() -> None:
         build_plan(
             project_id="solvan-demo",
             deployment_id="demo-20260808",
@@ -403,6 +412,24 @@ def test_release_apply_rejects_dev_backend_and_tfvars(tmp_path: Path) -> None:
             calibration_receipt_hash=None,
             apply=True,
         )
+
+    # dev tfvars with dev state passes the environment binding and proceeds
+    # to the catalog-input checks, which this minimal fixture does not carry.
+    with pytest.raises(ValueError, match="catalog_network_policy_hash"):
+        plan()
+
+    # dev tfvars attached to staging state is the cross-attachment the rule
+    # exists to refuse.
+    backend.write_text('bucket = "state"\nprefix = "solvan/staging"\n', encoding="utf-8")
+    with pytest.raises(ValueError, match="backend prefix must be solvan/dev"):
+        plan()
+
+    # an unknown environment refuses before any state is touched.
+    variables.write_text(
+        'project_id = "solvan-demo"\nenvironment = "production"\n', encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="environment must be dev or staging"):
+        plan()
 
 
 def test_release_apply_refuses_unconfigured_catalog_policy_before_cloud_work(

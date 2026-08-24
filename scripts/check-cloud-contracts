@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+# Provider contract tier: pins what Google's APIs actually do, from the
+# laptop, under the operator's ADC, before any deploy cycle is spent
+# discovering it live. Deliberately outside scripts/check -- it costs real
+# quota and needs real credentials -- and deliberately loud when it proves
+# nothing, mirroring scripts/check-contracts.
+#
+# Usage: scripts/check-cloud-contracts <project> [region]
+
+PROJECT="${1:?usage: scripts/check-cloud-contracts <project> [region]}"
+REGION="${2:-europe-west1}"
+
+output_file="$(mktemp -t solvan-cloud-contracts.XXXXXX)"
+set +e
+SOLVAN_CLOUD_CONTRACT_PROJECT="$PROJECT" \
+SOLVAN_CLOUD_CONTRACT_REGION="$REGION" \
+  uv run pytest tests/cloud_contracts -q 2>&1 | tee "$output_file"
+status=${PIPESTATUS[0]}
+set -e
+
+if grep -qE '[0-9]+ skipped' "$output_file" && ! grep -qE '[0-9]+ passed' "$output_file"; then
+  echo "Cloud contract tests were skipped; the tier proved nothing." >&2
+  exit 1
+fi
+if ! grep -qE '[0-9]+ passed' "$output_file"; then
+  echo "No cloud contract test executed; the tier proved nothing." >&2
+  exit 1
+fi
+exit "$status"
