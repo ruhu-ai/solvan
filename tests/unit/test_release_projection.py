@@ -114,6 +114,7 @@ def _topology() -> ReleaseTopology:
         "payments",
         "resource_manager",
         "resource_manager_mtls",
+        "storage",
         "telemetry",
         "telemetry_mtls",
         "verifier",
