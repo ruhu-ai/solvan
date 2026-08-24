@@ -637,7 +637,10 @@ def probe_memory() -> bool:
     except ValueError as error:
         raise RuntimeError(str(error)) from error
     config = MemoryBankConfiguration(
-        _required("SOLVAN_GCP_PROJECT"), _required("SOLVAN_GCP_REGION"), engine_id
+        _required("SOLVAN_GCP_PROJECT"),
+        _required("SOLVAN_GCP_REGION"),
+        engine_id,
+        project_number=_required("SOLVAN_GCP_PROJECT_NUMBER"),
     )
     exact_scope = MemoryScope(scope, "preflight-release-continuity", "INTERNAL", config.location)
     alternate_environment = (

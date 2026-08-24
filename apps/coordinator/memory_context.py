@@ -126,6 +126,7 @@ class EvidenceMemoryContextEnricher:
             settings.gcp_project_id,
             settings.gcp_region,
             engine_id,
+            project_number=settings.gcp_project_number,
         )
         try:
             api = VertexMemoryAPI(

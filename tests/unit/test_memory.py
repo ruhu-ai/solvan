@@ -368,3 +368,23 @@ def test_resolve_engine_id_accepts_both_project_spellings_and_nothing_else() -> 
         resolve_engine_id(
             "projects/solvan-staging/locations/europe-west1/reasoningEngines/re-1/extra", **kwargs
         )
+
+
+def test_memory_validation_accepts_the_number_spelling_vertex_returns() -> None:
+    """Creation succeeded and validation refused the created resource: the API
+    names memories with the project number while the config's canonical
+    resource uses the ID (staging-20260824-02). Both spellings must pass; a
+    third project must not."""
+
+    from solvan.platform.memory_bank import MemoryBankConfiguration
+
+    config = MemoryBankConfiguration(
+        "solvan-staging", "europe-west1", "re-1", project_number="599862894051"
+    )
+    prefixes = config.memory_prefixes()
+    assert any(p.startswith("projects/solvan-staging/") for p in prefixes)
+    assert any(p.startswith("projects/599862894051/") for p in prefixes)
+    assert not any("projects/other" in p for p in prefixes)
+    # Without a number, only the ID form is acceptable.
+    bare = MemoryBankConfiguration("solvan-staging", "europe-west1", "re-1")
+    assert len(bare.memory_prefixes()) == 1

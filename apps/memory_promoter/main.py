@@ -116,6 +116,7 @@ def tick(request: TickRequest) -> TickResponse:
         project_id=project_id,
         location=location,
         reasoning_engine_id=_engine_id(resource, project_id=project_id, location=location),
+        project_number=_required("SOLVAN_GCP_PROJECT_NUMBER"),
     )
     bank = GeminiMemoryBank(
         config=config,

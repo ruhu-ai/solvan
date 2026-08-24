@@ -119,6 +119,13 @@ class MemoryBankConfiguration:
     project_id: str
     location: str
     reasoning_engine_id: str
+    #: Vertex names created memories with the project *number*; every local
+    #: canonical form uses the project ID. Both spellings name the same
+    #: project, and validation must accept either or it refuses the very
+    #: resource the API just created (staging-20260824-02, after the
+    #: permission fix let creation succeed at all). Optional because local
+    #: fixtures have no number; validation then accepts the ID form only.
+    project_number: str | None = None
 
     def __post_init__(self) -> None:
         if not all(
@@ -131,6 +138,18 @@ class MemoryBankConfiguration:
         return (
             f"projects/{self.project_id}/locations/{self.location}/"
             f"reasoningEngines/{self.reasoning_engine_id}"
+        )
+
+    def memory_prefixes(self) -> tuple[str, ...]:
+        """Every acceptable spelling of this engine's memories/ prefix."""
+
+        spellings = [self.project_id]
+        if self.project_number:
+            spellings.append(self.project_number)
+        return tuple(
+            f"projects/{spelling}/locations/{self.location}/"
+            f"reasoningEngines/{self.reasoning_engine_id}/memories/"
+            for spelling in spellings
         )
 
 
@@ -244,8 +263,7 @@ class GeminiMemoryBank:
     def _validate(self, item: PlatformMemory, scope: dict[str, str]) -> None:
         if item.scope != scope:
             raise MemoryBankUnavailable("Memory Bank returned a non-exact scope")
-        prefix = f"{self._config.engine_resource}/memories/"
-        if not item.name.startswith(prefix) or not item.fact.strip():
+        if not item.name.startswith(self._config.memory_prefixes()) or not item.fact.strip():
             raise MemoryBankUnavailable("Memory Bank returned an invalid memory resource")
 
     def _managed_scope(self, exact_scope: MemoryScope) -> dict[str, str]:
